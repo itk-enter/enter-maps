@@ -65,17 +65,28 @@ docker compose exec phpfpm curl --silent 'http://enter-nginx-1:8080/ngsi-ld/v1/t
 If you change `docker-compose.override.yml` while the containers run, run `docker compose up --detach`. Then run
 `docker compose restart nginx`, because nginx keeps the old address of `phpfpm`.
 
+`Taskfile.yml` holds shortcuts for [Task](https://taskfile.dev/). Run `task` to see the list.
+
+To run a Symfony console command:
+
+```shell
+task console -- debug:router
+```
+
 To check the code before you make a pull request:
 
 ```shell
-docker compose exec phpfpm composer normalize --dry-run
-docker compose exec phpfpm vendor/bin/php-cs-fixer fix --dry-run --diff
-docker compose exec phpfpm vendor/bin/twig-cs-fixer lint
-docker compose run --rm prettier --no-editorconfig '**/*.{yml,yaml}' --check
-docker compose run --rm markdownlint markdownlint '**/*.md'
+task coding-standards:check
 ```
 
-The GitHub Actions workflows in `.github/workflows/` run the same checks.
+To correct the code style:
+
+```shell
+task coding-standards:apply
+```
+
+There is also a task for each type of file, for example `task coding-standards:php:check`. The GitHub Actions
+workflows in `.github/workflows/` run the same checks.
 
 ## Related projects
 
