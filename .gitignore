@@ -26,3 +26,9 @@ plan.md
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+/coverage/
+###< phpunit/phpunit ###

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-4](https://github.com/itk-enter/enter-maps/pull/4)
+  Added PHPUnit with a 100 % code coverage gate and `task test:coverage`
 * [PR-3](https://github.com/itk-enter/enter-maps/pull/3)
   Added PHPStan, the Woodpecker deploy to staging and the PR template
 * [PR-2](https://github.com/itk-enter/enter-maps/pull/2)

@@ -93,6 +93,21 @@ To run PHPStan:
 task code-analysis
 ```
 
+To run the tests:
+
+```shell
+task test
+```
+
+To run the tests with code coverage:
+
+```shell
+task test:coverage
+```
+
+The coverage of `src/` must be 100 %. The task and the `Tests` workflow fail if the coverage is lower. Put unit
+tests in `tests/Unit` and integration tests in `tests/Integration`.
+
 The GitHub Actions workflows in `.github/workflows/` run the same checks.
 
 ## Deployment
