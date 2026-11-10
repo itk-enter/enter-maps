@@ -12,15 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: go-task/setup-task@v2
 
       - name: Create docker network
         run: docker network create frontend
 
-      - name: Install dependencies
-        run: docker compose run --rm --no-deps phpfpm composer install
-
+      # The coverage threshold is in task/test.yml.
       - name: Run PHPUnit with coverage
-        run: docker compose run -e XDEBUG_MODE=coverage --rm --no-deps phpfpm vendor/bin/phpunit --coverage-clover=coverage/clover.xml
-
-      - name: Enforce coverage threshold (100%)
-        run: docker compose run --rm --no-deps phpfpm vendor/bin/coverage-check coverage/clover.xml 100
+        run: task test:coverage

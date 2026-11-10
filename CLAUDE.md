@@ -71,8 +71,9 @@ Do not add a baseline file. Correct the error.
 
 Before you make a pull request, run `task coding-standards:check`, `task code-analysis` and `task test:coverage`.
 
-The test coverage of `src/` must be 100 %. Write a test for each new class in `src/`. Put unit tests in
-`tests/Unit` and integration tests in `tests/Integration`.
+The test coverage of `src/` must not be lower than `COVERAGE_THRESHOLD` in `task/test.yml`. Do not write the value
+in other files. Write a test for each new class in `src/`. Put unit tests in `tests/Unit` and integration tests in
+`tests/Integration`.
 
 ### Language: ASD-STE100
 

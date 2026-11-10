@@ -105,8 +105,8 @@ To run the tests with code coverage:
 task test:coverage
 ```
 
-The coverage of `src/` must be 100 %. The task and the `Tests` workflow fail if the coverage is lower. Put unit
-tests in `tests/Unit` and integration tests in `tests/Integration`.
+The task fails if the coverage of `src/` is lower than `COVERAGE_THRESHOLD` in `task/test.yml`. The `Tests`
+workflow runs the same task. Put unit tests in `tests/Unit` and integration tests in `tests/Integration`.
 
 The GitHub Actions workflows in `.github/workflows/` run the same checks.
 
