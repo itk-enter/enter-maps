@@ -28,8 +28,32 @@ This project only reads from Enter. It does not write to Enter or to its broker.
 
 ## Development
 
-The project uses the ITK Dev Docker setup and [Task](https://taskfile.dev/). The setup comes in the first phase.
-This section will then tell how to start the project.
+The project uses the `symfony-8` template from
+[itk-dev/devops_itkdev-docker](https://github.com/itk-dev/devops_itkdev-docker). You need Docker and the
+`itkdev-docker-compose` script from that repository.
+
+To start the project:
+
+```shell
+itkdev-docker-compose traefik:start
+docker compose up --detach
+docker compose exec phpfpm composer install
+itkdev-docker-compose open
+```
+
+The site is at <http://enter-maps.local.itkdev.dk/>.
+
+To check the code before you make a pull request:
+
+```shell
+docker compose exec phpfpm composer normalize --dry-run
+docker compose exec phpfpm vendor/bin/php-cs-fixer fix --dry-run --diff
+docker compose exec phpfpm vendor/bin/twig-cs-fixer lint
+docker compose run --rm prettier --no-editorconfig '**/*.{yml,yaml}' --check
+docker compose run --rm markdownlint markdownlint '**/*.md'
+```
+
+The GitHub Actions workflows in `.github/workflows/` run the same checks.
 
 ## Related projects
 
