@@ -7,11 +7,64 @@ If an instruction here conflicts with the user's global `~/.claude/CLAUDE.md`, t
 
 ## Project overview
 
+Enter maps shows data from [Enter](https://github.com/itk-enter/enter) on maps that other sites embed in an
+`<iframe>`. [plan.md](plan.md) holds the design, the phases and the open questions. Read it before you start a task.
+
+The project has three parts:
+
+- **The map**, `/embed/{renderer}`. The settings come from the URL (`c`) or from a stored configuration (`{id}`). The
+  renderers are `leaflet` and `septima`.
+- **The builder**, `/builder`. A Live Component form that stores a `MapConfiguration` and gives the embed code.
+- **The data proxy**, `/data/{dataSet}.geojson`. It reads from Enter, pages through the results, caches them and
+  returns GeoJSON.
+
+Rules that apply to all parts:
+
+- This project only reads from Enter. Do not write to Enter or to its broker.
+- The browser never calls Enter. All data goes through the data proxy.
+- The proxy accepts only data sets that are in Enter's `/sources.json`.
+- Credentials for Enter stay on the server. Read them from environment variables, for example `ENTER_BASIC_AUTH`.
+- `config` is the source of the map. The converters make `map_json.leaflet` and `map_json.septima` from it on each
+  save. Do not edit `map_json` by hand.
+- Validate `config` against the JSON Schema in `config/schema/`. Do not remove support for an old schema version,
+  because embed codes stay on other sites for a long time.
+- Field definitions in `config` are data, not code. Do not put JavaScript functions into `config`.
+- The map must have zero axe-core violations on both renderers.
+
 ## Tech stack
+
+- Symfony on the ITK Dev Docker template for Symfony: `phpfpm`, `nginx`, `mariadb` and Traefik.
+- Doctrine ORM and migrations, with MariaDB.
+- Twig, `symfony/ux-twig-component`, `symfony/ux-live-component` and Stimulus.
+- AssetMapper with `importmap.php`. Do not add a Node build step.
+- Symfony Form and Validator for the builder.
+- `symfony/http-client` with a scoped client for Enter, and Symfony Cache for the data proxy.
+- Leaflet 1.9.x from the importmap.
+- Septima Widget as an ES module from its CDN, with a pinned version.
+- Adressevælger from Klimadatastyrelsen for address search.
+- PHPUnit for unit tests. Playwright and axe-core for browser tests.
 
 ## Project structure
 
+The application code does not exist yet. Phase 1 in [plan.md](plan.md) adds the scaffold. This is the planned
+structure:
+
+```text
+config/schema/map-config.v1.json   JSON Schema for config, version 1
+src/Controller/                    EmbedController, DataProxyController, BuilderController
+src/Entity/MapConfiguration.php    The stored configuration
+src/                               Converters for each renderer, the data proxy and the config value object
+templates/                         Twig templates and Twig components for the sidebar, list and detail view
+assets/controllers/                Stimulus controllers for the map, list, detail, search and filters
+tests/                             PHPUnit tests, with snapshot files for the converters
+```
+
+When the scaffold exists, update this section to agree with the real structure.
+
 ## Coding standards
+
+The ITK Dev templates supply the coding standards and the Taskfile tasks. PHPStan runs at level 6 without a baseline.
+Do not add a baseline file. Correct the error.
 
 ### Language: ASD-STE100
 
