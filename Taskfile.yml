@@ -3,6 +3,9 @@ version: '3'
 # https://taskfile.dev/usage/#env-files
 dotenv: ['.env.local', '.env']
 
+includes:
+  coding-standards: ./task/coding-standards.yml
+
 tasks:
   default:
     cmds:
@@ -15,97 +18,6 @@ tasks:
       task: php
       vars:
         TASK_ARGS: bin/console
-
-  coding-standards:apply:
-    desc: 'Apply coding standards'
-    cmds:
-      - task: coding-standards:composer:apply
-      - task: coding-standards:markdown:apply
-      - task: coding-standards:php:apply
-      - task: coding-standards:twig:apply
-      - task: coding-standards:yaml:apply
-
-  coding-standards:check:
-    desc: 'Check coding standards'
-    cmds:
-      - task: coding-standards:composer:check
-      - task: coding-standards:markdown:check
-      - task: coding-standards:php:check
-      - task: coding-standards:twig:check
-      - task: coding-standards:yaml:check
-
-  coding-standards:composer:apply:
-    desc: 'Apply coding standards for Composer'
-    cmd:
-      task: composer
-      vars:
-        TASK_ARGS: normalize
-
-  coding-standards:composer:check:
-    desc: 'Check coding standards for Composer'
-    cmds:
-      - task: composer
-        vars:
-          TASK_ARGS: validate --strict
-      - task: composer
-        vars:
-          TASK_ARGS: normalize --dry-run
-
-  coding-standards:markdown:apply:
-    desc: 'Apply coding standards for Markdown'
-    cmd:
-      task: compose
-      vars:
-        TASK_ARGS: run --rm markdownlint markdownlint '**/*.md' --fix
-
-  coding-standards:markdown:check:
-    desc: 'Check coding standards for Markdown'
-    cmd:
-      task: compose
-      vars:
-        TASK_ARGS: run --rm markdownlint markdownlint '**/*.md'
-
-  coding-standards:php:apply:
-    desc: 'Apply coding standards for PHP'
-    cmd:
-      task: php
-      vars:
-        TASK_ARGS: vendor/bin/php-cs-fixer fix
-
-  coding-standards:php:check:
-    desc: 'Check coding standards for PHP'
-    cmd:
-      task: php
-      vars:
-        TASK_ARGS: vendor/bin/php-cs-fixer fix --dry-run --diff
-
-  coding-standards:twig:apply:
-    desc: 'Apply coding standards for Twig'
-    cmd:
-      task: php
-      vars:
-        TASK_ARGS: vendor/bin/twig-cs-fixer lint --fix
-
-  coding-standards:twig:check:
-    desc: 'Check coding standards for Twig'
-    cmd:
-      task: php
-      vars:
-        TASK_ARGS: vendor/bin/twig-cs-fixer lint
-
-  coding-standards:yaml:apply:
-    desc: 'Apply coding standards for YAML'
-    cmd:
-      task: compose
-      vars:
-        TASK_ARGS: run --rm prettier --no-editorconfig '**/*.{yml,yaml}' --write
-
-  coding-standards:yaml:check:
-    desc: 'Check coding standards for YAML'
-    cmd:
-      task: compose
-      vars:
-        TASK_ARGS: run --rm prettier --no-editorconfig '**/*.{yml,yaml}' --check
 
   compose:
     internal: true

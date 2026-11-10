@@ -1,0 +1,96 @@
+version: "3"
+
+# Included from Taskfile.yml with the "coding-standards" namespace. The tasks
+# call the helper tasks in Taskfile.yml with a leading ":", e.g. ":php".
+
+tasks:
+  apply:
+    desc: "Apply coding standards"
+    cmds:
+      - task: composer:apply
+      - task: markdown:apply
+      - task: php:apply
+      - task: twig:apply
+      - task: yaml:apply
+
+  check:
+    desc: "Check coding standards"
+    cmds:
+      - task: composer:check
+      - task: markdown:check
+      - task: php:check
+      - task: twig:check
+      - task: yaml:check
+
+  composer:apply:
+    desc: "Apply coding standards for Composer"
+    cmd:
+      task: :composer
+      vars:
+        TASK_ARGS: normalize
+
+  composer:check:
+    desc: "Check coding standards for Composer"
+    cmds:
+      - task: :composer
+        vars:
+          TASK_ARGS: validate --strict
+      - task: :composer
+        vars:
+          TASK_ARGS: normalize --dry-run
+
+  markdown:apply:
+    desc: "Apply coding standards for Markdown"
+    cmd:
+      task: :compose
+      vars:
+        TASK_ARGS: run --rm markdownlint markdownlint '**/*.md' --fix
+
+  markdown:check:
+    desc: "Check coding standards for Markdown"
+    cmd:
+      task: :compose
+      vars:
+        TASK_ARGS: run --rm markdownlint markdownlint '**/*.md'
+
+  php:apply:
+    desc: "Apply coding standards for PHP"
+    cmd:
+      task: :php
+      vars:
+        TASK_ARGS: vendor/bin/php-cs-fixer fix
+
+  php:check:
+    desc: "Check coding standards for PHP"
+    cmd:
+      task: :php
+      vars:
+        TASK_ARGS: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+  twig:apply:
+    desc: "Apply coding standards for Twig"
+    cmd:
+      task: :php
+      vars:
+        TASK_ARGS: vendor/bin/twig-cs-fixer lint --fix
+
+  twig:check:
+    desc: "Check coding standards for Twig"
+    cmd:
+      task: :php
+      vars:
+        TASK_ARGS: vendor/bin/twig-cs-fixer lint
+
+  yaml:apply:
+    desc: "Apply coding standards for YAML"
+    cmd:
+      task: :compose
+      vars:
+        TASK_ARGS: run --rm prettier --no-editorconfig '**/*.{yml,yaml}' --write
+
+  yaml:check:
+    desc: "Check coding standards for YAML"
+    cmd:
+      task: :compose
+      vars:
+        TASK_ARGS: run --rm prettier --no-editorconfig '**/*.{yml,yaml}' --check
