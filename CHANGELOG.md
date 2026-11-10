@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-2](https://github.com/itk-enter/enter-maps/pull/2)
+  Added the Symfony 8.1 skeleton and the ITK Dev `symfony-8` Docker template
 * [PR-1](https://github.com/itk-enter/enter-maps/pull/1)
   Added the project README, CHANGELOG and CLAUDE.md, and removed plan.md from Git
 
