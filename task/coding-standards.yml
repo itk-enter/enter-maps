@@ -7,6 +7,7 @@ tasks:
   apply:
     desc: "Apply coding standards"
     cmds:
+      - task: assets:apply
       - task: composer:apply
       - task: markdown:apply
       - task: php:apply
@@ -16,11 +17,26 @@ tasks:
   check:
     desc: "Check coding standards"
     cmds:
+      - task: assets:check
       - task: composer:check
       - task: markdown:check
       - task: php:check
       - task: twig:check
       - task: yaml:check
+
+  assets:apply:
+    desc: "Apply coding standards for assets"
+    cmd:
+      task: :compose
+      vars:
+        TASK_ARGS: run --rm prettier --no-editorconfig 'assets/**/*.{js,css,scss}' --write
+
+  assets:check:
+    desc: "Check coding standards for assets"
+    cmd:
+      task: :compose
+      vars:
+        TASK_ARGS: run --rm prettier --no-editorconfig 'assets/**/*.{js,css,scss}' --check
 
   composer:apply:
     desc: "Apply coding standards for Composer"
