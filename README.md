@@ -4,8 +4,7 @@ Enter maps shows data from [Enter](https://github.com/itk-enter/enter) on maps t
 `<iframe>`. It also has a builder: a form that makes a map configuration and gives the embed code.
 
 > [!NOTE]
-> The project is in the plan stage. The repository has no application code yet. See [plan.md](plan.md) for the
-> design, the phases and the open questions.
+> The project is in the plan stage. The repository has no application code yet.
 
 ## Parts
 
@@ -29,7 +28,7 @@ This project only reads from Enter. It does not write to Enter or to its broker.
 
 ## Development
 
-The project uses the ITK Dev Docker setup and [Task](https://taskfile.dev/). The setup comes in phase 1 of the plan.
+The project uses the ITK Dev Docker setup and [Task](https://taskfile.dev/). The setup comes in the first phase.
 This section will then tell how to start the project.
 
 ## Related projects

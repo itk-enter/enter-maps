@@ -8,6 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 * [PR-1](https://github.com/itk-enter/enter-maps/pull/1)
-  Added the project README, CHANGELOG and CLAUDE.md
+  Added the project README, CHANGELOG and CLAUDE.md, and removed plan.md from Git
 
 [Unreleased]: https://github.com/itk-enter/enter-maps

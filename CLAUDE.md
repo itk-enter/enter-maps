@@ -8,7 +8,10 @@ If an instruction here conflicts with the user's global `~/.claude/CLAUDE.md`, t
 ## Project overview
 
 Enter maps shows data from [Enter](https://github.com/itk-enter/enter) on maps that other sites embed in an
-`<iframe>`. [plan.md](plan.md) holds the design, the phases and the open questions. Read it before you start a task.
+`<iframe>`.
+
+The design, the phases and the open questions are in `plan.md` in the project root. The file is not in Git, so
+it is possible that it does not exist. If it exists, read it before you start a task.
 
 The project has three parts:
 
@@ -46,7 +49,7 @@ Rules that apply to all parts:
 
 ## Project structure
 
-The application code does not exist yet. Phase 1 in [plan.md](plan.md) adds the scaffold. This is the planned
+The application code does not exist yet. Phase 1 in `plan.md` adds the scaffold. This is the planned
 structure:
 
 ```text
