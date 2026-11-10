@@ -17,6 +17,7 @@
     "require-dev": {
         "ergebnis/composer-normalize": "^2.56",
         "friendsofphp/php-cs-fixer": "^3.95.30",
+        "phpstan/phpstan": "^2.3",
         "vincentlanglet/twig-cs-fixer": "^4.1"
     },
     "replace": {

@@ -86,11 +86,11 @@ tasks:
     cmd:
       task: :compose
       vars:
-        TASK_ARGS: run --rm prettier --no-editorconfig '**/*.{yml,yaml}' --write
+        TASK_ARGS: run --rm prettier --no-editorconfig --parser yaml phpstan*.neon '**/*.{yml,yaml}' --write
 
   yaml:check:
     desc: "Check coding standards for YAML"
     cmd:
       task: :compose
       vars:
-        TASK_ARGS: run --rm prettier --no-editorconfig '**/*.{yml,yaml}' --check
+        TASK_ARGS: run --rm prettier --no-editorconfig --parser yaml phpstan*.neon '**/*.{yml,yaml}' --check

@@ -69,6 +69,8 @@ When the scaffold exists, update this section to agree with the real structure.
 The ITK Dev templates supply the coding standards and the Taskfile tasks. PHPStan runs at level 6 without a baseline.
 Do not add a baseline file. Correct the error.
 
+Before you make a pull request, run `task coding-standards:check` and `task code-analysis`.
+
 ### Language: ASD-STE100
 
 All English text that people read is in ASD-STE100 Simplified Technical English. This applies to:

@@ -4,6 +4,7 @@ version: '3'
 dotenv: ['.env.local', '.env']
 
 includes:
+  code-analysis: ./task/code-analysis.yml
   coding-standards: ./task/coding-standards.yml
 
 tasks:

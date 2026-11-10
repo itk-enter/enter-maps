@@ -85,8 +85,23 @@ To correct the code style:
 task coding-standards:apply
 ```
 
-There is also a task for each type of file, for example `task coding-standards:php:check`. The GitHub Actions
-workflows in `.github/workflows/` run the same checks.
+There is also a task for each type of file, for example `task coding-standards:php:check`.
+
+To run PHPStan:
+
+```shell
+task code-analysis
+```
+
+The GitHub Actions workflows in `.github/workflows/` run the same checks.
+
+## Deployment
+
+[Woodpecker](https://woodpecker-ci.org/) deploys a `release/*` branch to the staging server. The steps are in
+`.woodpecker/stg.yml`. Woodpecker gets the server and the login from these secrets: `id`, `secret`, `stg_host`,
+`stg_path` and `user`.
+
+On the server, set `ENTER_BASE_URI` in `.env.local` to the address of Enter.
 
 ## Related projects
 
