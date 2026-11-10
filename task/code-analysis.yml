@@ -1,0 +1,23 @@
+version: "3"
+
+# Included from Taskfile.yml with the "code-analysis" namespace. The tasks
+# call the helper tasks in Taskfile.yml with a leading ":", e.g. ":compose".
+#
+# The tasks use "run --rm --no-deps", so that they also work in GitHub Actions,
+# where the other containers do not run.
+
+tasks:
+  default:
+    desc: "Run code analysis"
+    cmds:
+      - task: phpstan
+
+  phpstan:
+    desc: "Run PHPStan"
+    cmds:
+      - task: :compose
+        vars:
+          TASK_ARGS: run --rm --no-deps phpfpm composer install --no-scripts
+      - task: :compose
+        vars:
+          TASK_ARGS: run --rm --no-deps phpfpm vendor/bin/phpstan

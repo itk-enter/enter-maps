@@ -1,0 +1,25 @@
+name: Enter maps
+
+env:
+  COMPOSE_USER: runner
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  code-analysis:
+    name: Code analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: go-task/setup-task@v2
+
+      - name: Create docker network
+        run: docker network create frontend
+
+      - name: Code analysis
+        run: task code-analysis
