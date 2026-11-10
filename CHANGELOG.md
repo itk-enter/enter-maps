@@ -8,6 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 * [PR-1](https://github.com/itk-enter/enter-maps/pull/1)
-  Added the project README, CHANGELOG, CLAUDE.md and sandbox config
+  Added the project README, CHANGELOG and CLAUDE.md
 
 [Unreleased]: https://github.com/itk-enter/enter-maps
