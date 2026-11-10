@@ -43,6 +43,28 @@ itkdev-docker-compose open
 
 The site is at <http://enter-maps.local.itkdev.dk/>.
 
+`docker-compose.override.yml` changes the template for this project. Docker Compose reads it automatically. It removes
+Mailpit, because the project does not send e-mail.
+
+### Data from a local Enter
+
+This project reads data from [Enter](https://github.com/itk-enter/enter). To use a local Enter, start the two projects
+on the same Docker host. The `phpfpm` container of this project is on the `frontend` network. The `nginx` container of
+Enter is also on that network, as `enter-nginx-1`.
+
+`ENTER_BASE_URI` in `.env` is `http://enter-nginx-1:8080` by default. If Enter uses a different
+`COMPOSE_PROJECT_NAME`, set the container name in `.env.local`.
+
+To make sure that the connection works:
+
+```shell
+docker compose exec phpfpm curl --silent http://enter-nginx-1:8080/sources.json
+docker compose exec phpfpm curl --silent 'http://enter-nginx-1:8080/ngsi-ld/v1/types'
+```
+
+If you change `docker-compose.override.yml` while the containers run, run `docker compose up --detach`. Then run
+`docker compose restart nginx`, because nginx keeps the old address of `phpfpm`.
+
 To check the code before you make a pull request:
 
 ```shell
