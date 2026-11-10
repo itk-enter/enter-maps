@@ -21,3 +21,8 @@
 # Local files
 plan.md
 .idea/
+
+###> symfony/asset-mapper ###
+/public/assets/
+/assets/vendor/
+###< symfony/asset-mapper ###
