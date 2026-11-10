@@ -1,0 +1,38 @@
+version: '3'
+
+# https://taskfile.dev/usage/#env-files
+dotenv: ['.env.local', '.env']
+
+includes:
+  coding-standards: ./task/coding-standards.yml
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  console:
+    desc: 'Run a Symfony console command, e.g. `task {{.TASK}} -- debug:router`'
+    cmd:
+      task: php
+      vars:
+        TASK_ARGS: bin/console
+
+  compose:
+    internal: true
+    cmd: 'docker compose {{.TASK_ARGS}} {{.CLI_ARGS}}'
+
+  composer:
+    internal: true
+    cmd:
+      task: compose
+      vars:
+        TASK_ARGS: exec phpfpm composer {{.TASK_ARGS}}
+
+  php:
+    internal: true
+    cmd:
+      task: compose
+      vars:
+        TASK_ARGS: exec phpfpm php {{.TASK_ARGS}}

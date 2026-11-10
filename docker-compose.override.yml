@@ -1,0 +1,14 @@
+# Local changes to the ITK Dev template. Docker Compose merges this file into
+# docker-compose.yml automatically. Do not give "-f" to "docker compose",
+# because then Docker Compose does not read this file.
+services:
+  # The project does not send e-mail, so it does not need Mailpit.
+  mail: !reset
+
+  # The data proxy in phpfpm reads from Enter. When the Enter project runs on
+  # the same Docker host, its nginx container is on the "frontend" network as
+  # "enter-nginx-1". See ENTER_BASE_URI in .env.
+  phpfpm:
+    networks:
+      - app
+      - frontend

@@ -49,8 +49,8 @@ Rules that apply to all parts:
 
 ## Project structure
 
-The application code does not exist yet. Phase 1 in `plan.md` adds the scaffold. This is the planned
-structure:
+The Symfony skeleton and the ITK Dev Docker template are installed. The application code does not exist yet. This is
+the planned structure:
 
 ```text
 config/schema/map-config.v1.json   JSON Schema for config, version 1

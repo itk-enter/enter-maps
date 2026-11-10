@@ -28,8 +28,65 @@ This project only reads from Enter. It does not write to Enter or to its broker.
 
 ## Development
 
-The project uses the ITK Dev Docker setup and [Task](https://taskfile.dev/). The setup comes in the first phase.
-This section will then tell how to start the project.
+The project uses the `symfony-8` template from
+[itk-dev/devops_itkdev-docker](https://github.com/itk-dev/devops_itkdev-docker). You need Docker and the
+`itkdev-docker-compose` script from that repository.
+
+To start the project:
+
+```shell
+itkdev-docker-compose traefik:start
+docker compose up --detach
+docker compose exec phpfpm composer install
+itkdev-docker-compose open
+```
+
+The site is at <http://enter-maps.local.itkdev.dk/>.
+
+`docker-compose.override.yml` changes the template for this project. Docker Compose reads it automatically. It removes
+Mailpit, because the project does not send e-mail.
+
+### Data from a local Enter
+
+This project reads data from [Enter](https://github.com/itk-enter/enter). To use a local Enter, start the two projects
+on the same Docker host. The `phpfpm` container of this project is on the `frontend` network. The `nginx` container of
+Enter is also on that network, as `enter-nginx-1`.
+
+`ENTER_BASE_URI` in `.env` is `http://enter-nginx-1:8080` by default. If Enter uses a different
+`COMPOSE_PROJECT_NAME`, set the container name in `.env.local`.
+
+To make sure that the connection works:
+
+```shell
+docker compose exec phpfpm curl --silent http://enter-nginx-1:8080/sources.json
+docker compose exec phpfpm curl --silent 'http://enter-nginx-1:8080/ngsi-ld/v1/types'
+```
+
+If you change `docker-compose.override.yml` while the containers run, run `docker compose up --detach`. Then run
+`docker compose restart nginx`, because nginx keeps the old address of `phpfpm`.
+
+`Taskfile.yml` holds shortcuts for [Task](https://taskfile.dev/). Run `task` to see the list.
+
+To run a Symfony console command:
+
+```shell
+task console -- debug:router
+```
+
+To check the code before you make a pull request:
+
+```shell
+task coding-standards:check
+```
+
+To correct the code style:
+
+```shell
+task coding-standards:apply
+```
+
+There is also a task for each type of file, for example `task coding-standards:php:check`. The GitHub Actions
+workflows in `.github/workflows/` run the same checks.
 
 ## Related projects
 
