@@ -12,6 +12,11 @@ namespace App\Enter;
  */
 final readonly class DataProxy
 {
+    /**
+     * A filter that is too long gives a clear 400, not a 503 from a URL that
+     * is too long for the broker. It also limits the work that one request
+     * causes in the broker. Real filters are much shorter.
+     */
     public const int MAX_WHERE_LENGTH = 500;
 
     /**
