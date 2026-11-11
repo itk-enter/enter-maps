@@ -136,6 +136,23 @@ GET /data/{dataSet}.geojson?where=isAccessibleForFree==true
 
 `config/packages/enter.yaml` holds the HTTP client for Enter.
 
+### Why the maps do not call Enter directly
+
+- **Paging.** The broker of Enter returns at most 1000 entities for each request. A Septima layer reads one URL and
+  cannot page. The proxy reads all pages and returns one response.
+- **NGSI-LD requests.** The broker needs a `Link` header with the context and `Accept: application/geo+json`. A map
+  layer cannot send these headers.
+- **Stable URLs.** Embed codes stay on other sites for a long time. They contain `/data/{dataSet}.geojson`, which this
+  project controls. If Enter changes its broker or its query format, we change the proxy, not the embed codes.
+- **Credentials.** On staging, Enter is behind basic auth. The proxy keeps the password on the server.
+- **Control of the requests.** The proxy accepts only data sets from `/sources.json`, and it checks the `where`
+  filter. Enter does not need CORS headers for the sites that embed a map.
+- **Smaller responses.** The proxy removes the `location` and `source` properties, which the broker adds and a map does
+  not use.
+
+The proxy has no cache now. Each request to the proxy sends requests to Enter. If the load on Enter or its outages
+become a problem, add a cache to the proxy.
+
 ## Deployment
 
 [Woodpecker](https://woodpecker-ci.org/) deploys a `release/*` branch to the staging server. The steps are in
