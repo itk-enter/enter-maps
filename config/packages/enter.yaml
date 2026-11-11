@@ -1,0 +1,10 @@
+# The connection to Enter.
+framework:
+    http_client:
+        scoped_clients:
+            enter.client:
+                base_uri: '%env(ENTER_BASE_URI)%'
+                # A slow Enter must not make the map slow.
+                timeout: 5
+                # Empty everywhere except on staging, where Enter is behind basic auth.
+                auth_basic: '%env(ENTER_BASIC_AUTH)%'

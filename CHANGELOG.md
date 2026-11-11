@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-7](https://github.com/itk-enter/enter-maps/pull/7)
+  Added the data proxy for Enter at `/data/{dataSet}.geojson`
 * [PR-6](https://github.com/itk-enter/enter-maps/pull/6)
   Added Rector with `task rector:check` and `task rector:apply`
 * [PR-5](https://github.com/itk-enter/enter-maps/pull/5)

@@ -119,13 +119,31 @@ workflow runs the same task. Put unit tests in `tests/Unit` and integration test
 
 The GitHub Actions workflows in `.github/workflows/` run the same checks.
 
+## The data proxy
+
+The maps get their data from this project, not from Enter:
+
+```text
+GET /data/{dataSet}.geojson
+GET /data/{dataSet}.geojson?where=isAccessibleForFree==true
+```
+
+- `{dataSet}` is the ID of a data set in Enter's `/sources.json`. An unknown ID gives `404`.
+- `where` is an NGSI-LD query that the entities must also match. A filter that is too long or that holds characters
+  that are not permitted gives `400`.
+- The proxy reads all pages from Enter on each request. It has no cache.
+- If Enter is not available, the proxy returns `503`.
+
+`config/packages/enter.yaml` holds the HTTP client for Enter.
+
 ## Deployment
 
 [Woodpecker](https://woodpecker-ci.org/) deploys a `release/*` branch to the staging server. The steps are in
 `.woodpecker/stg.yml`. Woodpecker gets the server and the login from these secrets: `id`, `secret`, `stg_host`,
 `stg_path` and `user`.
 
-On the server, set `ENTER_BASE_URI` in `.env.local` to the address of Enter.
+On the server, set `ENTER_BASE_URI` in `.env.local` to the address of Enter. On staging, also set
+`ENTER_BASIC_AUTH` to `user:password`, because the staging site of Enter is behind basic auth.
 
 ## Related projects
 
