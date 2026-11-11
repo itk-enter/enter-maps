@@ -1,0 +1,19 @@
+version: "3"
+
+# Included from Taskfile.yml with the "rector" namespace. The tasks call the
+# helper tasks in Taskfile.yml with a leading ":", e.g. ":php".
+
+tasks:
+  check:
+    desc: "Check for Rector refactorings (dry run)"
+    cmd:
+      task: :php
+      vars:
+        TASK_ARGS: vendor/bin/rector process --dry-run
+
+  apply:
+    desc: "Apply Rector refactorings"
+    cmd:
+      task: :php
+      vars:
+        TASK_ARGS: vendor/bin/rector process

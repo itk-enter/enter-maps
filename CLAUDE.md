@@ -69,7 +69,8 @@ When the scaffold exists, update this section to agree with the real structure.
 The ITK Dev templates supply the coding standards and the Taskfile tasks. PHPStan runs at level 6 without a baseline.
 Do not add a baseline file. Correct the error.
 
-Before you make a pull request, run `task coding-standards:check`, `task code-analysis` and `task test:coverage`.
+Before you make a pull request, run `task coding-standards:check`, `task code-analysis`, `task rector:check` and
+`task test:coverage`. Commit the changes from `task rector:apply` separately, for example "Applied Rector".
 
 The test coverage of `src/` must not be lower than `COVERAGE_THRESHOLD` in `task/test.yml`. Do not write the value
 in other files. Write a test for each new class in `src/`. Put unit tests in `tests/Unit` and integration tests in

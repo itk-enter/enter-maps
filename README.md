@@ -93,6 +93,15 @@ To run PHPStan:
 task code-analysis
 ```
 
+To find code that [Rector](https://getrector.com/) can make better, and to apply the changes:
+
+```shell
+task rector:check
+task rector:apply
+```
+
+`rector.php` holds the rules. Read the changes from `task rector:apply` before you commit them.
+
 To run the tests:
 
 ```shell
