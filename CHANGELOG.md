@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-9](https://github.com/itk-enter/enter-maps/pull/9)
+  Marked `symfony.lock` and `config/reference.php` as generated, so GitHub collapses them in reviews
 * [PR-6](https://github.com/itk-enter/enter-maps/pull/6)
   Added Rector with `task rector:check` and `task rector:apply`
 * [PR-5](https://github.com/itk-enter/enter-maps/pull/5)
