@@ -5,8 +5,10 @@ parameters:
     - config/
     - public/
     - src/
+    - tests/
 
   excludePaths:
     - src/Kernel.php
+    - tests/bootstrap.php
 
   treatPhpDocTypesAsCertain: false

@@ -1,0 +1,22 @@
+name: Tests
+
+env:
+  COMPOSE_USER: runner
+
+on:
+  pull_request:
+
+jobs:
+  phpunit:
+    name: PHPUnit + coverage gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: go-task/setup-task@v2
+
+      - name: Create docker network
+        run: docker network create frontend
+
+      # The coverage threshold is in task/test.yml.
+      - name: Run PHPUnit with coverage
+        run: task test:coverage

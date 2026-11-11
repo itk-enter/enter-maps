@@ -93,6 +93,30 @@ To run PHPStan:
 task code-analysis
 ```
 
+To find code that [Rector](https://getrector.com/) can make better, and to apply the changes:
+
+```shell
+task rector:check
+task rector:apply
+```
+
+`rector.php` holds the rules. Read the changes from `task rector:apply` before you commit them.
+
+To run the tests:
+
+```shell
+task test
+```
+
+To run the tests with code coverage:
+
+```shell
+task test:coverage
+```
+
+The task fails if the coverage of `src/` is lower than `COVERAGE_THRESHOLD` in `task/test.yml`. The `Tests`
+workflow runs the same task. Put unit tests in `tests/Unit` and integration tests in `tests/Integration`.
+
 The GitHub Actions workflows in `.github/workflows/` run the same checks.
 
 ## Deployment
