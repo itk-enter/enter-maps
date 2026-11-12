@@ -153,7 +153,7 @@
   },
   "$defs": {
     "text": {
-      "description": "A text that the map shows, as plain text. HTML is not permitted.",
+      "description": "A text that the map shows as plain text. The renderers escape it, so HTML in it shows as text and does not work.",
       "type": "string",
       "minLength": 1,
       "maxLength": 200
@@ -221,7 +221,7 @@
           "$ref": "#/$defs/name"
         },
         "dataSet": {
-          "description": "The id of the data set in /sources.json of Enter. The same data set can be in two layers, with a different where.",
+          "description": "The id of the data set in /sources.json of Enter. The same data set can be in two layers, with a different filter.",
           "type": "string",
           "pattern": "^[A-Za-z0-9_.:-]+$",
           "maxLength": 200
@@ -309,7 +309,7 @@
           "$ref": "#/$defs/path"
         },
         "codes": {
-          "description": "The value in the data for each code of the filter, for example {\"free\": true}. Without it, the value in the data is the code.",
+          "description": "The value in the data for each code of the filter, for example {\"free\": true}. Without it, the value in the data is the code, as a text. If the data holds a number or true or false, give the value here, for example {\"1\": 1}.",
           "type": "object",
           "minProperties": 1,
           "additionalProperties": { "type": ["string", "number", "boolean"] }

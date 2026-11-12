@@ -24,7 +24,7 @@ final readonly class Filter
 {
     /**
      * @param 'toggle'|'select'|'multiselect' $type
-     * @param array<string, string>           $values    the codes of the filter, with a text for each
+     * @param array<int|string, string>       $values    the codes of the filter, with a text for each; a code such as "1" is an integer key in PHP
      * @param list<FilterTarget>              $appliesTo
      */
     public function __construct(
