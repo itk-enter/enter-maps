@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-15](https://github.com/itk-enter/enter-maps/pull/15)
+  Added the MIT license
 * [PR-11](https://github.com/itk-enter/enter-maps/pull/11)
   Added the JSON Schema of the map configuration and `MapConfigParser`
 * [PR-7](https://github.com/itk-enter/enter-maps/pull/7)
