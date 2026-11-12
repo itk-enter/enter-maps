@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Added `LeafletConverter`, which makes the settings of the Leaflet map from the map configuration
 * [PR-11](https://github.com/itk-enter/enter-maps/pull/11)
   Added the JSON Schema of the map configuration and `MapConfigParser`
+* [PR-7](https://github.com/itk-enter/enter-maps/pull/7)
+  Added the data proxy for Enter at `/data/{dataSet}.geojson`
+* [PR-8](https://github.com/itk-enter/enter-maps/pull/8)
+  Added Doctrine with MariaDB
 * [PR-6](https://github.com/itk-enter/enter-maps/pull/6)
   Added Rector with `task rector:check` and `task rector:apply`
 * [PR-5](https://github.com/itk-enter/enter-maps/pull/5)

@@ -214,7 +214,7 @@
       "description": "One data set from Enter on the map.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "dataSet", "label", "row"],
+      "required": ["id", "dataSet", "label", "colour", "row"],
       "properties": {
         "id": {
           "description": "A short name of the layer, unique in the map. Filters refer to it.",

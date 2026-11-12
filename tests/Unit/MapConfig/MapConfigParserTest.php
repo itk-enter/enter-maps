@@ -21,7 +21,7 @@ use PHPUnit\Framework\TestCase;
 
 final class MapConfigParserTest extends TestCase
 {
-    private const string MINIMAL = '{"version": 1, "title": "Bænke", "layers": [{"id": "benches", "dataSet": "osm-bench", "label": "Bænke", "row": {"title": {"path": "name"}}}]}';
+    private const string MINIMAL = '{"version": 1, "title": "Bænke", "layers": [{"id": "benches", "dataSet": "osm-bench", "label": "Bænke", "colour": "#8a5a00", "row": {"title": {"path": "name"}}}]}';
 
     private MapConfigParser $parser;
 
@@ -126,7 +126,8 @@ final class MapConfigParserTest extends TestCase
         yield 'filter without values' => [['filters' => [self::filter(['values' => []])]], '/filters/0/values'];
         yield 'filter without layers' => [['filters' => [self::filter(['appliesTo' => []])]], '/filters/0/appliesTo'];
         yield 'filter code that is an object' => [['filters' => [self::filter(['appliesTo' => [['layer' => 'benches', 'path' => 'a', 'codes' => ['x' => ['y' => 1]]]]])]], '/filters/0/appliesTo/0/codes/x'];
-        yield 'layer without id' => [['layers' => [['dataSet' => 'osm-bench', 'label' => 'Bænke', 'row' => ['title' => ['path' => 'name']]]]], '/layers/0'];
+        yield 'layer without id' => [['layers' => [['dataSet' => 'osm-bench', 'label' => 'Bænke', 'colour' => '#8a5a00', 'row' => ['title' => ['path' => 'name']]]]], '/layers/0'];
+        yield 'layer without colour' => [['layers' => [['id' => 'benches', 'dataSet' => 'osm-bench', 'label' => 'Bænke', 'row' => ['title' => ['path' => 'name']]]]], '/layers/0'];
         yield 'two layers with the same id' => [['layers' => [self::layer('benches'), self::layer('benches')]], '/layers/1/id'];
         yield 'filter for a layer that does not exist' => [['filters' => [self::filter(['appliesTo' => [['layer' => 'toilets', 'path' => 'a']]])]], '/filters/0/appliesTo/0/layer'];
         yield 'code that the filter does not have' => [['filters' => [self::filter(['appliesTo' => [['layer' => 'benches', 'path' => 'a', 'codes' => ['y' => true]]]])]], '/filters/0/appliesTo/0/codes/y'];
@@ -224,7 +225,7 @@ final class MapConfigParserTest extends TestCase
      */
     private static function layer(string $id): array
     {
-        return ['id' => $id, 'dataSet' => 'osm-bench', 'label' => 'Bænke', 'row' => ['title' => ['path' => 'name']]];
+        return ['id' => $id, 'dataSet' => 'osm-bench', 'label' => 'Bænke', 'colour' => '#8a5a00', 'row' => ['title' => ['path' => 'name']]];
     }
 
     /**
