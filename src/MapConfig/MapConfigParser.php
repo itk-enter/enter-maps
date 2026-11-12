@@ -29,6 +29,11 @@ final readonly class MapConfigParser
 
     private const int MAX_ERRORS = 10;
 
+    /**
+     * The schemas refer to the schema of the closed filters with this id.
+     */
+    private const string CQL2_FILTER_ID = 'urn:enter-maps:cql2-filter';
+
     public function __construct(
         #[Autowire('%kernel.project_dir%/config/schema')]
         private string $schemaDir,
@@ -53,6 +58,7 @@ final readonly class MapConfigParser
         }
 
         $validator = new Validator(max_errors: self::MAX_ERRORS, stop_at_first_error: false);
+        $validator->resolver()?->registerFile(self::CQL2_FILTER_ID, $this->schemaDir.'/cql2-filter.json');
         $schema = $validator->loader()->loadObjectSchema(
             json_decode((string) file_get_contents($this->schemaDir.'/'.$schemaFile), false, 512, \JSON_THROW_ON_ERROR),
         );

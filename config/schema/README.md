@@ -6,9 +6,10 @@ converters make the settings of each renderer from it. The embed page and the bu
 The schema files in this directory define the configuration. Each property in a schema file has a `description`.
 Your editor shows it if you connect the schema to a JSON file.
 
-| File | Version |
+| File | Holds |
 | --- | --- |
-| [`map-config.v1.json`](map-config.v1.json) | 1 |
+| [`map-config.v1.json`](map-config.v1.json) | The map configuration, version 1 |
+| [`cql2-filter.json`](cql2-filter.json) | The part of CQL2-JSON that the data proxy supports. The closed filters use it. |
 
 ## Examples
 
@@ -46,6 +47,8 @@ language of the broker. The user cannot change it. The data proxy makes the quer
 ```
 
 The proxy supports `and`, `or`, `=`, `<>`, `<`, `<=`, `>`, `>=`, `in` and `isNull`, with five levels or fewer.
+[`cql2-filter.json`](cql2-filter.json) defines this part. The data proxy validates its `filter` parameter against the
+same file.
 
 The open filters in `filters[]` are different. The user changes them, and the map applies them to the features that
 it has.
