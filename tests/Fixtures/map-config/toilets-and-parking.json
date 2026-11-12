@@ -9,7 +9,7 @@
       "dataSet": "merged-public-toilets",
       "label": "Offentlige toiletter",
       "colour": "#6b3fa0",
-      "icon": "toilet",
+      "icon": { "name": "toilet" },
       "row": {
         "title": { "path": "name", "fallback": "Toilet" },
         "subtitle": { "path": "address.streetAddress", "fallback": "Adresse ikke registreret" }
@@ -30,7 +30,7 @@
       "dataSet": "merged-handicap-parking-spots",
       "label": "Handicapparkering",
       "colour": "#1f6fb2",
-      "icon": "parking",
+      "icon": { "name": "handicap-parking" },
       "row": {
         "title": { "path": "address.streetAddress", "fallback": "Handicapparkering" },
         "subtitle": { "path": "totalSpotNumber", "label": "Pladser", "format": "number" }

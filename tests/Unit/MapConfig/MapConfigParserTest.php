@@ -9,6 +9,7 @@ use App\JsonSchema\JsonSchemaValidator;
 use App\MapConfig\Field;
 use App\MapConfig\Filter;
 use App\MapConfig\FilterTarget;
+use App\MapConfig\Icon;
 use App\MapConfig\InvalidMapConfigException;
 use App\MapConfig\Layer;
 use App\MapConfig\LeafletSettings;
@@ -17,6 +18,7 @@ use App\MapConfig\MapConfigParser;
 use App\MapConfig\Report;
 use App\MapConfig\SeptimaSettings;
 use App\MapConfig\Sidebar;
+use App\MapConfig\SvgIconValidator;
 use App\MapConfig\View;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -30,7 +32,7 @@ final class MapConfigParserTest extends TestCase
     protected function setUp(): void
     {
         $validator = new JsonSchemaValidator(\dirname(__DIR__, 3).'/config/schema');
-        $this->parser = new MapConfigParser($validator, new Cql2FilterParser($validator));
+        $this->parser = new MapConfigParser($validator, new Cql2FilterParser($validator), new SvgIconValidator());
     }
 
     public function testParsesTheExampleOfThePlan(): void
@@ -50,7 +52,7 @@ final class MapConfigParserTest extends TestCase
                 dataSet: 'merged-public-toilets',
                 label: 'Offentlige toiletter',
                 colour: '#6b3fa0',
-                icon: 'toilet',
+                icon: new Icon('toilet', null),
                 filter: ['op' => '=', 'args' => [['property' => 'isAccessibleForFree'], true]],
                 title: new Field('name', null, 'Toilet', 'text', []),
                 subtitle: new Field('address.streetAddress', null, 'Adresse ikke registreret', 'text', []),
@@ -179,6 +181,46 @@ final class MapConfigParserTest extends TestCase
         $config = $this->parser->parse($this->withChange(['layers' => [[...self::layer('benches'), 'filter' => $filter]]]));
 
         $this->assertSame($filter, $config->layers[0]->filter);
+    }
+
+    public function testAcceptsAnSvgIcon(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h1v1z"/></svg>';
+
+        $config = $this->parser->parse($this->withChange(['layers' => [[...self::layer('benches'), 'icon' => ['svg' => $svg]]]]));
+
+        $this->assertEquals(new Icon(null, $svg), $config->layers[0]->icon);
+    }
+
+    public function testRejectsAnSvgIconWithAScript(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><script>alert(1)</script></svg>';
+
+        $exception = $this->parseInvalid($this->withChange(['layers' => [[...self::layer('benches'), 'icon' => ['svg' => $svg]]]]));
+
+        $this->assertSame(['/layers/0/icon/svg: The SVG holds the element "script", which is not permitted.'], $exception->errors);
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>}>
+     */
+    public static function invalidIconProvider(): iterable
+    {
+        yield 'name that is not on the list' => [['name' => 'rocket']];
+        yield 'name and SVG' => [['name' => 'bench', 'svg' => '<svg/>']];
+        yield 'empty' => [[]];
+        yield 'URL' => [['url' => 'https://example.com/icon.svg']];
+    }
+
+    /**
+     * @param array<string, mixed> $icon
+     */
+    #[DataProvider('invalidIconProvider')]
+    public function testRejectsAnInvalidIcon(array $icon): void
+    {
+        $exception = $this->parseInvalid($this->withChange(['layers' => [[...self::layer('benches'), 'icon' => $icon]]]));
+
+        $this->assertNotSame([], preg_grep('#^/layers/0/icon#', $exception->errors), implode("\n", $exception->errors));
     }
 
     public function testRejectsAClosedFilterThatTheProxyDoesNotAccept(): void

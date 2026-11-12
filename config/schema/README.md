@@ -71,6 +71,29 @@ the value:
 - Without `codes`, the value in the data is the code of the filter.
 - A filter does not change the features of a layer that is not in `appliesTo`.
 
+## Icons
+
+A layer has an optional `icon`:
+
+```json
+"icon": { "name": "toilet" }
+"icon": { "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\">…</svg>" }
+```
+
+- `name` is an icon from `App\Renderer\Icons`: `toilet`, `parking`, `handicap-parking`, `bench` or `pin`.
+- `svg` is an SVG from the editor, 10 KB or less. `App\MapConfig\SvgIconValidator` rejects an SVG that holds other
+  elements or attributes than these:
+  - Elements: `svg`, `g`, `path`, `circle`, `ellipse`, `rect`, `line`, `polyline` and `polygon`.
+  - Attributes: `viewBox`, `width`, `height`, `d`, `cx`, `cy`, `r`, `rx`, `ry`, `x`, `y`, `x1`, `y1`, `x2`, `y2`,
+    `points`, `transform`, `fill`, `fill-rule`, `clip-rule`, `stroke`, `stroke-width`, `stroke-linecap`,
+    `stroke-linejoin`, `opacity`, `fill-opacity` and `stroke-opacity`.
+  - No `url(...)`, no document type, no text and no processing instructions.
+- The validator does not clean an SVG. It gives an error, and the editor corrects the file.
+- Without `icon`, the map shows the default pin.
+
+The map shows an icon from the list as markup, and an SVG from the editor as an image (`<img>`), so that a script in
+the SVG cannot run.
+
 ## Validation
 
 `App\MapConfig\MapConfigParser` reads `version`, validates the configuration against the schema of that version and
@@ -93,6 +116,7 @@ An error tells where the problem is, as a JSON pointer:
   configuration holds no JavaScript.
 - A configuration holds no queries in the language of the broker. Closed filters are in CQL2-JSON.
 - A base map is a name from a list on the server, not a URL.
+- An icon is a name from a list on the server, or an SVG that the validator accepts.
 - `report.url` must start with `https://`.
 - Do not change the meaning of a property in a version that is in use, and do not remove an old schema file. Embed
   codes stay on other sites for a long time. A change that old configurations do not pass needs a new version and a
