@@ -124,7 +124,7 @@ final readonly class LeafletConverter
                 static function (FilterTarget $target) use ($filter): array {
                     $dataValues = [];
                     foreach (array_keys($filter->values) as $code) {
-                        $dataValues[$code] = $target->valueFor((string) $code);
+                        $dataValues[$code] = $target->valueFor($code);
                     }
 
                     return ['layer' => $target->layer, 'path' => explode('.', $target->path), 'dataValues' => $dataValues];

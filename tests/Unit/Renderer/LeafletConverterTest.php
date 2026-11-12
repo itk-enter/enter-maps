@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Renderer;
 
+use App\Enter\Cql2FilterParser;
+use App\JsonSchema\JsonSchemaValidator;
 use App\MapConfig\MapConfigParser;
 use App\Renderer\BaseMaps;
 use App\Renderer\LeafletConverter;
@@ -22,7 +24,8 @@ final class LeafletConverterTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->parser = new MapConfigParser(\dirname(__DIR__, 3).'/config/schema');
+        $validator = new JsonSchemaValidator(\dirname(__DIR__, 3).'/config/schema');
+        $this->parser = new MapConfigParser($validator, new Cql2FilterParser($validator));
 
         // The same path as the route of the data proxy.
         $routes = new RouteCollection();
