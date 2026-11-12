@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-8](https://github.com/itk-enter/enter-maps/pull/8)
+  Added Doctrine with MariaDB
 * [PR-6](https://github.com/itk-enter/enter-maps/pull/6)
   Added Rector with `task rector:check` and `task rector:apply`
 * [PR-5](https://github.com/itk-enter/enter-maps/pull/5)

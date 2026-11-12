@@ -8,8 +8,9 @@ use Rector\Config\RectorConfig;
  * Rector configuration.
  *
  * withComposerBased() reads composer.lock and enables only the rules for
- * the installed versions of Symfony and PHPUnit. The rules then stay in step
- * with the dependencies, and nobody has to update a version here.
+ * the installed versions of Symfony, Doctrine and PHPUnit. The rules then
+ * stay in step with the dependencies, and nobody has to update a version
+ * here.
  *
  * The prepared sets give changes that are easy to review together: dead
  * code, code quality and type declarations. The sets that change structure,
@@ -26,6 +27,7 @@ return RectorConfig::configure()
     ])
     ->withPhpSets(php84: true)
     ->withComposerBased(
+        doctrine: true,
         phpunit: true,
         symfony: true,
     )
