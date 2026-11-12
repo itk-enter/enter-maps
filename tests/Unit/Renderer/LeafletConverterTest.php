@@ -60,28 +60,15 @@ final class LeafletConverterTest extends TestCase
 
     public function testUsesTheDefaultsForAMinimalConfiguration(): void
     {
-        $config = $this->parser->parse('{"version": 1, "title": "Bænke", "layers": [{"id": "benches", "dataSet": "osm-bench", "label": "Bænke", "row": {"title": {"path": "name"}}}]}');
+        $config = $this->parser->parse('{"version": 1, "title": "Bænke", "layers": [{"id": "benches", "dataSet": "osm-bench", "label": "Bænke", "colour": "#8a5a00", "row": {"title": {"path": "name"}}}]}');
 
         $mapJson = $this->converter->convert($config);
 
         $this->assertNull($mapJson['view']);
         $this->assertSame(new BaseMaps()->leaflet()[BaseMaps::LEAFLET_DEFAULT]->url, $mapJson['baseMap']['url']);
         $this->assertSame('/data/osm-bench.geojson', $mapJson['layers'][0]['url']);
-        $this->assertSame(LeafletConverter::COLOURS[0], $mapJson['layers'][0]['colour']);
+        $this->assertSame('#8a5a00', $mapJson['layers'][0]['colour']);
         $this->assertNull($mapJson['report']);
-    }
-
-    public function testGivesTheColoursInOrderToTheLayersWithoutAColour(): void
-    {
-        $layers = array_map(
-            static fn (int $i): array => ['id' => 'layer-'.$i, 'dataSet' => 'osm-bench', 'label' => 'Bænke', 'row' => ['title' => ['path' => 'name']]],
-            range(0, \count(LeafletConverter::COLOURS)),
-        );
-        $config = $this->parser->parse(json_encode(['version' => 1, 'title' => 'Bænke', 'layers' => $layers], \JSON_THROW_ON_ERROR));
-
-        $colours = array_column($this->converter->convert($config)['layers'], 'colour');
-
-        $this->assertSame([...LeafletConverter::COLOURS, LeafletConverter::COLOURS[0]], $colours);
     }
 
     public function testGivesTheDataValueOfANumericCode(): void
@@ -89,7 +76,7 @@ final class LeafletConverterTest extends TestCase
         $config = $this->parser->parse(json_encode([
             'version' => 1,
             'title' => 'Parkering',
-            'layers' => [['id' => 'parking', 'dataSet' => 'parking', 'label' => 'Parkering', 'row' => ['title' => ['path' => 'name']]]],
+            'layers' => [['id' => 'parking', 'dataSet' => 'parking', 'label' => 'Parkering', 'colour' => '#1f6fb2', 'row' => ['title' => ['path' => 'name']]]],
             'filters' => [[
                 'type' => 'select',
                 'label' => 'Etage',

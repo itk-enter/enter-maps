@@ -24,17 +24,11 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  * - It changes the name of the base map into the URL of the tiles.
  * - It gives the value in the data for each code of an open filter.
  * - It changes the centre to the [latitude, longitude] order of Leaflet.
- * - It gives a colour to each layer that has no colour.
  *
  * The result holds only data, so that it can be stored as JSON.
  */
 final readonly class LeafletConverter
 {
-    /**
-     * The colours of the layers that have no colour, in this order.
-     */
-    public const array COLOURS = ['#6b3fa0', '#1f6fb2', '#b3261e', '#0f6e74', '#8a5a00'];
-
     public function __construct(
         private UrlGeneratorInterface $urlGenerator,
         private BaseMaps $baseMaps,
@@ -69,7 +63,7 @@ final readonly class LeafletConverter
                 'localSearch' => $config->sidebar->localSearch,
                 'addressSearch' => $config->sidebar->addressSearch,
             ],
-            'layers' => array_map($this->layer(...), $config->layers, array_keys($config->layers)),
+            'layers' => array_map($this->layer(...), $config->layers),
             'filters' => array_map($this->filter(...), $config->filters),
             'report' => $config->report instanceof Report ? [
                 'label' => $config->report->label,
@@ -82,7 +76,7 @@ final readonly class LeafletConverter
     /**
      * @return array<string, mixed>
      */
-    private function layer(Layer $layer, int $index): array
+    private function layer(Layer $layer): array
     {
         $parameters = ['dataSet' => $layer->dataSet];
         if (null !== $layer->filter) {
@@ -93,7 +87,7 @@ final readonly class LeafletConverter
             'id' => $layer->id,
             'label' => $layer->label,
             'url' => $this->urlGenerator->generate('app_data', $parameters),
-            'colour' => $layer->colour ?? self::COLOURS[$index % \count(self::COLOURS)],
+            'colour' => $layer->colour,
             'icon' => $layer->icon,
             'row' => [
                 'title' => $this->field($layer->title),
