@@ -12,3 +12,9 @@ services:
     networks:
       - app
       - frontend
+
+  # Use the nginx.conf of the server also in development. Without it, nginx
+  # uses the default of the image, which has no gzip.
+  nginx:
+    volumes:
+      - ./.docker/nginx.conf:/etc/nginx/nginx.conf:ro

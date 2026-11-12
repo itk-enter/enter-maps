@@ -1,0 +1,6 @@
+# Compresses the responses of the data proxy and the assets. The template's nginx.conf has "gzip on" but compresses
+# only text/html. GeoJSON from /data compresses to about 5 % of its size.
+gzip_types application/geo+json application/json application/javascript text/css image/svg+xml;
+gzip_min_length 1024;
+gzip_proxied any;
+gzip_vary on;
