@@ -247,7 +247,7 @@
               "enum": ["toilet", "parking", "handicap-parking", "bench", "pin"]
             },
             "svg": {
-              "description": "An SVG from the editor, 10 KB or less, with a viewBox. It cannot hold scripts or refer to other files: see README.md in this directory. The map shows it as an image.",
+              "description": "An SVG from the editor, 10 KB or less. It can hold only the permitted elements and attributes: see README.md in this directory. The map shows it as an image.",
               "type": "string",
               "minLength": 1,
               "maxLength": 10240
