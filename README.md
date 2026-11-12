@@ -132,7 +132,8 @@ GET /data/{dataSet}.geojson?filter={"op":"=","args":[{"property":"isAccessibleFo
 - `filter` is a filter in [CQL2-JSON](https://docs.ogc.org/is/21-065r2/21-065r2.html) that the entities must also
   match. Encode it for the URL. `filter-lang` is optional. If it is given, it must be `cql2-json`.
 - The proxy supports `and`, `or`, `=`, `<>`, `<`, `<=`, `>`, `>=`, `in` and `isNull`. A filter that is not valid,
-  or that uses other operators, gives `400`. `Cql2Filter` makes the NGSI-LD query from the filter.
+  or that uses other operators, gives `400`. `config/schema/cql2-filter.json` defines the supported part.
+  `Cql2FilterParser` validates the filter against it and makes the NGSI-LD query.
 - The proxy reads all pages from Enter on each request. It follows the `rel="next"` link of the broker. It has no
   cache.
 - If Enter is not available, the proxy returns `503`.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Enter;
 
+use App\Enter\Cql2FilterParser;
 use App\Enter\DataProxy;
 use App\Enter\EnterClient;
 use App\Enter\EnterUnavailableException;
@@ -25,7 +26,10 @@ final class DataProxyTest extends TestCase
         $this->enter->dataSets = [['id' => 'toilets', 'title' => 'Toilets']];
         $this->enter->features['toilets'] = [FakeEnter::feature('urn:1')];
 
-        $this->proxy = new DataProxy(new EnterClient($this->enter->client()));
+        $this->proxy = new DataProxy(
+            new EnterClient($this->enter->client()),
+            new Cql2FilterParser(\dirname(__DIR__, 3).'/config/schema/cql2-filter.json'),
+        );
     }
 
     public function testGetFeaturesReturnsTheFeaturesOfTheDataSet(): void

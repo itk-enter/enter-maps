@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:enter-maps:cql2-filter",
+  "title": "Filter in CQL2-JSON",
+  "description": "The part of CQL2-JSON that the data proxy supports: and, or, =, <>, <, <=, >, >=, in and isNull. The proxy also allows five levels or fewer. Example: {\"op\": \"=\", \"args\": [{\"property\": \"isAccessibleForFree\"}, true]}.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["op", "args"],
+  "properties": {
+    "op": {
+      "description": "The operator.",
+      "enum": ["and", "or", "=", "<>", "<", "<=", ">", ">=", "in", "isNull"]
+    },
+    "args": {
+      "description": "The arguments of the operator.",
+      "type": "array"
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "op": { "enum": ["and", "or"] } } },
+      "then": {
+        "properties": {
+          "args": {
+            "description": "Two or more filters.",
+            "minItems": 2,
+            "items": { "$ref": "#" }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "op": { "enum": ["=", "<>", "<", "<=", ">", ">="] } } },
+      "then": {
+        "properties": {
+          "args": {
+            "description": "A property and a value.",
+            "prefixItems": [{ "$ref": "#/$defs/property" }, { "$ref": "#/$defs/value" }],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "op": { "const": "in" } } },
+      "then": {
+        "properties": {
+          "args": {
+            "description": "A property and a list of values.",
+            "prefixItems": [
+              { "$ref": "#/$defs/property" },
+              { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/value" } }
+            ],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "op": { "const": "isNull" } } },
+      "then": {
+        "properties": {
+          "args": {
+            "description": "A property. The filter matches the entities that do not have it.",
+            "prefixItems": [{ "$ref": "#/$defs/property" }],
+            "minItems": 1,
+            "maxItems": 1
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "property": {
+      "description": "A property of the entities, for example {\"property\": \"address.addressLocality\"}. The path is a dot path into the GeoJSON properties.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["property"],
+      "properties": {
+        "property": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+          "maxLength": 200
+        }
+      }
+    },
+    "value": {
+      "description": "A text, a number, or true or false. A text cannot hold quotes, backslashes or control characters, because the broker cannot read them in a quoted value.",
+      "type": ["string", "number", "boolean"],
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[^\"\\\\\\x00-\\x1f]*$"
+    }
+  }
+}

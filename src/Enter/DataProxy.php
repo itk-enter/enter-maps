@@ -14,6 +14,7 @@ final readonly class DataProxy
 {
     public function __construct(
         private EnterClient $enter,
+        private Cql2FilterParser $filterParser,
     ) {
     }
 
@@ -30,7 +31,7 @@ final readonly class DataProxy
      */
     public function getFeatures(string $dataSetId, ?string $filter): array
     {
-        $filter = null === $filter || '' === trim($filter) ? null : Cql2Filter::fromJson($filter);
+        $filter = null === $filter || '' === trim($filter) ? null : $this->filterParser->parse($filter);
         $dataSet = $this->enter->getDataSets()[$dataSetId] ?? null;
         if (!$dataSet instanceof DataSet) {
             throw new UnknownDataSetException(\sprintf('Enter does not list the data set "%s".', $dataSetId));

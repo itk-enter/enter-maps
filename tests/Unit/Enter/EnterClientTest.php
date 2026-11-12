@@ -88,7 +88,7 @@ final class EnterClientTest extends TestCase
     public function testGetFeaturesAddsTheFilter(): void
     {
         $enter = new FakeEnter();
-        $filter = Cql2Filter::fromJson('{"op": "or", "args": [{"op": "=", "args": [{"property": "a"}, 1]}, {"op": "=", "args": [{"property": "b"}, 2]}]}');
+        $filter = new Cql2Filter('(a==1|b==2)');
 
         new EnterClient($enter->client())->getFeatures(new DataSet('toilets', 'Toilets', null, null), $filter);
 

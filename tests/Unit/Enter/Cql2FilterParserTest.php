@@ -4,13 +4,20 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Enter;
 
-use App\Enter\Cql2Filter;
+use App\Enter\Cql2FilterParser;
 use App\Enter\InvalidFilterException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-final class Cql2FilterTest extends TestCase
+final class Cql2FilterParserTest extends TestCase
 {
+    private Cql2FilterParser $parser;
+
+    protected function setUp(): void
+    {
+        $this->parser = new Cql2FilterParser(\dirname(__DIR__, 3).'/config/schema/cql2-filter.json');
+    }
+
     /**
      * @return iterable<string, array{string, string}>
      */
@@ -41,7 +48,7 @@ final class Cql2FilterTest extends TestCase
     #[DataProvider('filterProvider')]
     public function testMakesTheNgsiLdQuery(string $json, string $query): void
     {
-        $this->assertSame($query, Cql2Filter::fromJson($json)->query);
+        $this->assertSame($query, $this->parser->parse($json)->query);
     }
 
     /**
@@ -50,21 +57,22 @@ final class Cql2FilterTest extends TestCase
     public static function invalidFilterProvider(): iterable
     {
         yield 'not JSON' => ['isAccessibleForFree==true', 'not valid JSON'];
-        yield 'not an object' => ['[1, 2]', 'only "op" and "args"'];
-        yield 'extra key' => ['{"op": "isNull", "args": [{"property": "a"}], "x": 1}', 'only "op" and "args"'];
-        yield 'not' => ['{"op": "not", "args": [{"op": "isNull", "args": [{"property": "a"}]}]}', 'does not support the operator "not"'];
-        yield 'like' => ['{"op": "like", "args": [{"property": "a"}, "b%"]}', 'does not support the operator "like"'];
-        yield 'and with one argument' => ['{"op": "and", "args": [{"op": "isNull", "args": [{"property": "a"}]}]}', 'two or more arguments'];
-        yield 'comparison with one argument' => ['{"op": "=", "args": [{"property": "a"}]}', 'must have 2 arguments'];
-        yield 'value first' => ['{"op": "=", "args": [1, {"property": "a"}]}', 'first argument'];
-        yield 'NGSI-LD in the path' => ['{"op": "=", "args": [{"property": "a==1;b"}, 1]}', 'first argument'];
-        yield 'quote in a text' => ['{"op": "=", "args": [{"property": "a"}, "x\"|b==\"y"]}', 'without quotes'];
-        yield 'backslash in a text' => ['{"op": "=", "args": [{"property": "a"}, "x\\\\"]}', 'without quotes'];
-        yield 'new line in a text' => ['{"op": "=", "args": [{"property": "a"}, "x\ny"]}', 'without quotes'];
-        yield 'empty text' => ['{"op": "=", "args": [{"property": "a"}, ""]}', 'without quotes'];
-        yield 'null' => ['{"op": "=", "args": [{"property": "a"}, null]}', 'must be a number'];
-        yield 'in without a list' => ['{"op": "in", "args": [{"property": "a"}, "x"]}', 'list of values'];
-        yield 'in with an empty list' => ['{"op": "in", "args": [{"property": "a"}, []]}', 'list of values'];
+        yield 'not an object' => ['[1, 2]', 'not valid: /:'];
+        yield 'extra key' => ['{"op": "isNull", "args": [{"property": "a"}], "x": 1}', 'not valid: /:'];
+        yield 'not' => ['{"op": "not", "args": [{"op": "isNull", "args": [{"property": "a"}]}]}', '/op:'];
+        yield 'like' => ['{"op": "like", "args": [{"property": "a"}, "b%"]}', '/op:'];
+        yield 'and with one argument' => ['{"op": "and", "args": [{"op": "isNull", "args": [{"property": "a"}]}]}', '/args:'];
+        yield 'comparison with one argument' => ['{"op": "=", "args": [{"property": "a"}]}', '/args:'];
+        yield 'value first' => ['{"op": "=", "args": [1, {"property": "a"}]}', '/args/0:'];
+        yield 'NGSI-LD in the path' => ['{"op": "=", "args": [{"property": "a==1;b"}, 1]}', '/args/0/property:'];
+        yield 'quote in a text' => ['{"op": "=", "args": [{"property": "a"}, "x\"|b==\"y"]}', '/args/1:'];
+        yield 'backslash in a text' => ['{"op": "=", "args": [{"property": "a"}, "x\\\\"]}', '/args/1:'];
+        yield 'new line in a text' => ['{"op": "=", "args": [{"property": "a"}, "x\ny"]}', '/args/1:'];
+        yield 'empty text' => ['{"op": "=", "args": [{"property": "a"}, ""]}', '/args/1:'];
+        yield 'null' => ['{"op": "=", "args": [{"property": "a"}, null]}', '/args/1:'];
+        yield 'in without a list' => ['{"op": "in", "args": [{"property": "a"}, "x"]}', '/args/1:'];
+        yield 'invalid filter inside and' => ['{"op": "and", "args": [{"op": "isNull", "args": [{"property": "a"}]}, {"op": "not", "args": []}]}', '/args/1/op:'];
+        yield 'in with an empty list' => ['{"op": "in", "args": [{"property": "a"}, []]}', '/args/1:'];
     }
 
     #[DataProvider('invalidFilterProvider')]
@@ -73,7 +81,7 @@ final class Cql2FilterTest extends TestCase
         $this->expectException(InvalidFilterException::class);
         $this->expectExceptionMessageIsOrContains($message);
 
-        Cql2Filter::fromJson($json);
+        $this->parser->parse($json);
     }
 
     public function testRejectsAFilterThatIsTooLong(): void
@@ -81,20 +89,20 @@ final class Cql2FilterTest extends TestCase
         $this->expectException(InvalidFilterException::class);
         $this->expectExceptionMessageIsOrContains('longer than');
 
-        Cql2Filter::fromJson(str_repeat(' ', Cql2Filter::MAX_LENGTH + 1));
+        $this->parser->parse(str_repeat(' ', Cql2FilterParser::MAX_LENGTH + 1));
     }
 
     public function testRejectsAFilterWithTooManyLevels(): void
     {
         $leaf = ['op' => 'isNull', 'args' => [['property' => 'a']]];
         $expression = $leaf;
-        for ($level = 0; $level < Cql2Filter::MAX_DEPTH; ++$level) {
+        for ($level = 0; $level < Cql2FilterParser::MAX_DEPTH; ++$level) {
             $expression = ['op' => 'and', 'args' => [$expression, $leaf]];
         }
 
         $this->expectException(InvalidFilterException::class);
         $this->expectExceptionMessageIsOrContains('levels');
 
-        Cql2Filter::fromJson(json_encode($expression, \JSON_THROW_ON_ERROR));
+        $this->parser->parse(json_encode($expression, \JSON_THROW_ON_ERROR));
     }
 }
