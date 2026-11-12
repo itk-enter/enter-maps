@@ -48,7 +48,7 @@ final class MapConfigParserTest extends TestCase
                 label: 'Offentlige toiletter',
                 colour: '#6b3fa0',
                 icon: 'toilet',
-                where: 'isAccessibleForFree==true',
+                filter: ['op' => '=', 'args' => [['property' => 'isAccessibleForFree'], true]],
                 title: new Field('name', null, 'Toilet', 'text', []),
                 subtitle: new Field('address.streetAddress', null, 'Adresse ikke registreret', 'text', []),
                 detail: [
@@ -150,15 +150,55 @@ final class MapConfigParserTest extends TestCase
             'dataSet' => 'osm bench',
             'label' => 'Bænke',
             'colour' => 'red',
-            'where' => str_repeat('a', 501),
+            'filter' => ['op' => 'not', 'args' => []],
             'row' => ['title' => ['path' => 'name; drop', 'format' => 'html']],
         ];
 
         $exception = $this->parseInvalid($this->withChange(['layers' => [$layer]]));
 
-        foreach (['/layers/0/dataSet', '/layers/0/colour', '/layers/0/where', '/layers/0/row/title/path', '/layers/0/row/title/format'] as $pointer) {
+        foreach (['/layers/0/dataSet', '/layers/0/colour', '/layers/0/filter/op', '/layers/0/row/title/path', '/layers/0/row/title/format'] as $pointer) {
             $this->assertNotSame([], preg_grep('#^'.preg_quote($pointer, '#').': #', $exception->errors), $pointer);
         }
+    }
+
+    public function testAcceptsAClosedFilterWithAllTheOperators(): void
+    {
+        $filter = ['op' => 'and', 'args' => [
+            ['op' => 'or', 'args' => [
+                ['op' => 'in', 'args' => [['property' => 'wheelchairAccessible'], ['yes', 'limited']]],
+                ['op' => 'isNull', 'args' => [['property' => 'fee']]],
+            ]],
+            ['op' => '>=', 'args' => [['property' => 'address.postalCode'], 8000]],
+            ['op' => '<>', 'args' => [['property' => 'name'], 'Ådalen']],
+        ]];
+
+        $config = $this->parser->parse($this->withChange(['layers' => [[...self::layer('benches'), 'filter' => $filter]]]));
+
+        $this->assertSame($filter, $config->layers[0]->filter);
+    }
+
+    /**
+     * @return iterable<string, array{mixed, string}>
+     */
+    public static function invalidClosedFilterProvider(): iterable
+    {
+        $isNull = ['op' => 'isNull', 'args' => [['property' => 'a']]];
+
+        yield 'NGSI-LD text' => ['isAccessibleForFree==true', '/layers/0/filter'];
+        yield 'not' => [['op' => 'not', 'args' => [$isNull]], '/layers/0/filter/op'];
+        yield 'and with one filter' => [['op' => 'and', 'args' => [$isNull]], '/layers/0/filter/args'];
+        yield 'value first' => [['op' => '=', 'args' => [true, ['property' => 'a']]], '/layers/0/filter/args/0'];
+        yield 'quote in a text' => [['op' => '=', 'args' => [['property' => 'a'], 'x"|b==1']], '/layers/0/filter/args/1'];
+        yield 'in without a list' => [['op' => 'in', 'args' => [['property' => 'a'], 'x']], '/layers/0/filter/args/1'];
+        yield 'NGSI-LD in the path' => [['op' => 'isNull', 'args' => [['property' => 'a;b']]], '/layers/0/filter/args/0/property'];
+    }
+
+    #[DataProvider('invalidClosedFilterProvider')]
+    public function testRejectsAnInvalidClosedFilter(mixed $filter, string $pointer): void
+    {
+        $exception = $this->parseInvalid($this->withChange(['layers' => [[...self::layer('benches'), 'filter' => $filter]]]));
+
+        $this->assertNotSame([], preg_grep('#^'.preg_quote($pointer, '#').': #', $exception->errors), implode("\n", $exception->errors));
     }
 
     public function testParsesTwoLayersWithAFilterForBoth(): void

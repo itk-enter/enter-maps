@@ -34,9 +34,21 @@ Septima converter must change, not the stored configurations.
 
 ## Layers and filters
 
-Each layer has an `id`, a data set from Enter's `/sources.json`, a closed filter (`where`) and its own fields for the
+Each layer has an `id`, a data set from Enter's `/sources.json`, a closed filter (`filter`) and its own fields for the
 list row (`row`) and the detail view (`detail`). Two data sets can have different attributes, because each layer
 describes its own fields.
+
+The closed filter of a layer is in [CQL2-JSON](https://docs.ogc.org/is/21-065r2/21-065r2.html), not in the query
+language of the broker. The user cannot change it. The data proxy makes the query for the broker from it:
+
+```json
+{ "op": "=", "args": [{ "property": "isAccessibleForFree" }, true] }
+```
+
+The proxy supports `and`, `or`, `=`, `<>`, `<`, `<=`, `>`, `>=`, `in` and `isNull`, with five levels or fewer.
+
+The open filters in `filters[]` are different. The user changes them, and the map applies them to the features that
+it has.
 
 A filter has its own codes in `values`. `appliesTo` tells which layers the filter changes, and where each layer keeps
 the value:
@@ -74,6 +86,7 @@ An error tells where the problem is, as a JSON pointer:
 ## Rules
 
 - Texts are plain text. A configuration holds no HTML and no JavaScript.
+- A configuration holds no queries in the language of the broker. Closed filters are in CQL2-JSON.
 - A base map is a name from a list on the server, not a URL.
 - `report.url` must start with `https://`.
 - Do not change the meaning of a property in a version that is in use, and do not remove an old schema file. Embed

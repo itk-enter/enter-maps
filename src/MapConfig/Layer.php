@@ -7,14 +7,14 @@ namespace App\MapConfig;
 /**
  * One data set from Enter on the map, with its own fields for the list row
  * and the detail view. The same data set can be on the map more than once,
- * for example with two different $where filters.
+ * for example with two different filters.
  */
 final readonly class Layer
 {
     /**
-     * @param string      $id     a short name, unique in the map; filters refer to it
-     * @param string|null $where  the closed filter: an NGSI-LD query that the entities must also match
-     * @param list<Field> $detail the fields of the detail view
+     * @param string                    $id     a short name, unique in the map; filters refer to it
+     * @param array<string, mixed>|null $filter the closed filter, in CQL2-JSON; the data proxy makes the query for the broker from it
+     * @param list<Field>               $detail the fields of the detail view
      */
     public function __construct(
         public string $id,
@@ -22,7 +22,7 @@ final readonly class Layer
         public string $label,
         public ?string $colour,
         public ?string $icon,
-        public ?string $where,
+        public ?array $filter,
         public Field $title,
         public ?Field $subtitle,
         public array $detail,
@@ -40,7 +40,7 @@ final readonly class Layer
             label: $data['label'],
             colour: $data['colour'] ?? null,
             icon: $data['icon'] ?? null,
-            where: $data['where'] ?? null,
+            filter: $data['filter'] ?? null,
             title: Field::fromArray($data['row']['title']),
             subtitle: isset($data['row']['subtitle']) ? Field::fromArray($data['row']['subtitle']) : null,
             detail: array_map(Field::fromArray(...), $data['detail'] ?? []),

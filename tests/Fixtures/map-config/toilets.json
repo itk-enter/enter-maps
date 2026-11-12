@@ -13,7 +13,7 @@
       "label": "Offentlige toiletter",
       "colour": "#6b3fa0",
       "icon": "toilet",
-      "where": "isAccessibleForFree==true",
+      "filter": { "op": "=", "args": [{ "property": "isAccessibleForFree" }, true] },
       "row": {
         "title": { "path": "name", "fallback": "Toilet" },
         "subtitle": { "path": "address.streetAddress", "fallback": "Adresse ikke registreret" }

@@ -239,11 +239,9 @@
           "description": "The name of the icon in the markers.",
           "$ref": "#/$defs/name"
         },
-        "where": {
-          "description": "The closed filter: an NGSI-LD query that the entities must also match, for example isAccessibleForFree==true. The user cannot change it.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 500
+        "filter": {
+          "description": "The closed filter: the entities must also match it. The user cannot change it.",
+          "$ref": "#/$defs/cql2"
         },
         "row": {
           "description": "The fields that identify a feature, for example in a list.",
@@ -295,6 +293,94 @@
           "items": { "$ref": "#/$defs/filterTarget" }
         }
       }
+    },
+    "cql2": {
+      "description": "A filter in CQL2-JSON. The data proxy supports and, or, =, <>, <, <=, >, >=, in and isNull, with five levels or fewer. Example: {\"op\": \"=\", \"args\": [{\"property\": \"isAccessibleForFree\"}, true]}.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "args"],
+      "properties": {
+        "op": {
+          "description": "The operator.",
+          "enum": ["and", "or", "=", "<>", "<", "<=", ">", ">=", "in", "isNull"]
+        },
+        "args": {
+          "description": "The arguments of the operator.",
+          "type": "array"
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "op": { "enum": ["and", "or"] } } },
+          "then": {
+            "properties": {
+              "args": {
+                "description": "Two or more filters.",
+                "minItems": 2,
+                "items": { "$ref": "#/$defs/cql2" }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "op": { "enum": ["=", "<>", "<", "<=", ">", ">="] } } },
+          "then": {
+            "properties": {
+              "args": {
+                "description": "A property and a value.",
+                "prefixItems": [{ "$ref": "#/$defs/cql2Property" }, { "$ref": "#/$defs/cql2Value" }],
+                "minItems": 2,
+                "maxItems": 2
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "op": { "const": "in" } } },
+          "then": {
+            "properties": {
+              "args": {
+                "description": "A property and a list of values.",
+                "prefixItems": [
+                  { "$ref": "#/$defs/cql2Property" },
+                  { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/cql2Value" } }
+                ],
+                "minItems": 2,
+                "maxItems": 2
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "op": { "const": "isNull" } } },
+          "then": {
+            "properties": {
+              "args": {
+                "description": "A property. The filter matches the entities that do not have it.",
+                "prefixItems": [{ "$ref": "#/$defs/cql2Property" }],
+                "minItems": 1,
+                "maxItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "cql2Property": {
+      "description": "A property of the entities, for example {\"property\": \"isAccessibleForFree\"}.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["property"],
+      "properties": {
+        "property": { "$ref": "#/$defs/path" }
+      }
+    },
+    "cql2Value": {
+      "description": "A text, a number, or true or false. A text cannot hold quotes, backslashes or control characters.",
+      "type": ["string", "number", "boolean"],
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[^\"\\\\\\x00-\\x1f]*$"
     },
     "filterTarget": {
       "description": "Where a layer keeps the value of a filter.",
