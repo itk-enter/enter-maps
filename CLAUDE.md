@@ -25,6 +25,7 @@ Rules that apply to all parts:
 - This project only reads from Enter. Do not write to Enter or to its broker.
 - The browser never calls Enter. All data goes through the data proxy.
 - The proxy accepts only data sets that are in Enter's `/sources.json`.
+- Filters to the proxy are in CQL2-JSON. Do not send NGSI-LD queries from the map or put them in `config`.
 - Credentials for Enter stay on the server. Read them from environment variables, for example `ENTER_BASIC_AUTH`.
 - `config` is the source of the map. The converters make `map_json.leaflet` and `map_json.septima` from it on each
   save. Do not edit `map_json` by hand.

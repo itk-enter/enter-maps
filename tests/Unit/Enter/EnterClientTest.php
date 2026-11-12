@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Enter;
 
+use App\Enter\Cql2Filter;
 use App\Enter\DataSet;
 use App\Enter\EnterClient;
 use App\Enter\EnterUnavailableException;
@@ -68,7 +69,6 @@ final class EnterClientTest extends TestCase
             'format' => 'simplified',
             'limit' => '1000',
             'type' => 'PublicToilet',
-            'offset' => '0',
         ], $query);
         $this->assertContains('Accept: application/geo+json', $enter->options[0]['headers']);
         $this->assertContains('Link: <https://example.com/context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"', $enter->options[0]['headers']);
@@ -85,27 +85,18 @@ final class EnterClientTest extends TestCase
         $this->assertSame([], preg_grep('/^Link:/', $enter->options[0]['headers']));
     }
 
-    /**
-     * @return iterable<string, array{string, string}>
-     */
-    public static function whereProvider(): iterable
-    {
-        yield 'and' => ['isAccessibleForFree==true', 'sourceId=="toilets";isAccessibleForFree==true'];
-        yield 'or gets parentheses' => ['a==1|b==2', 'sourceId=="toilets";(a==1|b==2)'];
-    }
-
-    #[\PHPUnit\Framework\Attributes\DataProvider('whereProvider')]
-    public function testGetFeaturesAddsTheWhereFilter(string $where, string $expectedQuery): void
+    public function testGetFeaturesAddsTheFilter(): void
     {
         $enter = new FakeEnter();
+        $filter = Cql2Filter::fromJson('{"op": "or", "args": [{"op": "=", "args": [{"property": "a"}, 1]}, {"op": "=", "args": [{"property": "b"}, 2]}]}');
 
-        new EnterClient($enter->client())->getFeatures(new DataSet('toilets', 'Toilets', null, null), $where);
+        new EnterClient($enter->client())->getFeatures(new DataSet('toilets', 'Toilets', null, null), $filter);
 
         parse_str((string) parse_url($enter->requests[0], \PHP_URL_QUERY), $query);
-        $this->assertSame($expectedQuery, $query['q']);
+        $this->assertSame('sourceId=="toilets";(a==1|b==2)', $query['q']);
     }
 
-    public function testGetFeaturesReadsAllPagesAndRemovesBrokerProperties(): void
+    public function testGetFeaturesFollowsTheNextLinkAndRemovesBrokerProperties(): void
     {
         $enter = new FakeEnter();
         $enter->features['toilets'] = array_map(
@@ -113,12 +104,41 @@ final class EnterClientTest extends TestCase
             range(1, EnterClient::PAGE_SIZE + 1),
         );
 
-        $features = new EnterClient($enter->client())->getFeatures(new DataSet('toilets', 'Toilets', null, null), null);
+        $features = new EnterClient($enter->client())->getFeatures(new DataSet('toilets', 'Toilets', 'PublicToilet', 'https://example.com/context.jsonld'), null);
 
         $this->assertCount(2, $enter->requests);
-        $this->assertStringContainsString('offset='.EnterClient::PAGE_SIZE, $enter->requests[1]);
+        parse_str((string) parse_url($enter->requests[1], \PHP_URL_QUERY), $query);
+        $this->assertSame((string) EnterClient::PAGE_SIZE, $query['offset']);
+        $this->assertSame('sourceId=="toilets"', $query['q']);
+        $this->assertContains('Link: <https://example.com/context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"', $enter->options[1]['headers']);
         $this->assertCount(EnterClient::PAGE_SIZE + 1, $features);
         $this->assertSame(['name' => 'Toilet 1'], $features[0]['properties']);
+    }
+
+    public function testGetFeaturesStopsWhenThereIsNoNextLink(): void
+    {
+        $fullPage = json_encode([
+            'type' => 'FeatureCollection',
+            'features' => array_fill(0, EnterClient::PAGE_SIZE, ['type' => 'Feature']),
+        ], \JSON_THROW_ON_ERROR);
+        $client = new MockHttpClient([new MockResponse($fullPage)], 'http://enter.example');
+
+        $features = new EnterClient($client)->getFeatures(new DataSet('toilets', 'Toilets', null, null), null);
+
+        $this->assertCount(EnterClient::PAGE_SIZE, $features);
+    }
+
+    public function testGetFeaturesFollowsTheNextLinkAfterAShortPage(): void
+    {
+        $page = json_encode(['type' => 'FeatureCollection', 'features' => [['type' => 'Feature']]], \JSON_THROW_ON_ERROR);
+        $client = new MockHttpClient([
+            new MockResponse($page, ['response_headers' => ['Link' => '</ngsi-ld/v1/entities?q=x&offset=1>;rel="next";type="application/ld+json"']]),
+            new MockResponse($page),
+        ], 'http://enter.example');
+
+        $features = new EnterClient($client)->getFeatures(new DataSet('toilets', 'Toilets', null, null), null);
+
+        $this->assertCount(2, $features);
     }
 
     public function testGetFeaturesKeepsFeaturesWithoutPropertiesAndSkipsItemsThatAreNotFeatures(): void
@@ -145,11 +165,11 @@ final class EnterClientTest extends TestCase
 
     public function testGetFeaturesStopsAfterMaxPages(): void
     {
-        $fullPage = json_encode([
-            'type' => 'FeatureCollection',
-            'features' => array_fill(0, EnterClient::PAGE_SIZE, ['type' => 'Feature']),
-        ], \JSON_THROW_ON_ERROR);
-        $client = new MockHttpClient(static fn (): MockResponse => new MockResponse($fullPage), 'http://enter.example');
+        $page = json_encode(['type' => 'FeatureCollection', 'features' => []], \JSON_THROW_ON_ERROR);
+        $client = new MockHttpClient(
+            static fn (): MockResponse => new MockResponse($page, ['response_headers' => ['Link' => '</ngsi-ld/v1/entities?offset=1>; rel="next"']]),
+            'http://enter.example',
+        );
 
         $this->expectException(EnterUnavailableException::class);
         $this->expectExceptionMessageIsOrContains('more than '.EnterClient::MAX_PAGES.' pages');

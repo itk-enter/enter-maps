@@ -97,9 +97,20 @@ final class FakeEnter
             $dataSetId = preg_match('/^sourceId=="([^"]+)"/', (string) ($query['q'] ?? ''), $matches) ? $matches[1] : '';
             $limit = (int) ($query['limit'] ?? 0);
             $offset = (int) ($query['offset'] ?? 0);
-            $page = \array_slice($this->features[$dataSetId] ?? [], $offset, $limit);
+            $features = $this->features[$dataSetId] ?? [];
+            $page = \array_slice($features, $offset, $limit);
 
-            return new MockResponse(json_encode(['type' => 'FeatureCollection', 'features' => $page], \JSON_THROW_ON_ERROR));
+            // The broker links the next page in the Link header, as Scorpio does.
+            $headers = [];
+            if ($offset + $limit < \count($features)) {
+                $next = '/ngsi-ld/v1/entities?'.http_build_query([...$query, 'offset' => $offset + $limit]);
+                $headers['Link'] = \sprintf('<%s>;rel="next";type="application/ld+json"', $next);
+            }
+
+            return new MockResponse(
+                json_encode(['type' => 'FeatureCollection', 'features' => $page], \JSON_THROW_ON_ERROR),
+                ['response_headers' => $headers],
+            );
         }
 
         return new MockResponse('', ['http_code' => 404]);

@@ -6,7 +6,7 @@ namespace App\Controller;
 
 use App\Enter\DataProxy;
 use App\Enter\EnterUnavailableException;
-use App\Enter\InvalidWhereException;
+use App\Enter\InvalidFilterException;
 use App\Enter\UnknownDataSetException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -29,13 +29,21 @@ final class DataController extends AbstractController
         methods: [Request::METHOD_GET],
         stateless: true,
     )]
-    public function __invoke(DataProxy $proxy, string $dataSet, #[MapQueryParameter] ?string $where = null): JsonResponse
-    {
+    public function __invoke(
+        DataProxy $proxy,
+        string $dataSet,
+        #[MapQueryParameter] ?string $filter = null,
+        #[MapQueryParameter('filter-lang')] string $filterLang = 'cql2-json',
+    ): JsonResponse {
+        if ('cql2-json' !== $filterLang) {
+            throw new BadRequestHttpException('The only filter language is "cql2-json".');
+        }
+
         try {
-            $features = $proxy->getFeatures($dataSet, $where);
+            $features = $proxy->getFeatures($dataSet, $filter);
         } catch (UnknownDataSetException $exception) {
             throw new NotFoundHttpException($exception->getMessage(), $exception);
-        } catch (InvalidWhereException $exception) {
+        } catch (InvalidFilterException $exception) {
             throw new BadRequestHttpException($exception->getMessage(), $exception);
         } catch (EnterUnavailableException $exception) {
             throw new ServiceUnavailableHttpException(60, 'Enter is not available.', $exception);

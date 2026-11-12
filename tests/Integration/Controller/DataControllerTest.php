@@ -52,9 +52,12 @@ final class DataControllerTest extends WebTestCase
         $this->assertResponseHeaderSame('Cache-Control', 'max-age=60, public');
     }
 
-    public function testPassesTheWhereFilterToEnter(): void
+    public function testPassesTheFilterToEnter(): void
     {
-        $this->browser->request('GET', '/data/toilets.geojson', ['where' => 'isAccessibleForFree==true']);
+        $this->browser->request('GET', '/data/toilets.geojson', [
+            'filter' => '{"op": "=", "args": [{"property": "isAccessibleForFree"}, true]}',
+            'filter-lang' => 'cql2-json',
+        ]);
 
         $this->assertResponseIsSuccessful();
         parse_str((string) parse_url($this->enter->requests[1], \PHP_URL_QUERY), $query);
@@ -68,9 +71,16 @@ final class DataControllerTest extends WebTestCase
         $this->assertResponseStatusCodeSame(404);
     }
 
-    public function testReturnsBadRequestForAnInvalidWhereFilter(): void
+    public function testReturnsBadRequestForAnInvalidFilter(): void
     {
-        $this->browser->request('GET', '/data/toilets.geojson', ['where' => 'a==1&b==2']);
+        $this->browser->request('GET', '/data/toilets.geojson', ['filter' => 'isAccessibleForFree==true']);
+
+        $this->assertResponseStatusCodeSame(400);
+    }
+
+    public function testReturnsBadRequestForAnotherFilterLanguage(): void
+    {
+        $this->browser->request('GET', '/data/toilets.geojson', ['filter' => 'isAccessibleForFree = true', 'filter-lang' => 'cql2-text']);
 
         $this->assertResponseStatusCodeSame(400);
     }

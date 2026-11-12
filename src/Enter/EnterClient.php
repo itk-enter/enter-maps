@@ -12,14 +12,16 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * Reads the data sets and their entities from Enter.
  *
  * The broker of Enter returns at most 1000 entities for each request, so
- * getFeatures() reads the entities page by page.
+ * getFeatures() reads the entities page by page, as the broker links them.
  */
 final readonly class EnterClient
 {
     public const int PAGE_SIZE = 1000;
 
+    private const string ENTITIES_PATH = '/ngsi-ld/v1/entities';
+
     /**
-     * Stops a broker that always returns full pages. 100 pages is 100 000 entities.
+     * Stops a broker that always links a next page. 100 pages is 100 000 entities.
      */
     public const int MAX_PAGES = 100;
 
@@ -45,7 +47,7 @@ final readonly class EnterClient
      */
     public function getDataSets(): array
     {
-        $items = $this->getJson('/sources.json', []);
+        [$items] = $this->get('/sources.json', []);
         if (!array_is_list($items)) {
             throw new EnterUnavailableException('Enter returned a /sources.json that is not a list.');
         }
@@ -70,16 +72,19 @@ final readonly class EnterClient
     /**
      * Gets all the entities of a data set as GeoJSON features.
      *
-     * @param string|null $where an NGSI-LD query that the entities must also match, e.g. "isAccessibleForFree==true"
+     * The method reads the pages that the broker links with rel="next" in the
+     * Link header, until a page has no next page.
+     *
+     * @param Cql2Filter|null $filter a filter that the entities must also match
      *
      * @return list<array<mixed>>
      *
      * @throws EnterUnavailableException
      */
-    public function getFeatures(DataSet $dataSet, ?string $where): array
+    public function getFeatures(DataSet $dataSet, ?Cql2Filter $filter): array
     {
         $query = [
-            'q' => $this->buildQuery($dataSet, $where),
+            'q' => \sprintf('sourceId=="%s"', $dataSet->id).($filter instanceof Cql2Filter ? ';'.$filter->query : ''),
             'format' => 'simplified',
             'limit' => self::PAGE_SIZE,
         ];
@@ -94,12 +99,9 @@ final readonly class EnterClient
 
         $features = [];
         for ($page = 0; $page < self::MAX_PAGES; ++$page) {
-            $response = $this->getJson('/ngsi-ld/v1/entities', [
-                'query' => [...$query, 'offset' => $page * self::PAGE_SIZE],
-                'headers' => $headers,
-            ]);
+            [$collection, $responseHeaders] = $this->get(self::ENTITIES_PATH, ['query' => $query, 'headers' => $headers]);
 
-            $pageFeatures = $response['features'] ?? null;
+            $pageFeatures = $collection['features'] ?? null;
             if (!\is_array($pageFeatures) || !array_is_list($pageFeatures)) {
                 throw new EnterUnavailableException(\sprintf('Enter returned entities of "%s" that are not a GeoJSON feature collection.', $dataSet->id));
             }
@@ -110,7 +112,8 @@ final readonly class EnterClient
                 }
             }
 
-            if (\count($pageFeatures) < self::PAGE_SIZE) {
+            $query = $this->nextPage($responseHeaders['link'] ?? []);
+            if (null === $query) {
                 return $features;
             }
         }
@@ -119,18 +122,23 @@ final readonly class EnterClient
     }
 
     /**
-     * Makes the NGSI-LD query: the entities of the data set, and the entities
-     * that match the "where" filter. ";" is "and". The filter gets parentheses
-     * if it holds "|" ("or"), so that "or" applies only inside the filter.
+     * Gets the query of the next page from the Link headers of a response.
+     *
+     * @param list<string> $links
+     *
+     * @return array<mixed>|null the query, or null if there is no next page
      */
-    private function buildQuery(DataSet $dataSet, ?string $where): string
+    private function nextPage(array $links): ?array
     {
-        $query = \sprintf('sourceId=="%s"', $dataSet->id);
-        if (null === $where) {
-            return $query;
+        foreach ($links as $link) {
+            if (1 === preg_match('/<([^>]*)>[^,]*rel="next"/', $link, $match)) {
+                parse_str((string) parse_url($match[1], \PHP_URL_QUERY), $query);
+
+                return $query;
+            }
         }
 
-        return $query.';'.(str_contains($where, '|') ? '('.$where.')' : $where);
+        return null;
     }
 
     /**
@@ -152,14 +160,16 @@ final readonly class EnterClient
     /**
      * @param array<string, mixed> $options
      *
-     * @return array<mixed>
+     * @return array{array<mixed>, array<string, list<string>>} the decoded JSON and the headers of the response
      *
      * @throws EnterUnavailableException
      */
-    private function getJson(string $url, array $options): array
+    private function get(string $url, array $options): array
     {
         try {
-            return $this->client->request('GET', $url, $options)->toArray();
+            $response = $this->client->request('GET', $url, $options);
+
+            return [$response->toArray(), $response->getHeaders()];
         } catch (ExceptionInterface $exception) {
             throw new EnterUnavailableException(\sprintf('Enter did not return %s: %s', $url, $exception->getMessage()), $exception->getCode(), previous: $exception);
         }

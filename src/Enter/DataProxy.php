@@ -12,19 +12,6 @@ namespace App\Enter;
  */
 final readonly class DataProxy
 {
-    /**
-     * A filter that is too long gives a clear 400, not a 503 from a URL that
-     * is too long for the broker. It also limits the work that one request
-     * causes in the broker. Real filters are much shorter.
-     */
-    public const int MAX_WHERE_LENGTH = 500;
-
-    /**
-     * The characters of an NGSI-LD query: letters, digits, the operators and
-     * the characters in quoted values.
-     */
-    private const string WHERE_PATTERN = '/^[\p{L}\p{N} _.:@#\-="\'<>!~;|()\[\],\/+*%]+$/u';
-
     public function __construct(
         private EnterClient $enter,
     ) {
@@ -33,45 +20,22 @@ final readonly class DataProxy
     /**
      * Gets the features of a data set.
      *
-     * @param string|null $where an NGSI-LD query that the entities must also match, or null for all the entities
+     * @param string|null $filter a filter in CQL2-JSON that the entities must also match, or null for all the entities
      *
      * @return list<array<mixed>> the GeoJSON features
      *
      * @throws UnknownDataSetException   if Enter does not list the data set
-     * @throws InvalidWhereException     if $where is too long or holds characters that are not permitted
+     * @throws InvalidFilterException    if the filter is not valid, or uses a part of CQL2 that the proxy does not support
      * @throws EnterUnavailableException if Enter is not available
      */
-    public function getFeatures(string $dataSetId, ?string $where): array
+    public function getFeatures(string $dataSetId, ?string $filter): array
     {
-        $where = $this->validateWhere($where);
+        $filter = null === $filter || '' === trim($filter) ? null : Cql2Filter::fromJson($filter);
         $dataSet = $this->enter->getDataSets()[$dataSetId] ?? null;
         if (!$dataSet instanceof DataSet) {
             throw new UnknownDataSetException(\sprintf('Enter does not list the data set "%s".', $dataSetId));
         }
 
-        return $this->enter->getFeatures($dataSet, $where);
-    }
-
-    /**
-     * @return string|null the filter, or null if there is no filter
-     *
-     * @throws InvalidWhereException
-     */
-    private function validateWhere(?string $where): ?string
-    {
-        $where = null === $where ? '' : trim($where);
-        if ('' === $where) {
-            return null;
-        }
-
-        if (mb_strlen($where) > self::MAX_WHERE_LENGTH) {
-            throw new InvalidWhereException(\sprintf('The "where" filter is longer than %d characters.', self::MAX_WHERE_LENGTH));
-        }
-
-        if (1 !== preg_match(self::WHERE_PATTERN, $where)) {
-            throw new InvalidWhereException('The "where" filter holds characters that are not permitted.');
-        }
-
-        return $where;
+        return $this->enter->getFeatures($dataSet, $filter);
     }
 }

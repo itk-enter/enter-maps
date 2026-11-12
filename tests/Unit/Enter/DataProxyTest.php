@@ -7,7 +7,7 @@ namespace App\Tests\Unit\Enter;
 use App\Enter\DataProxy;
 use App\Enter\EnterClient;
 use App\Enter\EnterUnavailableException;
-use App\Enter\InvalidWhereException;
+use App\Enter\InvalidFilterException;
 use App\Enter\UnknownDataSetException;
 use App\Tests\Support\FakeEnter;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -62,48 +62,39 @@ final class DataProxyTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string|null, string|null}>
+     * @return iterable<string, array{string|null}>
      */
-    public static function emptyWhereProvider(): iterable
+    public static function emptyFilterProvider(): iterable
     {
-        yield 'null' => [null, null];
-        yield 'empty' => ['', null];
-        yield 'spaces' => ['  ', null];
-        yield 'trimmed' => [' a==1 ', 'a==1'];
+        yield 'null' => [null];
+        yield 'empty' => [''];
+        yield 'spaces' => ['  '];
     }
 
-    #[DataProvider('emptyWhereProvider')]
-    public function testGetFeaturesTrimsTheWhereFilter(?string $where, ?string $expected): void
+    #[DataProvider('emptyFilterProvider')]
+    public function testGetFeaturesWithoutAFilterGetsAllTheEntities(?string $filter): void
     {
-        $this->proxy->getFeatures('toilets', $where);
+        $this->proxy->getFeatures('toilets', $filter);
 
         parse_str((string) parse_url($this->enter->requests[1], \PHP_URL_QUERY), $query);
-        $this->assertSame('sourceId=="toilets"'.(null === $expected ? '' : ';'.$expected), $query['q']);
+        $this->assertSame('sourceId=="toilets"', $query['q']);
     }
 
-    /**
-     * @return iterable<string, array{string, string}>
-     */
-    public static function invalidWhereProvider(): iterable
+    public function testGetFeaturesMakesTheQueryFromTheFilter(): void
     {
-        yield 'too long' => [str_repeat('a', DataProxy::MAX_WHERE_LENGTH + 1), 'longer than'];
-        yield 'new line' => ["a==1\nb==2", 'not permitted'];
-        yield 'ampersand' => ['a==1&b==2', 'not permitted'];
+        $this->proxy->getFeatures('toilets', '{"op": "=", "args": [{"property": "name"}, "Ådalen"]}');
+
+        parse_str((string) parse_url($this->enter->requests[1], \PHP_URL_QUERY), $query);
+        $this->assertSame('sourceId=="toilets";name=="Ådalen"', $query['q']);
     }
 
-    #[DataProvider('invalidWhereProvider')]
-    public function testGetFeaturesRejectsAnInvalidWhereFilter(string $where, string $message): void
+    public function testGetFeaturesRejectsAnInvalidFilterBeforeItAsksEnter(): void
     {
-        $this->expectException(InvalidWhereException::class);
-        $this->expectExceptionMessageIsOrContains($message);
-
-        $this->proxy->getFeatures('toilets', $where);
-    }
-
-    public function testGetFeaturesAcceptsDanishLettersInTheWhereFilter(): void
-    {
-        $features = $this->proxy->getFeatures('toilets', 'name=="Ådalen"');
-
-        $this->assertCount(1, $features);
+        try {
+            $this->proxy->getFeatures('toilets', 'isAccessibleForFree==true');
+            $this->fail('The proxy accepted a filter that is not CQL2-JSON.');
+        } catch (InvalidFilterException) {
+            $this->assertSame([], $this->enter->requests);
+        }
     }
 }

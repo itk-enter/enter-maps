@@ -125,13 +125,16 @@ The maps get their data from this project, not from Enter:
 
 ```text
 GET /data/{dataSet}.geojson
-GET /data/{dataSet}.geojson?where=isAccessibleForFree==true
+GET /data/{dataSet}.geojson?filter={"op":"=","args":[{"property":"isAccessibleForFree"},true]}
 ```
 
 - `{dataSet}` is the ID of a data set in Enter's `/sources.json`. An unknown ID gives `404`.
-- `where` is an NGSI-LD query that the entities must also match. A filter that is too long or that holds characters
-  that are not permitted gives `400`.
-- The proxy reads all pages from Enter on each request. It has no cache.
+- `filter` is a filter in [CQL2-JSON](https://docs.ogc.org/is/21-065r2/21-065r2.html) that the entities must also
+  match. Encode it for the URL. `filter-lang` is optional. If it is given, it must be `cql2-json`.
+- The proxy supports `and`, `or`, `=`, `<>`, `<`, `<=`, `>`, `>=`, `in` and `isNull`. A filter that is not valid,
+  or that uses other operators, gives `400`. `Cql2Filter` makes the NGSI-LD query from the filter.
+- The proxy reads all pages from Enter on each request. It follows the `rel="next"` link of the broker. It has no
+  cache.
 - If Enter is not available, the proxy returns `503`.
 
 `config/packages/enter.yaml` holds the HTTP client for Enter.
@@ -143,10 +146,12 @@ GET /data/{dataSet}.geojson?where=isAccessibleForFree==true
 - **NGSI-LD requests.** The broker needs a `Link` header with the context and `Accept: application/geo+json`. A map
   layer cannot send these headers.
 - **Stable URLs.** Embed codes stay on other sites for a long time. They contain `/data/{dataSet}.geojson`, which this
-  project controls. If Enter changes its broker or its query format, we change the proxy, not the embed codes.
+  project controls. The filters are in CQL2-JSON, not in the query language of the broker. If Enter changes its
+  broker or its query format, we change the proxy, not the embed codes.
 - **Credentials.** On staging, Enter is behind basic auth. The proxy keeps the password on the server.
-- **Control of the requests.** The proxy accepts only data sets from `/sources.json`, and it checks the `where`
-  filter. Enter does not need CORS headers for the sites that embed a map.
+- **Control of the requests.** The proxy accepts only data sets from `/sources.json`. It makes the NGSI-LD query
+  from a filter in CQL2-JSON, so a map cannot send a query to the broker. Enter does not need CORS headers for the
+  sites that embed a map.
 - **Smaller responses.** The proxy removes the `location` and `source` properties, which the broker adds and a map does
   not use.
 
