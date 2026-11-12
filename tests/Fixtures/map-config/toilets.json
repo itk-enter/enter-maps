@@ -8,6 +8,7 @@
   "sidebar": { "position": "left", "list": true, "categories": true, "search": { "local": true, "address": true } },
   "layers": [
     {
+      "id": "toilets",
       "dataSet": "merged-public-toilets",
       "label": "Offentlige toiletter",
       "colour": "#6b3fa0",
@@ -25,10 +26,10 @@
   ],
   "filters": [
     {
-      "path": "wheelchairAccessible",
       "type": "select",
       "label": "Kørestolsadgang",
-      "values": { "yes": "Ja", "limited": "Delvist", "no": "Nej" }
+      "values": { "yes": "Ja", "limited": "Delvist", "no": "Nej" },
+      "appliesTo": [{ "layer": "toilets", "path": "wheelchairAccessible" }]
     }
   ],
   "report": {

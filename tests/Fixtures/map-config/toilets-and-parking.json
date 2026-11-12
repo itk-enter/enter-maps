@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "title": "Tilgængelighed i midtbyen",
+  "description": "Offentlige toiletter og handicapparkering i Aarhus midtby.",
+  "sidebar": { "list": true, "categories": true },
+  "layers": [
+    {
+      "id": "toilets",
+      "dataSet": "merged-public-toilets",
+      "label": "Offentlige toiletter",
+      "colour": "#6b3fa0",
+      "icon": "toilet",
+      "row": {
+        "title": { "path": "name", "fallback": "Toilet" },
+        "subtitle": { "path": "address.streetAddress", "fallback": "Adresse ikke registreret" }
+      },
+      "detail": [
+        { "path": "openingHours", "label": "Åbningstider", "format": "list" },
+        {
+          "path": "wheelchairAccessible",
+          "label": "Kørestolsadgang",
+          "values": { "yes": "Ja", "limited": "Delvist", "no": "Nej" },
+          "fallback": "Ikke registreret"
+        },
+        { "path": "isAccessibleForFree", "label": "Gratis", "format": "boolean" }
+      ]
+    },
+    {
+      "id": "parking",
+      "dataSet": "merged-handicap-parking-spots",
+      "label": "Handicapparkering",
+      "colour": "#1f6fb2",
+      "icon": "parking",
+      "row": {
+        "title": { "path": "address.streetAddress", "fallback": "Handicapparkering" },
+        "subtitle": { "path": "totalSpotNumber", "label": "Pladser", "format": "number" }
+      },
+      "detail": [
+        { "path": "totalSpotNumber", "label": "Antal pladser", "format": "number" },
+        { "path": "maximumParkingDuration", "label": "Maks. parkeringstid", "fallback": "Ingen grænse" },
+        { "path": "fee", "label": "Betaling", "values": { "no": "Gratis", "yes": "Betaling" } }
+      ]
+    }
+  ],
+  "filters": [
+    {
+      "type": "toggle",
+      "label": "Kun gratis",
+      "values": { "free": "Kun gratis" },
+      "appliesTo": [
+        { "layer": "toilets", "path": "isAccessibleForFree", "codes": { "free": true } },
+        { "layer": "parking", "path": "fee", "codes": { "free": "no" } }
+      ]
+    },
+    {
+      "type": "select",
+      "label": "Kørestolsadgang til toilettet",
+      "values": { "yes": "Ja", "limited": "Delvist", "no": "Nej" },
+      "appliesTo": [{ "layer": "toilets", "path": "wheelchairAccessible" }]
+    }
+  ]
+}

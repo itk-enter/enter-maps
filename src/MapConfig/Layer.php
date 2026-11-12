@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace App\MapConfig;
 
 /**
- * One data set from Enter on the map.
+ * One data set from Enter on the map, with its own fields for the list row
+ * and the detail view. The same data set can be on the map more than once,
+ * for example with two different $where filters.
  */
 final readonly class Layer
 {
     /**
+     * @param string      $id     a short name, unique in the map; filters refer to it
      * @param string|null $where  the closed filter: an NGSI-LD query that the entities must also match
      * @param list<Field> $detail the fields of the detail view
      */
     public function __construct(
+        public string $id,
         public string $dataSet,
         public string $label,
         public ?string $colour,
@@ -31,6 +35,7 @@ final readonly class Layer
     public static function fromArray(array $data): self
     {
         return new self(
+            id: $data['id'],
             dataSet: $data['dataSet'],
             label: $data['label'],
             colour: $data['colour'] ?? null,

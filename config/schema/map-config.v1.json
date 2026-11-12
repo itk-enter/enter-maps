@@ -141,8 +141,12 @@
     "layer": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["dataSet", "label", "row"],
+      "required": ["id", "dataSet", "label", "row"],
       "properties": {
+        "id": {
+          "description": "A short name of the layer, unique in the map. Filters refer to it.",
+          "$ref": "#/$defs/name"
+        },
         "dataSet": { "type": "string", "pattern": "^[A-Za-z0-9_.:-]+$", "maxLength": 200 },
         "label": { "$ref": "#/$defs/text" },
         "colour": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
@@ -170,14 +174,39 @@
       }
     },
     "filter": {
+      "description": "A control in the sidebar. It changes only the features of the layers in appliesTo.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["path", "type", "label", "values"],
+      "required": ["type", "label", "values", "appliesTo"],
       "properties": {
-        "path": { "$ref": "#/$defs/path" },
         "type": { "enum": ["toggle", "select", "multiselect"] },
         "label": { "$ref": "#/$defs/text" },
-        "values": { "$ref": "#/$defs/values" }
+        "values": {
+          "description": "The codes of the filter, with the text that the control shows for each.",
+          "$ref": "#/$defs/values"
+        },
+        "appliesTo": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": { "$ref": "#/$defs/filterTarget" }
+        }
+      }
+    },
+    "filterTarget": {
+      "description": "Where a layer keeps the value of a filter.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layer", "path"],
+      "properties": {
+        "layer": { "description": "The id of a layer.", "$ref": "#/$defs/name" },
+        "path": { "$ref": "#/$defs/path" },
+        "codes": {
+          "description": "The value in the data for each code of the filter. Without it, the value in the data is the code.",
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": ["string", "number", "boolean"] }
+        }
       }
     }
   }

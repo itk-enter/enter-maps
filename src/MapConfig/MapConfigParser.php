@@ -11,7 +11,8 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * Makes a MapConfig from JSON, after validation against the JSON Schema of
- * its version.
+ * its version, and a check that the filters refer to layers and codes that
+ * exist.
  *
  * Each version has its own schema file in config/schema/. Do not remove the
  * schema of an old version, because embed codes stay on other sites for a
@@ -67,6 +68,50 @@ final readonly class MapConfigParser
             throw new InvalidMapConfigException($errors);
         }
 
-        return MapConfig::fromArray(json_decode($json, true, 512, \JSON_THROW_ON_ERROR));
+        $data = json_decode($json, true, 512, \JSON_THROW_ON_ERROR);
+        $errors = $this->checkReferences($data);
+        if ([] !== $errors) {
+            throw new InvalidMapConfigException($errors);
+        }
+
+        return MapConfig::fromArray($data);
+    }
+
+    /**
+     * Checks the rules that the schema cannot express: each layer has its own
+     * id, and each filter refers to layers and codes that exist.
+     *
+     * @param array<string, mixed> $data JSON that is valid against the schema
+     *
+     * @return list<string> the errors, in the same format as the errors of the schema
+     */
+    private function checkReferences(array $data): array
+    {
+        $errors = [];
+        $layerIds = [];
+        foreach ($data['layers'] as $index => $layer) {
+            if (isset($layerIds[$layer['id']])) {
+                $errors[] = \sprintf('/layers/%d/id: The id "%s" is used by more than one layer.', $index, $layer['id']);
+            }
+
+            $layerIds[$layer['id']] = true;
+        }
+
+        foreach ($data['filters'] ?? [] as $filterIndex => $filter) {
+            foreach ($filter['appliesTo'] as $targetIndex => $target) {
+                $pointer = \sprintf('/filters/%d/appliesTo/%d', $filterIndex, $targetIndex);
+                if (!isset($layerIds[$target['layer']])) {
+                    $errors[] = \sprintf('%s/layer: There is no layer with the id "%s".', $pointer, $target['layer']);
+                }
+
+                foreach (array_keys($target['codes'] ?? []) as $code) {
+                    if (!\array_key_exists($code, $filter['values'])) {
+                        $errors[] = \sprintf('%s/codes/%s: The filter has no code "%s".', $pointer, $code, $code);
+                    }
+                }
+            }
+        }
+
+        return $errors;
     }
 }

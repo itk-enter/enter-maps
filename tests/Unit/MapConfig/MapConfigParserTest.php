@@ -6,6 +6,7 @@ namespace App\Tests\Unit\MapConfig;
 
 use App\MapConfig\Field;
 use App\MapConfig\Filter;
+use App\MapConfig\FilterTarget;
 use App\MapConfig\InvalidMapConfigException;
 use App\MapConfig\Layer;
 use App\MapConfig\LeafletSettings;
@@ -20,7 +21,7 @@ use PHPUnit\Framework\TestCase;
 
 final class MapConfigParserTest extends TestCase
 {
-    private const string MINIMAL = '{"version": 1, "title": "Bænke", "layers": [{"dataSet": "osm-bench", "label": "Bænke", "row": {"title": {"path": "name"}}}]}';
+    private const string MINIMAL = '{"version": 1, "title": "Bænke", "layers": [{"id": "benches", "dataSet": "osm-bench", "label": "Bænke", "row": {"title": {"path": "name"}}}]}';
 
     private MapConfigParser $parser;
 
@@ -42,6 +43,7 @@ final class MapConfigParserTest extends TestCase
             minZoom: 15.0,
             sidebar: new Sidebar('left', true, true, true, true),
             layers: [new Layer(
+                id: 'toilets',
                 dataSet: 'merged-public-toilets',
                 label: 'Offentlige toiletter',
                 colour: '#6b3fa0',
@@ -54,7 +56,9 @@ final class MapConfigParserTest extends TestCase
                     new Field('openingHours', 'Åbningstider', null, 'list', []),
                 ],
             )],
-            filters: [new Filter('wheelchairAccessible', 'select', 'Kørestolsadgang', ['yes' => 'Ja', 'limited' => 'Delvist', 'no' => 'Nej'])],
+            filters: [new Filter('select', 'Kørestolsadgang', ['yes' => 'Ja', 'limited' => 'Delvist', 'no' => 'Nej'], [
+                new FilterTarget('toilets', 'wheelchairAccessible', []),
+            ])],
             report: new Report('Ret eller tilføj oplysninger', 'https://example.aarhus.dk/form?entity={id}&sources={seeAlso}', '_blank'),
             leaflet: new LeafletSettings('osm'),
             septima: new SeptimaSettings('skaermkort'),
@@ -118,8 +122,14 @@ final class MapConfigParserTest extends TestCase
         yield 'empty description' => [['description' => ''], '/description'];
         yield 'centre outside the world' => [['view' => ['center' => [200, 56], 'zoom' => 14]], '/view/center/0'];
         yield 'report without https' => [['report' => ['label' => 'Ret', 'url' => 'javascript:alert(1)']], '/report/url'];
-        yield 'unknown filter type' => [['filters' => [['path' => 'a', 'type' => 'range', 'label' => 'A', 'values' => ['x' => 'X']]]], '/filters/0/type'];
-        yield 'filter without values' => [['filters' => [['path' => 'a', 'type' => 'select', 'label' => 'A', 'values' => []]]], '/filters/0/values'];
+        yield 'unknown filter type' => [['filters' => [self::filter(['type' => 'range'])]], '/filters/0/type'];
+        yield 'filter without values' => [['filters' => [self::filter(['values' => []])]], '/filters/0/values'];
+        yield 'filter without layers' => [['filters' => [self::filter(['appliesTo' => []])]], '/filters/0/appliesTo'];
+        yield 'filter code that is an object' => [['filters' => [self::filter(['appliesTo' => [['layer' => 'benches', 'path' => 'a', 'codes' => ['x' => ['y' => 1]]]]])]], '/filters/0/appliesTo/0/codes/x'];
+        yield 'layer without id' => [['layers' => [['dataSet' => 'osm-bench', 'label' => 'Bænke', 'row' => ['title' => ['path' => 'name']]]]], '/layers/0'];
+        yield 'two layers with the same id' => [['layers' => [self::layer('benches'), self::layer('benches')]], '/layers/1/id'];
+        yield 'filter for a layer that does not exist' => [['filters' => [self::filter(['appliesTo' => [['layer' => 'toilets', 'path' => 'a']]])]], '/filters/0/appliesTo/0/layer'];
+        yield 'code that the filter does not have' => [['filters' => [self::filter(['appliesTo' => [['layer' => 'benches', 'path' => 'a', 'codes' => ['y' => true]]]])]], '/filters/0/appliesTo/0/codes/y'];
     }
 
     /**
@@ -136,6 +146,7 @@ final class MapConfigParserTest extends TestCase
     public function testRejectsInvalidValuesInALayer(): void
     {
         $layer = [
+            'id' => 'benches',
             'dataSet' => 'osm bench',
             'label' => 'Bænke',
             'colour' => 'red',
@@ -148,6 +159,48 @@ final class MapConfigParserTest extends TestCase
         foreach (['/layers/0/dataSet', '/layers/0/colour', '/layers/0/where', '/layers/0/row/title/path', '/layers/0/row/title/format'] as $pointer) {
             $this->assertNotSame([], preg_grep('#^'.preg_quote($pointer, '#').': #', $exception->errors), $pointer);
         }
+    }
+
+    public function testParsesTwoLayersWithAFilterForBoth(): void
+    {
+        $config = $this->parser->parse((string) file_get_contents(\dirname(__DIR__, 2).'/Fixtures/map-config/toilets-and-parking.json'));
+
+        $this->assertSame(['toilets', 'parking'], array_map(static fn (Layer $layer): string => $layer->id, $config->layers));
+        $this->assertSame('name', $config->layers[0]->title->path);
+        $this->assertSame('address.streetAddress', $config->layers[1]->title->path);
+
+        // One control in the sidebar, with a different attribute and code in each layer.
+        $this->assertEquals([
+            new FilterTarget('toilets', 'isAccessibleForFree', ['free' => true]),
+            new FilterTarget('parking', 'fee', ['free' => 'no']),
+        ], $config->filters[0]->appliesTo);
+
+        // A filter for one layer only. It does not change the parking spots.
+        $this->assertSame(['toilets'], array_map(static fn (FilterTarget $target): string => $target->layer, $config->filters[1]->appliesTo));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function layer(string $id): array
+    {
+        return ['id' => $id, 'dataSet' => 'osm-bench', 'label' => 'Bænke', 'row' => ['title' => ['path' => 'name']]];
+    }
+
+    /**
+     * @param array<string, mixed> $change
+     *
+     * @return array<string, mixed>
+     */
+    private static function filter(array $change): array
+    {
+        return [
+            'type' => 'toggle',
+            'label' => 'Med ryglæn',
+            'values' => ['x' => 'Med ryglæn'],
+            'appliesTo' => [['layer' => 'benches', 'path' => 'backrest']],
+            ...$change,
+        ];
     }
 
     /**
