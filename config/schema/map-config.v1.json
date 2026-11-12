@@ -1,0 +1,320 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:enter-maps:map-config:v1",
+  "title": "Map configuration, version 1",
+  "description": "The configuration of one map. The converters make the settings of each renderer from it. See README.md in this directory.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "title", "layers"],
+  "properties": {
+    "version": {
+      "description": "The version of the schema. The embed page uses it to select the schema file.",
+      "const": 1
+    },
+    "title": {
+      "description": "The title of the map.",
+      "$ref": "#/$defs/text"
+    },
+    "description": {
+      "description": "A short text about the map, as plain text.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "locale": {
+      "description": "The language of the texts that the configuration does not give. The default is da-DK.",
+      "enum": ["da-DK", "en-GB"]
+    },
+    "view": {
+      "description": "The start view. Without it, the map shows all the features.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["center", "zoom"],
+      "properties": {
+        "center": {
+          "description": "The centre of the map: longitude and latitude, in this order, as in GeoJSON.",
+          "type": "array",
+          "prefixItems": [
+            { "description": "Longitude.", "type": "number", "minimum": -180, "maximum": 180 },
+            { "description": "Latitude.", "type": "number", "minimum": -90, "maximum": 90 }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "zoom": {
+          "description": "The zoom level at the start.",
+          "$ref": "#/$defs/zoom"
+        }
+      }
+    },
+    "zoomGate": {
+      "description": "Hides the features when the user zooms out, for data sets with many features.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minZoom"],
+      "properties": {
+        "minZoom": {
+          "description": "Below this zoom level, the map does not show the features.",
+          "$ref": "#/$defs/zoom"
+        }
+      }
+    },
+    "sidebar": {
+      "description": "The settings of the sidebar. Without it, the sidebar is on the left with the list, and has no search.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "description": "The side of the map with the sidebar. The default is left.",
+          "enum": ["left", "right"]
+        },
+        "list": {
+          "description": "If true, the sidebar shows a list of the features. The default is true.",
+          "type": "boolean"
+        },
+        "categories": {
+          "description": "If true, the user can turn each layer on and off. The default is false.",
+          "type": "boolean"
+        },
+        "search": {
+          "description": "The search fields of the sidebar.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "local": {
+              "description": "If true, the user can search in the features of the map. The default is false.",
+              "type": "boolean"
+            },
+            "address": {
+              "description": "If true, the user can search for an address with Adressevælger. The default is false.",
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "layers": {
+      "description": "The data sets on the map. Each layer has its own data set, filter and fields.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": { "$ref": "#/$defs/layer" }
+    },
+    "filters": {
+      "description": "The open filters: filters that the user can change.",
+      "type": "array",
+      "maxItems": 20,
+      "items": { "$ref": "#/$defs/filter" }
+    },
+    "report": {
+      "description": "A link for each feature, for example to a form that corrects the data.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "url"],
+      "properties": {
+        "label": {
+          "description": "The text of the link.",
+          "$ref": "#/$defs/text"
+        },
+        "url": {
+          "description": "The address of the link. It must start with https://. {id} and {seeAlso} get the values of the entity.",
+          "type": "string",
+          "pattern": "^https://",
+          "maxLength": 500
+        },
+        "target": {
+          "description": "_blank opens a new window. _top opens the link in place of the page around the frame. postMessage sends {type: \"enter-map:report\", id, seeAlso} to the page around the frame. The default is _blank.",
+          "enum": ["_blank", "_top", "postMessage"]
+        }
+      }
+    },
+    "leaflet": {
+      "description": "Settings that only the Leaflet renderer uses. The other settings are for all renderers.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "baseMap": {
+          "description": "The name of the base map, from a list on the server. Not a URL. Without it, the renderer uses its default.",
+          "enum": ["osm"]
+        }
+      }
+    },
+    "septima": {
+      "description": "Settings that only the Septima renderer uses. The other settings are for all renderers. Do not put a configuration in the format of Septima here.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "baseMap": {
+          "description": "The name of the base map, from a list on the server. Not a URL. Without it, the renderer uses its default.",
+          "$ref": "#/$defs/name"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "text": {
+      "description": "A text that the map shows as plain text. The renderers escape it, so HTML in it shows as text and does not work.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "name": {
+      "description": "A short name: lower-case letters, digits and hyphens.",
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "maxLength": 50
+    },
+    "zoom": {
+      "description": "A zoom level. 0 shows the world. 18 shows a street.",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 22
+    },
+    "path": {
+      "description": "A dot path into the properties of a GeoJSON feature, for example address.streetAddress.",
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+      "maxLength": 200
+    },
+    "values": {
+      "description": "Maps a code in the data to the text that the map shows, for example {\"yes\": \"Ja\"}.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/text" }
+    },
+    "field": {
+      "description": "A value from the properties of a feature, with the text that the map shows for it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path"],
+      "properties": {
+        "path": {
+          "description": "Where the feature keeps the value.",
+          "$ref": "#/$defs/path"
+        },
+        "label": {
+          "description": "The name of the value.",
+          "$ref": "#/$defs/text"
+        },
+        "fallback": {
+          "description": "The text if the feature has no value. Without it, the map does not show the field.",
+          "$ref": "#/$defs/text"
+        },
+        "format": {
+          "description": "The type of the value. The default is text.",
+          "enum": ["text", "list", "boolean", "number", "date", "link"]
+        },
+        "values": {
+          "description": "The text for each code. A code that is not here is shown as it is.",
+          "$ref": "#/$defs/values"
+        }
+      }
+    },
+    "layer": {
+      "description": "One data set from Enter on the map.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "dataSet", "label", "colour", "row"],
+      "properties": {
+        "id": {
+          "description": "A short name of the layer, unique in the map. Filters refer to it.",
+          "$ref": "#/$defs/name"
+        },
+        "dataSet": {
+          "description": "The id of the data set in /sources.json of Enter. The same data set can be in two layers, with a different filter.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.:-]+$",
+          "maxLength": 200
+        },
+        "label": {
+          "description": "The name of the layer.",
+          "$ref": "#/$defs/text"
+        },
+        "colour": {
+          "description": "The colour of the markers, as #rrggbb.",
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "icon": {
+          "description": "The name of the icon in the markers.",
+          "$ref": "#/$defs/name"
+        },
+        "filter": {
+          "description": "The closed filter, in CQL2-JSON: the entities must also match it. The user cannot change it. cql2-filter.json defines the supported part.",
+          "$ref": "urn:enter-maps:cql2-filter"
+        },
+        "row": {
+          "description": "The fields that identify a feature, for example in a list.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["title"],
+          "properties": {
+            "title": {
+              "description": "The title of a feature.",
+              "$ref": "#/$defs/field"
+            },
+            "subtitle": {
+              "description": "The subtitle of a feature.",
+              "$ref": "#/$defs/field"
+            }
+          }
+        },
+        "detail": {
+          "description": "The fields of the detail view, in this order.",
+          "type": "array",
+          "maxItems": 50,
+          "items": { "$ref": "#/$defs/field" }
+        }
+      }
+    },
+    "filter": {
+      "description": "An open filter that the user can change. It changes only the features of the layers in appliesTo.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "label", "values", "appliesTo"],
+      "properties": {
+        "type": {
+          "description": "toggle: the user turns one code on or off. select: the user selects one code. multiselect: the user selects one or more codes.",
+          "enum": ["toggle", "select", "multiselect"]
+        },
+        "label": {
+          "description": "The name of the filter.",
+          "$ref": "#/$defs/text"
+        },
+        "values": {
+          "description": "The codes of the filter, with a text for each.",
+          "$ref": "#/$defs/values"
+        },
+        "appliesTo": {
+          "description": "The layers of the filter. Each layer can keep the value in a different attribute and with different codes.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": { "$ref": "#/$defs/filterTarget" }
+        }
+      }
+    },
+    "filterTarget": {
+      "description": "Where a layer keeps the value of a filter.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layer", "path"],
+      "properties": {
+        "layer": {
+          "description": "The id of a layer.",
+          "$ref": "#/$defs/name"
+        },
+        "path": {
+          "description": "Where the features of this layer keep the value.",
+          "$ref": "#/$defs/path"
+        },
+        "codes": {
+          "description": "The value in the data for each code of the filter, for example {\"free\": true}. Without it, the value in the data is the code, as a text. If the data holds a number or true or false, give the value here, for example {\"1\": 1}.",
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": ["string", "number", "boolean"] }
+        }
+      }
+    }
+  }
+}
