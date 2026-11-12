@@ -28,7 +28,9 @@
             "label": "Offentlige toiletter",
             "url": "/data/merged-public-toilets.geojson?filter=%7B%22op%22:%22%3D%22,%22args%22:%5B%7B%22property%22:%22isAccessibleForFree%22%7D,true%5D%7D",
             "colour": "#6b3fa0",
-            "icon": "toilet",
+            "icon": {
+                "glyph": "<text x=\"12\" y=\"16\" text-anchor=\"middle\" font-family=\"Arial, sans-serif\" font-size=\"10\" font-weight=\"700\">WC</text>"
+            },
             "row": {
                 "title": {
                     "path": [

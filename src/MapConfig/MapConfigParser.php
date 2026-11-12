@@ -11,7 +11,8 @@ use App\JsonSchema\JsonSchemaValidator;
 /**
  * Makes a MapConfig from JSON, after validation against the JSON Schema of
  * its version. It also checks that the filters refer to layers and codes
- * that exist, and that the data proxy accepts each closed filter.
+ * that exist, that the data proxy accepts each closed filter, and that each
+ * SVG icon holds only permitted elements and attributes.
  *
  * Each version has its own schema file in config/schema/. Do not remove the
  * schema of an old version, because embed codes stay on other sites for a
@@ -29,6 +30,7 @@ final readonly class MapConfigParser
     public function __construct(
         private JsonSchemaValidator $validator,
         private Cql2FilterParser $filterParser,
+        private SvgIconValidator $svgIconValidator,
     ) {
     }
 
@@ -55,12 +57,31 @@ final readonly class MapConfigParser
         }
 
         $data = json_decode($json, true, 512, \JSON_THROW_ON_ERROR);
-        $errors = [...$this->checkReferences($data), ...$this->checkFilters($data)];
+        $errors = [...$this->checkReferences($data), ...$this->checkFilters($data), ...$this->checkIcons($data)];
         if ([] !== $errors) {
             throw new InvalidMapConfigException($errors);
         }
 
         return MapConfig::fromArray($data);
+    }
+
+    /**
+     * Checks each SVG icon against the permitted elements and attributes.
+     *
+     * @param array<string, mixed> $data JSON that is valid against the schema
+     *
+     * @return list<string>
+     */
+    private function checkIcons(array $data): array
+    {
+        $errors = [];
+        foreach ($data['layers'] as $index => $layer) {
+            foreach (isset($layer['icon']['svg']) ? $this->svgIconValidator->validate($layer['icon']['svg']) : [] as $error) {
+                $errors[] = \sprintf('/layers/%d/icon/svg: %s', $index, $error);
+            }
+        }
+
+        return $errors;
     }
 
     /**
