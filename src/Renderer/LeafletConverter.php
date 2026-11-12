@@ -7,6 +7,7 @@ namespace App\Renderer;
 use App\MapConfig\Field;
 use App\MapConfig\Filter;
 use App\MapConfig\FilterTarget;
+use App\MapConfig\Icon;
 use App\MapConfig\Layer;
 use App\MapConfig\MapConfig;
 use App\MapConfig\Report;
@@ -22,6 +23,8 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  *
  * - It makes the URL of the data proxy for each layer, with the closed filter.
  * - It changes the name of the base map into the URL of the tiles.
+ * - It changes the icon into markup from the list of icons, or into an image
+ *   for an SVG from the editor. Without an icon, it uses the default pin.
  * - It gives the value in the data for each code of an open filter.
  * - It changes the centre to the [latitude, longitude] order of Leaflet.
  *
@@ -32,6 +35,7 @@ final readonly class LeafletConverter
     public function __construct(
         private UrlGeneratorInterface $urlGenerator,
         private BaseMaps $baseMaps,
+        private Icons $icons,
     ) {
     }
 
@@ -88,13 +92,29 @@ final readonly class LeafletConverter
             'label' => $layer->label,
             'url' => $this->urlGenerator->generate('app_data', $parameters),
             'colour' => $layer->colour,
-            'icon' => $layer->icon,
+            'icon' => $this->icon($layer->icon),
             'row' => [
                 'title' => $this->field($layer->title),
                 'subtitle' => $layer->subtitle instanceof Field ? $this->field($layer->subtitle) : null,
             ],
             'detail' => array_map($this->field(...), $layer->detail),
         ];
+    }
+
+    /**
+     * Gives the icon as markup from the list of icons ("glyph"), or as an
+     * image ("image"). The app puts the markup into the page. It shows the
+     * image with an <img> element, so that a script in the SVG cannot run.
+     *
+     * @return array{glyph: string}|array{image: string}
+     */
+    private function icon(?Icon $icon): array
+    {
+        if (null !== $icon?->svg) {
+            return ['image' => 'data:image/svg+xml;base64,'.base64_encode($icon->svg)];
+        }
+
+        return ['glyph' => $this->icons->all()[$icon->name ?? Icons::DEFAULT]];
     }
 
     /**

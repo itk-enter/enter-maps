@@ -22,7 +22,9 @@
             "label": "Offentlige toiletter",
             "url": "/data/merged-public-toilets.geojson",
             "colour": "#6b3fa0",
-            "icon": "toilet",
+            "icon": {
+                "glyph": "<text x=\"12\" y=\"16\" text-anchor=\"middle\" font-family=\"Arial, sans-serif\" font-size=\"10\" font-weight=\"700\">WC</text>"
+            },
             "row": {
                 "title": {
                     "path": [
@@ -83,7 +85,9 @@
             "label": "Handicapparkering",
             "url": "/data/merged-handicap-parking-spots.geojson",
             "colour": "#1f6fb2",
-            "icon": "parking",
+            "icon": {
+                "glyph": "<path d=\"M12 4a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm-1 5.5h2l.6 3H17v2h-3.9l-.4-2H11a4.5 4.5 0 1 0 4.4 5.5h2A6.5 6.5 0 1 1 11 9.5Z\"/>"
+            },
             "row": {
                 "title": {
                     "path": [
