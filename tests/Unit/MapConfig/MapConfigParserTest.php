@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\MapConfig;
 
-use App\MapConfig\BaseMap;
 use App\MapConfig\Field;
 use App\MapConfig\Filter;
 use App\MapConfig\InvalidMapConfigException;
 use App\MapConfig\Layer;
+use App\MapConfig\LeafletSettings;
 use App\MapConfig\MapConfig;
 use App\MapConfig\MapConfigParser;
 use App\MapConfig\Report;
+use App\MapConfig\SeptimaSettings;
 use App\MapConfig\Sidebar;
 use App\MapConfig\View;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -35,9 +36,9 @@ final class MapConfigParserTest extends TestCase
         $this->assertEquals(new MapConfig(
             version: 1,
             title: 'Toiletter i Aarhus',
+            description: 'Offentlige toiletter, som er gratis at bruge.',
             locale: 'da-DK',
             view: new View(10.21432, 56.15355, 14.0),
-            baseMap: new BaseMap('osm', 'skaermkort'),
             minZoom: 15.0,
             sidebar: new Sidebar('left', true, true, true, true),
             layers: [new Layer(
@@ -55,6 +56,8 @@ final class MapConfigParserTest extends TestCase
             )],
             filters: [new Filter('wheelchairAccessible', 'select', 'Kørestolsadgang', ['yes' => 'Ja', 'limited' => 'Delvist', 'no' => 'Nej'])],
             report: new Report('Ret eller tilføj oplysninger', 'https://example.aarhus.dk/form?entity={id}&sources={seeAlso}', '_blank'),
+            leaflet: new LeafletSettings('osm'),
+            septima: new SeptimaSettings('skaermkort'),
         ), $config);
     }
 
@@ -64,7 +67,9 @@ final class MapConfigParserTest extends TestCase
 
         $this->assertSame('da-DK', $config->locale);
         $this->assertNull($config->view);
-        $this->assertEquals(new BaseMap(null, null), $config->baseMap);
+        $this->assertNull($config->description);
+        $this->assertEquals(new LeafletSettings(null), $config->leaflet);
+        $this->assertEquals(new SeptimaSettings(null), $config->septima);
         $this->assertNull($config->minZoom);
         $this->assertEquals(new Sidebar('left', true, false, false, false), $config->sidebar);
         $this->assertSame([], $config->filters);
@@ -108,7 +113,9 @@ final class MapConfigParserTest extends TestCase
     {
         yield 'no layers' => [['layers' => []], '/layers'];
         yield 'unknown setting' => [['script' => 'alert(1)'], '/'];
-        yield 'base map URL' => [['baseMap' => ['leaflet' => 'https://tiles.example.com/{z}/{x}/{y}.png']], '/baseMap/leaflet'];
+        yield 'base map URL' => [['leaflet' => ['baseMap' => 'https://tiles.example.com/{z}/{x}/{y}.png']], '/leaflet/baseMap'];
+        yield 'Septima setting in the Leaflet section' => [['leaflet' => ['widget' => '3.23.0']], '/leaflet'];
+        yield 'empty description' => [['description' => ''], '/description'];
         yield 'centre outside the world' => [['view' => ['center' => [200, 56], 'zoom' => 14]], '/view/center/0'];
         yield 'report without https' => [['report' => ['label' => 'Ret', 'url' => 'javascript:alert(1)']], '/report/url'];
         yield 'unknown filter type' => [['filters' => [['path' => 'a', 'type' => 'range', 'label' => 'A', 'values' => ['x' => 'X']]]], '/filters/0/type'];

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "title": "Toiletter i Aarhus",
+  "description": "Offentlige toiletter, som er gratis at bruge.",
   "locale": "da-DK",
   "view": { "center": [10.21432, 56.15355], "zoom": 14 },
-  "baseMap": { "leaflet": "osm", "septima": "skaermkort" },
   "zoomGate": { "minZoom": 15 },
   "sidebar": { "position": "left", "list": true, "categories": true, "search": { "local": true, "address": true } },
   "layers": [
@@ -35,5 +35,7 @@
     "label": "Ret eller tilføj oplysninger",
     "url": "https://example.aarhus.dk/form?entity={id}&sources={seeAlso}",
     "target": "_blank"
-  }
+  },
+  "leaflet": { "baseMap": "osm" },
+  "septima": { "baseMap": "skaermkort" }
 }

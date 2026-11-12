@@ -9,6 +9,12 @@
   "properties": {
     "version": { "const": 1 },
     "title": { "$ref": "#/$defs/text" },
+    "description": {
+      "description": "A short text about the map, as plain text. The map shows it in the sidebar.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
     "locale": {
       "description": "The language of the texts on the map.",
       "enum": ["da-DK", "en-GB"]
@@ -30,15 +36,6 @@
           "maxItems": 2
         },
         "zoom": { "$ref": "#/$defs/zoom" }
-      }
-    },
-    "baseMap": {
-      "description": "The name of the base map for each renderer. The names are on a list on the server, not URLs.",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "leaflet": { "enum": ["osm"] },
-        "septima": { "$ref": "#/$defs/name" }
       }
     },
     "zoomGate": {
@@ -88,6 +85,28 @@
         "label": { "$ref": "#/$defs/text" },
         "url": { "type": "string", "pattern": "^https://", "maxLength": 500 },
         "target": { "enum": ["_blank", "_top", "postMessage"] }
+      }
+    },
+    "leaflet": {
+      "description": "Settings that only the Leaflet renderer uses.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "baseMap": {
+          "description": "The name of the base map, from a list on the server. Not a URL.",
+          "enum": ["osm"]
+        }
+      }
+    },
+    "septima": {
+      "description": "Settings that only the Septima renderer uses.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "baseMap": {
+          "description": "The name of the base map, from a list on the server. Not a URL.",
+          "$ref": "#/$defs/name"
+        }
       }
     }
   },
