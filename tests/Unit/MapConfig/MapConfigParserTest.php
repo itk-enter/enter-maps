@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\MapConfig;
 
+use App\Enter\Cql2FilterParser;
+use App\JsonSchema\JsonSchemaValidator;
 use App\MapConfig\Field;
 use App\MapConfig\Filter;
 use App\MapConfig\FilterTarget;
@@ -27,7 +29,8 @@ final class MapConfigParserTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->parser = new MapConfigParser(\dirname(__DIR__, 3).'/config/schema');
+        $validator = new JsonSchemaValidator(\dirname(__DIR__, 3).'/config/schema');
+        $this->parser = new MapConfigParser($validator, new Cql2FilterParser($validator));
     }
 
     public function testParsesTheExampleOfThePlan(): void
@@ -176,6 +179,18 @@ final class MapConfigParserTest extends TestCase
         $config = $this->parser->parse($this->withChange(['layers' => [[...self::layer('benches'), 'filter' => $filter]]]));
 
         $this->assertSame($filter, $config->layers[0]->filter);
+    }
+
+    public function testRejectsAClosedFilterThatTheProxyDoesNotAccept(): void
+    {
+        $filter = ['op' => 'isNull', 'args' => [['property' => 'a']]];
+        for ($level = 0; $level < Cql2FilterParser::MAX_DEPTH; ++$level) {
+            $filter = ['op' => 'and', 'args' => [$filter, ['op' => 'isNull', 'args' => [['property' => 'b']]]]];
+        }
+
+        $exception = $this->parseInvalid($this->withChange(['layers' => [[...self::layer('benches'), 'filter' => $filter]]]));
+
+        $this->assertSame(['/layers/0/filter: The filter has more than 5 levels.'], $exception->errors);
     }
 
     /**
