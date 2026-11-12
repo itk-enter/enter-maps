@@ -10,6 +10,7 @@ use App\Enter\EnterClient;
 use App\Enter\EnterUnavailableException;
 use App\Enter\InvalidFilterException;
 use App\Enter\UnknownDataSetException;
+use App\JsonSchema\JsonSchemaValidator;
 use App\Tests\Support\FakeEnter;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -28,7 +29,7 @@ final class DataProxyTest extends TestCase
 
         $this->proxy = new DataProxy(
             new EnterClient($this->enter->client()),
-            new Cql2FilterParser(\dirname(__DIR__, 3).'/config/schema/cql2-filter.json'),
+            new Cql2FilterParser(new JsonSchemaValidator(\dirname(__DIR__, 3).'/config/schema')),
         );
     }
 

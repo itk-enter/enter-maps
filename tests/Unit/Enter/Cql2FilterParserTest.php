@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Enter;
 
 use App\Enter\Cql2FilterParser;
 use App\Enter\InvalidFilterException;
+use App\JsonSchema\JsonSchemaValidator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +16,7 @@ final class Cql2FilterParserTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->parser = new Cql2FilterParser(\dirname(__DIR__, 3).'/config/schema/cql2-filter.json');
+        $this->parser = new Cql2FilterParser(new JsonSchemaValidator(\dirname(__DIR__, 3).'/config/schema'));
     }
 
     /**

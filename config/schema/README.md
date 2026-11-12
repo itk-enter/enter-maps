@@ -88,7 +88,9 @@ An error tells where the problem is, as a JSON pointer:
 
 ## Rules
 
-- Texts are plain text. A configuration holds no HTML and no JavaScript.
+- Texts are plain text. The schema does not reject HTML, because a text such as "< 5 pladser" is correct. Each
+  renderer must escape all texts from the configuration, so HTML in a text shows as text and does not work. A
+  configuration holds no JavaScript.
 - A configuration holds no queries in the language of the broker. Closed filters are in CQL2-JSON.
 - A base map is a name from a list on the server, not a URL.
 - `report.url` must start with `https://`.

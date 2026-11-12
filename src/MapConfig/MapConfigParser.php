@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\MapConfig;
 
-use Opis\JsonSchema\Errors\ErrorFormatter;
-use Opis\JsonSchema\Errors\ValidationError;
-use Opis\JsonSchema\Validator;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use App\Enter\Cql2FilterParser;
+use App\Enter\InvalidFilterException;
+use App\JsonSchema\JsonSchemaValidator;
 
 /**
  * Makes a MapConfig from JSON, after validation against the JSON Schema of
- * its version, and a check that the filters refer to layers and codes that
- * exist.
+ * its version. It also checks that the filters refer to layers and codes
+ * that exist, and that the data proxy accepts each closed filter.
  *
  * Each version has its own schema file in config/schema/. Do not remove the
  * schema of an old version, because embed codes stay on other sites for a
@@ -27,16 +26,9 @@ final readonly class MapConfigParser
         1 => 'map-config.v1.json',
     ];
 
-    private const int MAX_ERRORS = 10;
-
-    /**
-     * The schemas refer to the schema of the closed filters with this id.
-     */
-    private const string CQL2_FILTER_ID = 'urn:enter-maps:cql2-filter';
-
     public function __construct(
-        #[Autowire('%kernel.project_dir%/config/schema')]
-        private string $schemaDir,
+        private JsonSchemaValidator $validator,
+        private Cql2FilterParser $filterParser,
     ) {
     }
 
@@ -57,30 +49,45 @@ final readonly class MapConfigParser
             throw new InvalidMapConfigException([\sprintf('/version: The supported versions are %s.', implode(', ', array_keys(self::SCHEMAS)))]);
         }
 
-        $validator = new Validator(max_errors: self::MAX_ERRORS, stop_at_first_error: false);
-        $validator->resolver()?->registerFile(self::CQL2_FILTER_ID, $this->schemaDir.'/cql2-filter.json');
-        $schema = $validator->loader()->loadObjectSchema(
-            json_decode((string) file_get_contents($this->schemaDir.'/'.$schemaFile), false, 512, \JSON_THROW_ON_ERROR),
-        );
-        $error = $validator->validate($data, $schema)->error();
-        if ($error instanceof ValidationError) {
-            $errors = [];
-            foreach (new ErrorFormatter()->format($error) as $pointer => $messages) {
-                foreach ($messages as $message) {
-                    $errors[] = ('' === $pointer ? '/' : $pointer).': '.$message;
-                }
-            }
-
+        $errors = $this->validator->validate($data, $schemaFile);
+        if ([] !== $errors) {
             throw new InvalidMapConfigException($errors);
         }
 
         $data = json_decode($json, true, 512, \JSON_THROW_ON_ERROR);
-        $errors = $this->checkReferences($data);
+        $errors = [...$this->checkReferences($data), ...$this->checkFilters($data)];
         if ([] !== $errors) {
             throw new InvalidMapConfigException($errors);
         }
 
         return MapConfig::fromArray($data);
+    }
+
+    /**
+     * Checks each closed filter with the parser of the data proxy, so that a
+     * stored filter is a filter that the proxy accepts. For example, the schema
+     * cannot limit the levels of a filter.
+     *
+     * @param array<string, mixed> $data JSON that is valid against the schema
+     *
+     * @return list<string>
+     */
+    private function checkFilters(array $data): array
+    {
+        $errors = [];
+        foreach ($data['layers'] as $index => $layer) {
+            if (!isset($layer['filter'])) {
+                continue;
+            }
+
+            try {
+                $this->filterParser->parse(json_encode($layer['filter'], \JSON_THROW_ON_ERROR));
+            } catch (InvalidFilterException $exception) {
+                $errors[] = \sprintf('/layers/%d/filter: %s', $index, $exception->getMessage());
+            }
+        }
+
+        return $errors;
     }
 
     /**

@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enter;
 
-use Opis\JsonSchema\Errors\ErrorFormatter;
-use Opis\JsonSchema\Errors\ValidationError;
-use Opis\JsonSchema\Validator;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use App\JsonSchema\JsonSchemaValidator;
 
 /**
  * Changes a filter in CQL2-JSON into an NGSI-LD query.
@@ -43,11 +40,8 @@ final readonly class Cql2FilterParser
 
     private const array COMPARISONS = ['=' => '==', '<>' => '!=', '<' => '<', '<=' => '<=', '>' => '>', '>=' => '>='];
 
-    private const int MAX_ERRORS = 5;
-
     public function __construct(
-        #[Autowire('%kernel.project_dir%/config/schema/cql2-filter.json')]
-        private string $schemaFile,
+        private JsonSchemaValidator $validator,
     ) {
     }
 
@@ -66,17 +60,8 @@ final readonly class Cql2FilterParser
             throw new InvalidFilterException('The filter is not valid JSON.');
         }
 
-        $validator = new Validator(max_errors: self::MAX_ERRORS, stop_at_first_error: false);
-        $schema = $validator->loader()->loadObjectSchema(
-            json_decode((string) file_get_contents($this->schemaFile), false, 512, \JSON_THROW_ON_ERROR),
-        );
-        $error = $validator->validate($data, $schema)->error();
-        if ($error instanceof ValidationError) {
-            $errors = [];
-            foreach (new ErrorFormatter()->format($error, false) as $pointer => $message) {
-                $errors[] = ('' === $pointer ? '/' : $pointer).': '.$message;
-            }
-
+        $errors = $this->validator->validate($data, 'cql2-filter.json');
+        if ([] !== $errors) {
             throw new InvalidFilterException('The filter is not valid: '.implode(' ', $errors));
         }
 

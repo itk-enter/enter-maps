@@ -13,7 +13,7 @@ final readonly class Field
      * @param string                                         $path     a dot path into the GeoJSON properties
      * @param string|null                                    $fallback the text for a missing value; without it, the map leaves out the field
      * @param 'text'|'list'|'boolean'|'number'|'date'|'link' $format
-     * @param array<string, string>                          $values   maps a code to a text
+     * @param array<int|string, string>                      $values   maps a code to a text; a code such as "1" is an integer key in PHP
      */
     public function __construct(
         public string $path,
@@ -25,7 +25,7 @@ final readonly class Field
     }
 
     /**
-     * @param array{path: string, label?: string, fallback?: string, format?: 'text'|'list'|'boolean'|'number'|'date'|'link', values?: array<string, string>} $data
+     * @param array{path: string, label?: string, fallback?: string, format?: 'text'|'list'|'boolean'|'number'|'date'|'link', values?: array<int|string, string>} $data
      */
     public static function fromArray(array $data): self
     {
