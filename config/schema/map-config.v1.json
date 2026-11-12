@@ -12,17 +12,17 @@
       "const": 1
     },
     "title": {
-      "description": "The title of the map. The map shows it at the top of the sidebar, and it is the title of the frame.",
+      "description": "The title of the map.",
       "$ref": "#/$defs/text"
     },
     "description": {
-      "description": "A short text about the map, as plain text. The map shows it in the sidebar.",
+      "description": "A short text about the map, as plain text.",
       "type": "string",
       "minLength": 1,
       "maxLength": 1000
     },
     "locale": {
-      "description": "The language of the texts on the map that the configuration does not give, for example the buttons. The default is da-DK.",
+      "description": "The language of the texts that the configuration does not give. The default is da-DK.",
       "enum": ["da-DK", "en-GB"]
     },
     "view": {
@@ -54,7 +54,7 @@
       "required": ["minZoom"],
       "properties": {
         "minZoom": {
-          "description": "Below this zoom level, the map does not show the features, and it tells the user to zoom in.",
+          "description": "Below this zoom level, the map does not show the features.",
           "$ref": "#/$defs/zoom"
         }
       }
@@ -101,19 +101,19 @@
       "items": { "$ref": "#/$defs/layer" }
     },
     "filters": {
-      "description": "The open filters: controls in the sidebar that the user can change.",
+      "description": "The open filters: filters that the user can change.",
       "type": "array",
       "maxItems": 20,
       "items": { "$ref": "#/$defs/filter" }
     },
     "report": {
-      "description": "A link or a button in the detail view, for example to a form that corrects the data.",
+      "description": "A link for each feature, for example to a form that corrects the data.",
       "type": "object",
       "additionalProperties": false,
       "required": ["label", "url"],
       "properties": {
         "label": {
-          "description": "The text of the link or the button.",
+          "description": "The text of the link.",
           "$ref": "#/$defs/text"
         },
         "url": {
@@ -193,7 +193,7 @@
           "$ref": "#/$defs/path"
         },
         "label": {
-          "description": "The text before the value. Without it, the map shows only the value.",
+          "description": "The name of the value.",
           "$ref": "#/$defs/text"
         },
         "fallback": {
@@ -201,7 +201,7 @@
           "$ref": "#/$defs/text"
         },
         "format": {
-          "description": "How the map shows the value. list shows each item of a list on a line. The default is text.",
+          "description": "The type of the value. The default is text.",
           "enum": ["text", "list", "boolean", "number", "date", "link"]
         },
         "values": {
@@ -227,7 +227,7 @@
           "maxLength": 200
         },
         "label": {
-          "description": "The name of the layer, for example in the legend and in the categories.",
+          "description": "The name of the layer.",
           "$ref": "#/$defs/text"
         },
         "colour": {
@@ -246,17 +246,17 @@
           "maxLength": 500
         },
         "row": {
-          "description": "The fields of a feature in the list.",
+          "description": "The fields that identify a feature, for example in a list.",
           "type": "object",
           "additionalProperties": false,
           "required": ["title"],
           "properties": {
             "title": {
-              "description": "The first line of the row, and the title of the detail view.",
+              "description": "The title of a feature.",
               "$ref": "#/$defs/field"
             },
             "subtitle": {
-              "description": "The second line of the row.",
+              "description": "The subtitle of a feature.",
               "$ref": "#/$defs/field"
             }
           }
@@ -270,21 +270,21 @@
       }
     },
     "filter": {
-      "description": "A control in the sidebar. It changes only the features of the layers in appliesTo.",
+      "description": "An open filter that the user can change. It changes only the features of the layers in appliesTo.",
       "type": "object",
       "additionalProperties": false,
       "required": ["type", "label", "values", "appliesTo"],
       "properties": {
         "type": {
-          "description": "toggle is one checkbox for one code. select lets the user select one code. multiselect lets the user select more than one code.",
+          "description": "toggle: the user turns one code on or off. select: the user selects one code. multiselect: the user selects one or more codes.",
           "enum": ["toggle", "select", "multiselect"]
         },
         "label": {
-          "description": "The text of the control.",
+          "description": "The name of the filter.",
           "$ref": "#/$defs/text"
         },
         "values": {
-          "description": "The codes of the filter, with the text that the control shows for each.",
+          "description": "The codes of the filter, with a text for each.",
           "$ref": "#/$defs/values"
         },
         "appliesTo": {

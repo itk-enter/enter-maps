@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\MapConfig;
 
 /**
- * A link or a button in the detail view, for example to a form that corrects
- * the data.
+ * A link for each feature, for example to a form that corrects the data.
  */
 final readonly class Report
 {

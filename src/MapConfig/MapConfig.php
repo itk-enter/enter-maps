@@ -18,7 +18,7 @@ final readonly class MapConfig
      * @param 'da-DK'|'en-GB' $locale
      * @param float|null      $minZoom below this zoom, the map does not show the features
      * @param list<Layer>     $layers
-     * @param list<Filter>    $filters the open filters in the sidebar
+     * @param list<Filter>    $filters the open filters, which the user can change
      */
     public function __construct(
         public int $version,

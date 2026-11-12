@@ -23,8 +23,8 @@ version, title, description, locale   The map
 view, zoomGate                         The start view and the minimum zoom level
 sidebar                                The list, the categories and the search
 layers[]                               The data sets, each with its own fields
-filters[]                              The controls in the sidebar
-report                                 A link or a button in the detail view
+filters[]                              The open filters that the user can change
+report                                 A link for each feature
 leaflet, septima                       Settings that only one renderer uses
 ```
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\MapConfig;
 
 /**
- * An open filter: a control in the sidebar.
+ * An open filter: a filter that the user can change.
  *
  * A filter changes only the features of the layers in $appliesTo. The
  * features of other layers stay on the map. Each layer can keep the value in
@@ -24,7 +24,7 @@ final readonly class Filter
 {
     /**
      * @param 'toggle'|'select'|'multiselect' $type
-     * @param array<string, string>           $values    the codes of the filter, with the text that the control shows for each
+     * @param array<string, string>           $values    the codes of the filter, with a text for each
      * @param list<FilterTarget>              $appliesTo
      */
     public function __construct(
