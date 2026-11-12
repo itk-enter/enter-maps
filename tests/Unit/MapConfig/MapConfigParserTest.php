@@ -198,7 +198,7 @@ final class MapConfigParserTest extends TestCase
 
         $exception = $this->parseInvalid($this->withChange(['layers' => [[...self::layer('benches'), 'icon' => ['svg' => $svg]]]]));
 
-        $this->assertSame(['/layers/0/icon/svg: The SVG holds the element "script", which is not permitted.'], $exception->errors);
+        $this->assertSame(['/layers/0/icon/svg: <script> is not allowed in uploaded SVGs.'], $exception->errors);
     }
 
     /**

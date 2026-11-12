@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c892a5f5f202c65e3e95f7e9127b7ff8",
+    "content-hash": "d9044e1326db819997f43b83fb632b8f",
     "packages": [
         {
             "name": "composer/semver",
@@ -1200,6 +1200,79 @@
                 "source": "https://github.com/doctrine/sql-formatter/tree/1.5.4"
             },
             "time": "2026-02-08T16:21:46+00:00"
+        },
+        {
+            "name": "itools/svgsecuritycheck",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/interactivetools-com/SvgSecurityCheck.git",
+                "reference": "588e2da66ef438f8a01bcf6c7f1906b3e9407886"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/interactivetools-com/SvgSecurityCheck/zipball/588e2da66ef438f8a01bcf6c7f1906b3e9407886",
+                "reference": "588e2da66ef438f8a01bcf6c7f1906b3e9407886",
+                "shasum": ""
+            },
+            "require": {
+                "ext-libxml": "*",
+                "ext-xmlreader": "*",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^10.5"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Itools\\SvgSecurityCheck\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "interactivetools.com",
+                    "homepage": "https://interactivetools.com/"
+                }
+            ],
+            "description": "Allowlist check for uploaded SVG files: rejects any that could run script, load an outside resource, or hang a renderer, even when opened outside an <img> tag, and never rewrites a file it accepts",
+            "homepage": "https://github.com/interactivetools-com/SvgSecurityCheck",
+            "keywords": [
+                "XMLReader",
+                "allowlist",
+                "entity-expansion",
+                "file-upload",
+                "image-upload",
+                "libxml",
+                "php",
+                "security",
+                "stored-xss",
+                "svg",
+                "svg-sanitizer",
+                "svg-security",
+                "svg-upload",
+                "svg-validator",
+                "svg-xss",
+                "upload-validation",
+                "validator",
+                "xss",
+                "xxe"
+            ],
+            "support": {
+                "issues": "https://github.com/interactivetools-com/SvgSecurityCheck/issues",
+                "source": "https://github.com/interactivetools-com/SvgSecurityCheck"
+            },
+            "time": "2026-10-14T05:02:17+00:00",
+            "published-time": "2026-10-14T05:06:52+00:00"
         },
         {
             "name": "opis/json-schema",
@@ -8807,5 +8880,5 @@
         "ext-iconv": "*"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.11.0"
 }
