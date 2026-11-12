@@ -81,13 +81,12 @@ A layer has an optional `icon`:
 ```
 
 - `name` is an icon from `App\Renderer\Icons`: `toilet`, `parking`, `handicap-parking`, `bench` or `pin`.
-- `svg` is an SVG from the editor, 10 KB or less. `App\MapConfig\SvgIconValidator` rejects an SVG that holds other
-  elements or attributes than these:
-  - Elements: `svg`, `g`, `path`, `circle`, `ellipse`, `rect`, `line`, `polyline` and `polygon`.
-  - Attributes: `viewBox`, `width`, `height`, `d`, `cx`, `cy`, `r`, `rx`, `ry`, `x`, `y`, `x1`, `y1`, `x2`, `y2`,
-    `points`, `transform`, `fill`, `fill-rule`, `clip-rule`, `stroke`, `stroke-width`, `stroke-linecap`,
-    `stroke-linejoin`, `opacity`, `fill-opacity` and `stroke-opacity`.
-  - No `url(...)`, no document type, no text and no processing instructions.
+- `svg` is an SVG from the editor, 10 KB or less, with a `viewBox`. `App\MapConfig\SvgIconValidator` checks it with
+  [enshrined/svg-sanitize](https://github.com/darylldoyle/svg-sanitizer). The validator rejects an SVG if the
+  sanitizer removes an element or an attribute. For example, it rejects `<script>`, `on…` attributes,
+  `<foreignObject>`, `javascript:` links and references to other servers. It also rejects a document type and
+  processing instructions. It permits what drawing programs write: `id`, `class`, `style`, gradients, text and
+  `#id` references.
 - The validator does not clean an SVG. It gives an error, and the editor corrects the file.
 - Without `icon`, the map shows the default pin.
 

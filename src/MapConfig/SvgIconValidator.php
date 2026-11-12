@@ -4,29 +4,29 @@ declare(strict_types=1);
 
 namespace App\MapConfig;
 
+use enshrined\svgSanitize\Sanitizer;
+
 /**
- * Checks an SVG icon from an editor against a list of permitted elements and
- * attributes.
+ * Checks an SVG icon from an editor.
  *
- * The validator rejects an SVG that holds anything else. It does not clean
- * the SVG, so the stored SVG is the file of the editor. The map also shows the
- * SVG as an image, not as markup in the page, and a browser does not run
- * scripts in an SVG image. Thus an error in this check cannot let a script
- * run.
+ * enshrined/svg-sanitize does the security check. The sanitizer compares the
+ * elements and attributes with allowlists and removes references to other
+ * servers. This class does not keep the clean SVG. It rejects the SVG if the
+ * sanitizer reports an item that it removed, so the stored SVG is the file of
+ * the editor.
+ *
+ * The sanitizer removes a document type and PHP tags but does not report
+ * them, so this class rejects them first. It also adds the rules of an icon: a
+ * maximum size, and a viewBox so that the map can scale the icon.
+ *
+ * The map also shows the SVG as an image, not as markup in the page, and a
+ * browser does not run scripts in an SVG image.
  */
 final readonly class SvgIconValidator
 {
     public const int MAX_LENGTH = 10240;
 
     private const string SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
-
-    private const array ELEMENTS = ['svg', 'g', 'path', 'circle', 'ellipse', 'rect', 'line', 'polyline', 'polygon'];
-
-    private const array ATTRIBUTES = [
-        'viewBox', 'width', 'height', 'd', 'cx', 'cy', 'r', 'rx', 'ry', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'points',
-        'transform', 'fill', 'fill-rule', 'clip-rule', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin',
-        'opacity', 'fill-opacity', 'stroke-opacity',
-    ];
 
     /**
      * @return list<string> the errors; empty if the SVG is permitted
@@ -42,18 +42,38 @@ final readonly class SvgIconValidator
             return ['The SVG has a document type. Remove the <!DOCTYPE> line.'];
         }
 
-        $document = new \DOMDocument();
-        $previous = libxml_use_internal_errors(true);
-        $loaded = $document->loadXML($svg, \LIBXML_NONET);
-        libxml_clear_errors();
-        libxml_use_internal_errors($previous);
-
-        $root = $document->documentElement;
-        if (!$loaded || !$root instanceof \DOMElement) {
-            return ['The SVG is not valid XML.'];
+        // Only the XML declaration is permitted. Other instructions can run code or load a style sheet.
+        if (1 === preg_match('/<\?(?!xml\s)/i', $svg)) {
+            return ['The SVG holds a processing instruction. Remove all "<?" lines except "<?xml ...?>".'];
         }
 
-        if ('svg' !== $root->localName || self::SVG_NAMESPACE !== $root->namespaceURI) {
+        $sanitizer = new Sanitizer();
+        $sanitizer->removeRemoteReferences(true);
+        $clean = $sanitizer->sanitize($svg);
+
+        $errors = [];
+        foreach ($sanitizer->getXmlIssues() as $issue) {
+            // The sanitizer removes comments. A comment cannot run a script, so it is not an error.
+            if ("Suspicious node '#comment'" === $issue['message']) {
+                continue;
+            }
+            $message = rtrim(trim($issue['message']), '.').'.';
+            $errors[] = $issue['line'] > 0 ? \sprintf('Line %d: %s', $issue['line'], $message) : $message;
+        }
+
+        if (false === $clean) {
+            return [] === $errors ? ['The SVG is not valid XML.'] : $errors;
+        }
+
+        if ([] !== $errors) {
+            return $errors;
+        }
+
+        // The sanitizer accepted the SVG, so it is well-formed XML without a document type.
+        $document = new \DOMDocument();
+        $document->loadXML($svg, \LIBXML_NONET);
+        $root = $document->documentElement;
+        if (!$root instanceof \DOMElement || 'svg' !== $root->localName || self::SVG_NAMESPACE !== $root->namespaceURI) {
             return ['The SVG must start with <svg xmlns="http://www.w3.org/2000/svg">.'];
         }
 
@@ -61,44 +81,6 @@ final readonly class SvgIconValidator
             return ['The SVG must have a viewBox attribute, for example viewBox="0 0 24 24".'];
         }
 
-        $errors = [];
-        foreach ($document->childNodes as $node) {
-            if ($node instanceof \DOMProcessingInstruction) {
-                $errors[] = \sprintf('The SVG holds the instruction "%s", which is not permitted.', $node->target);
-            }
-        }
-
-        return [...$errors, ...$this->checkElement($root)];
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function checkElement(\DOMElement $element): array
-    {
-        if (self::SVG_NAMESPACE !== $element->namespaceURI || !\in_array($element->localName, self::ELEMENTS, true)) {
-            return [\sprintf('The SVG holds the element "%s", which is not permitted.', $element->nodeName)];
-        }
-
-        $errors = [];
-        foreach ($element->attributes ?? [] as $attribute) {
-            if (null !== $attribute->namespaceURI || !\in_array($attribute->localName, self::ATTRIBUTES, true)) {
-                $errors[] = \sprintf('The SVG holds the attribute "%s", which is not permitted.', $attribute->nodeName);
-            } elseif (1 === preg_match('/url\s*\(|javascript:|data:/i', $attribute->value)) {
-                $errors[] = \sprintf('The attribute "%s" refers to something else. Use a colour or a number.', $attribute->nodeName);
-            }
-        }
-
-        foreach ($element->childNodes as $child) {
-            if ($child instanceof \DOMElement) {
-                $errors = [...$errors, ...$this->checkElement($child)];
-            } elseif ($child instanceof \DOMProcessingInstruction) {
-                $errors[] = \sprintf('The SVG holds the instruction "%s", which is not permitted.', $child->target);
-            } elseif ($child instanceof \DOMText && '' !== trim($child->textContent)) {
-                $errors[] = 'The SVG holds text. Change the text into paths.';
-            }
-        }
-
-        return $errors;
+        return [];
     }
 }
