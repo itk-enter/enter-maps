@@ -7,7 +7,10 @@
         "php": ">=8.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "opis/json-schema": "^2.6",
+        "opis/json-schema": "^2.6.2",
+        "doctrine/doctrine-bundle": "^3.3.4",
+        "doctrine/doctrine-migrations-bundle": "^4.0.1",
+        "doctrine/orm": "^3.7.6",
         "symfony/asset-mapper": "~8.1.11",
         "symfony/console": "~8.1.11",
         "symfony/dotenv": "~8.1.6",
@@ -69,6 +72,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
+            "docker": false,
             "require": "8.1.*"
         }
     },
