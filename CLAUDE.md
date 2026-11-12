@@ -18,14 +18,14 @@ The project has three parts:
 - **The map**, `/embed/{renderer}`. The settings come from the URL (`c`) or from a stored configuration (`{id}`). The
   renderers are `leaflet` and `septima`.
 - **The builder**, `/builder`. A Live Component form that stores a `MapConfiguration` and gives the embed code.
-- **The data proxy**, `/data/{dataSet}.geojson`. It reads from Enter, pages through the results, caches them and
-  returns GeoJSON.
+- **The data proxy**, `/data/{dataSet}.geojson`. It reads from Enter, pages through the results and returns GeoJSON.
 
 Rules that apply to all parts:
 
 - This project only reads from Enter. Do not write to Enter or to its broker.
 - The browser never calls Enter. All data goes through the data proxy.
 - The proxy accepts only data sets that are in Enter's `/sources.json`.
+- Filters to the proxy are in CQL2-JSON. Do not send NGSI-LD queries from the map or put them in `config`.
 - Credentials for Enter stay on the server. Read them from environment variables, for example `ENTER_BASIC_AUTH`.
 - `config` is the source of the map. The converters make `map_json.leaflet` and `map_json.septima` from it on each
   save. Do not edit `map_json` by hand.
@@ -49,20 +49,31 @@ Rules that apply to all parts:
 
 ## Project structure
 
-The Symfony skeleton and the ITK Dev Docker template are installed. The application code does not exist yet. This is
-the planned structure:
+The structure now:
+
+```text
+config/packages/enter.yaml         The HTTP client for Enter
+src/Controller/DataController.php  GET /data/{dataSet}.geojson
+src/Enter/                         EnterClient reads from Enter. DataProxy validates the request.
+tests/Unit/                        Unit tests
+tests/Integration/                 Tests that boot the kernel or send requests
+tests/Support/FakeEnter.php        A fake Enter for tests, on MockHttpClient
+```
+
+The structure that the plan adds later:
 
 ```text
 config/schema/map-config.v1.json   JSON Schema for config, version 1
-src/Controller/                    EmbedController, DataProxyController, BuilderController
+src/Controller/                    EmbedController, BuilderController
 src/Entity/MapConfiguration.php    The stored configuration
-src/                               Converters for each renderer, the data proxy and the config value object
+src/                               Converters for each renderer and the config value object
 templates/                         Twig templates and Twig components for the sidebar, list and detail view
 assets/controllers/                Stimulus controllers for the map, list, detail, search and filters
-tests/                             PHPUnit tests, with snapshot files for the converters
 ```
 
-When the scaffold exists, update this section to agree with the real structure.
+Update this section when the structure changes.
+
+In tests, do not send requests to a real Enter. Use `FakeEnter`.
 
 ## Coding standards
 

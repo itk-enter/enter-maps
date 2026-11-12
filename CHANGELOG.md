@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-7](https://github.com/itk-enter/enter-maps/pull/7)
+  Added the data proxy for Enter at `/data/{dataSet}.geojson`
 * [PR-8](https://github.com/itk-enter/enter-maps/pull/8)
   Added Doctrine with MariaDB
 * [PR-6](https://github.com/itk-enter/enter-maps/pull/6)
