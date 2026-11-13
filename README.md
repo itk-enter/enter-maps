@@ -66,6 +66,15 @@ docker compose exec phpfpm curl --silent 'http://enter-nginx-1:8080/ngsi-ld/v1/t
 If you change `docker-compose.override.yml` while the containers run, run `docker compose up --detach`. Then run
 `docker compose restart nginx`, because nginx keeps the old address of `phpfpm`.
 
+### Map configurations
+
+Until the builder exists, import a map configuration from a JSON file. The command gives the id of the stored
+configuration.
+
+```shell
+task console -- app:map-config:import tests/Fixtures/map-config/toilets.json
+```
+
 `Taskfile.yml` holds shortcuts for [Task](https://taskfile.dev/). Run `task` to see the list.
 
 To run a Symfony console command:
@@ -117,6 +126,9 @@ task test:coverage
 
 The task fails if the coverage of `src/` is lower than `COVERAGE_THRESHOLD` in `task/test.yml`. The `Tests`
 workflow runs the same task. Put unit tests in `tests/Unit` and integration tests in `tests/Integration`.
+
+The tests use SQLite, not MariaDB, because the `Tests` workflow runs without MariaDB. The schema comes from the
+entities, so a test does not run the migrations.
 
 The GitHub Actions workflows in `.github/workflows/` run the same checks.
 

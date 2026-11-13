@@ -53,20 +53,24 @@ The structure now:
 
 ```text
 config/packages/enter.yaml         The HTTP client for Enter
+config/schema/map-config.v1.json   JSON Schema for config, version 1
+migrations/                        Doctrine migrations for MariaDB
+src/Command/                       Console commands, for example app:map-config:import
 src/Controller/DataController.php  GET /data/{dataSet}.geojson
 src/Enter/                         EnterClient reads from Enter. DataProxy validates the request.
+src/Entity/MapConfiguration.php    The stored configuration, on itk-dev/entity-bundle
+src/MapConfig/                     MapConfigParser, the config value objects and MapConfigurationFactory
+src/Renderer/                      The converter of each renderer, the base maps and the icons
 tests/Unit/                        Unit tests
 tests/Integration/                 Tests that boot the kernel or send requests
 tests/Support/FakeEnter.php        A fake Enter for tests, on MockHttpClient
+tests/Support/Database.php         Makes an empty SQLite database for a test
 ```
 
 The structure that the plan adds later:
 
 ```text
-config/schema/map-config.v1.json   JSON Schema for config, version 1
 src/Controller/                    EmbedController, BuilderController
-src/Entity/MapConfiguration.php    The stored configuration
-src/                               Converters for each renderer and the config value object
 templates/                         Twig templates and Twig components for the sidebar, list and detail view
 assets/controllers/                Stimulus controllers for the map, list, detail, search and filters
 ```
@@ -74,6 +78,9 @@ assets/controllers/                Stimulus controllers for the map, list, detai
 Update this section when the structure changes.
 
 In tests, do not send requests to a real Enter. Use `FakeEnter`.
+
+The test environment uses SQLite, because CI runs the tests without MariaDB. A test that uses the database calls
+`Database::reset()` first. The schema comes from the entities, so write a migration for MariaDB for each change.
 
 ## Coding standards
 
