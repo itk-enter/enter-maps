@@ -11,6 +11,7 @@
         "doctrine/doctrine-migrations-bundle": "^4.0.1",
         "doctrine/orm": "^3.7.6",
         "enshrined/svg-sanitize": "^1.1",
+        "itk-dev/entity-bundle": "^0.2",
         "opis/json-schema": "^2.6.2",
         "symfony/asset-mapper": "~8.1.11",
         "symfony/console": "~8.1.11",
@@ -89,5 +90,10 @@
             "assets:install %PUBLIC_DIR%": "symfony-cmd",
             "importmap:install": "symfony-cmd"
         }
-    }
+    },
+    "repositories": [{
+        "name": "entity-bundle",
+        "type": "vcs",
+        "url": "https://github.com/itk-dev/entity-bundle.git"
+    }]
 }
