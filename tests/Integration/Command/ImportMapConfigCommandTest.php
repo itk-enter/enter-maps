@@ -25,7 +25,7 @@ final class ImportMapConfigCommandTest extends KernelTestCase
 
     public function testImportsTheConfigurationsAndGivesTheirUrls(): void
     {
-        $this->tester->execute(['files' => [self::fixture('toilets'), self::fixture('toilets-and-parking')]]);
+        $this->tester->execute(['files' => [$this->fixture('toilets'), $this->fixture('toilets-and-parking')]]);
 
         $this->assertSame(Command::SUCCESS, $this->tester->getStatusCode());
         $stored = self::getContainer()->get(MapConfigurationRepository::class)->findAll();
@@ -42,7 +42,7 @@ final class ImportMapConfigCommandTest extends KernelTestCase
         file_put_contents($file, '{"version": 1}');
 
         try {
-            $this->tester->execute(['files' => [$file, '/does/not/exist.json', self::fixture('toilets')]]);
+            $this->tester->execute(['files' => [$file, '/does/not/exist.json', $this->fixture('toilets')]]);
         } finally {
             unlink($file);
         }
@@ -54,7 +54,7 @@ final class ImportMapConfigCommandTest extends KernelTestCase
         $this->assertCount(1, self::getContainer()->get(MapConfigurationRepository::class)->findAll());
     }
 
-    private static function fixture(string $name): string
+    private function fixture(string $name): string
     {
         return \dirname(__DIR__, 2).'/Fixtures/map-config/'.$name.'.json';
     }
