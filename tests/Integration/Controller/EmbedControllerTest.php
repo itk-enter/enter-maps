@@ -73,7 +73,7 @@ final class EmbedControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSame('combobox', $crawler->filter('#search')->attr('role'));
         $this->assertCount(1, $crawler->filter('#filter-0'));
-        $this->assertStringContainsString('Ret eller tilføj oplysninger', (string) $crawler->filter('#map-detail template')->html());
+        $this->assertStringContainsString('Ret eller tilføj oplysninger', $crawler->filter('#map-detail template')->html());
     }
 
     public function testShowsOnlyTheMapWithoutTheSidebar(): void
@@ -86,7 +86,7 @@ final class EmbedControllerTest extends WebTestCase
         $this->assertCount(0, $crawler->filter('#search'));
         $this->assertCount(0, $crawler->filter('#map-list'));
         $this->assertCount(1, $crawler->filter('#map-detail'));
-        $this->assertStringNotContainsString('Ret eller tilføj oplysninger', (string) $crawler->filter('#map-detail template')->html());
+        $this->assertStringNotContainsString('Ret eller tilføj oplysninger', $crawler->filter('#map-detail template')->html());
     }
 
     public function testSaysThatAMapThatDoesNotExistIsNotAvailable(): void

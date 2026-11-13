@@ -19,7 +19,7 @@ final class EmbedOptionsParserTest extends TestCase
 
     public function testUsesTheSettingsOfTheMapWithoutAQueryString(): void
     {
-        $options = $this->parser->parse([], self::settings());
+        $options = $this->parser->parse([], $this->settings());
 
         $this->assertSame('da', $options->locale);
         $this->assertSame('right', $options->sidebar);
@@ -39,7 +39,7 @@ final class EmbedOptionsParserTest extends TestCase
             'list' => '1',
             'report' => '0',
             'lang' => 'en',
-        ], self::settings());
+        ], $this->settings());
 
         $this->assertSame('en', $options->locale);
         $this->assertSame('off', $options->sidebar);
@@ -78,12 +78,12 @@ final class EmbedOptionsParserTest extends TestCase
     #[DataProvider('invalidProvider')]
     public function testIgnoresAValueThatIsNotValid(array $query): void
     {
-        $this->assertEquals($this->parser->parse([], self::settings()), $this->parser->parse($query, self::settings()));
+        $this->assertEquals($this->parser->parse([], $this->settings()), $this->parser->parse($query, $this->settings()));
     }
 
     public function testCannotAddAReportLinkThatTheMapDoesNotHave(): void
     {
-        $settings = self::settings();
+        $settings = $this->settings();
         unset($settings->report);
 
         $this->assertFalse($this->parser->parse(['report' => '1'], $settings)->report);
@@ -105,7 +105,7 @@ final class EmbedOptionsParserTest extends TestCase
         $this->assertSame('en', $this->parser->locale(['lang' => 'en']));
     }
 
-    private static function settings(): \stdClass
+    private function settings(): \stdClass
     {
         /** @var \stdClass $settings */
         $settings = json_decode('{
