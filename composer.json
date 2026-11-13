@@ -20,6 +20,9 @@
         "symfony/framework-bundle": "~8.1.11",
         "symfony/http-client": "~8.1.11",
         "symfony/runtime": "~8.1.11",
+        "symfony/security-bundle": "~8.1.11",
+        "symfony/translation": "~8.1.11",
+        "symfony/twig-bundle": "~8.1.9",
         "symfony/yaml": "~8.1.11"
     },
     "require-dev": {
