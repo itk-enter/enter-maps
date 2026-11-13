@@ -1,0 +1,28 @@
+{% props local = true, address = true %}
+{# The search field. With `local`, it filters the list. With `address`, it #}
+{# is a combobox with suggestions from Adressevælger. #}
+{% set mode = local and address ? '' : (local ? '_local' : '_address') %}
+<div {{ stimulus_controller('address-search', {local: local, address: address}) }} class="relative px-5 pt-5">
+    <label for="search" class="sr-only">{{ ('embed.search.label' ~ mode)|trans }}</label>
+    <div class="relative">
+        <twig:Icon:Search class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-text-muted" />
+        {# Raw input: the combobox attributes depend on the address search. #}
+        <input id="search" type="search" autocomplete="off" aria-describedby="search-help"
+               data-address-search-target="input"
+               data-action="input->address-search#input keydown->address-search#keydown blur->address-search#blur"
+               {% if address %}role="combobox" aria-expanded="false" aria-controls="search-suggestions" aria-autocomplete="list"{% endif %}
+               placeholder="{{ ('embed.search.label' ~ mode)|trans }}"
+               class="box-border h-11 w-full rounded border border-line bg-surface pr-3 pl-[38px] text-ink">
+    </div>
+    <p id="search-help" class="sr-only">{{ ('embed.search.help' ~ mode)|trans }}</p>
+    {% if address %}
+        <ul id="search-suggestions" role="listbox" aria-label="{{ 'embed.search.suggestions'|trans }}" hidden data-address-search-target="listbox" class="absolute right-5 left-5 z-[500] mt-0.5 mb-0 list-none rounded border border-line bg-surface p-0 shadow-lg"></ul>
+        <template data-address-search-target="option">
+            <li role="option" aria-selected="false" class="cursor-pointer px-3 py-2.5 hover:bg-surface-2 aria-selected:bg-surface-2">
+                <span data-field="label"></span>
+                <span data-field="narrow" class="block text-[13px] text-text-muted">{{ 'embed.search.narrow'|trans }}</span>
+            </li>
+        </template>
+        <p data-address-search-target="error" role="status" hidden class="mt-2 mb-0 text-sm text-text-muted">{{ 'embed.search.error'|trans }}</p>
+    {% endif %}
+</div>

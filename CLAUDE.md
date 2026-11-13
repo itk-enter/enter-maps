@@ -40,10 +40,11 @@ Rules that apply to all parts:
 - Doctrine ORM and migrations, with MariaDB.
 - Twig, `symfony/ux-twig-component`, `symfony/ux-live-component` and Stimulus.
 - AssetMapper with `importmap.php`. Do not add a Node build step.
+- Tailwind CSS v4 through `symfonycasts/tailwind-bundle`, with a pinned binary. See "Frontend".
 - Symfony Form and Validator for the builder.
 - `symfony/http-client` with a scoped client for Enter, and Symfony Cache for the data proxy.
 - Leaflet 1.9.x from the importmap.
-- Septima Widget as an ES module from its CDN, with a pinned version.
+- Septima Widget as an ES module from its CDN, with a pinned version. This is the only CDN.
 - Adressevælger from Klimadatastyrelsen for address search.
 - PHPUnit for unit tests. Playwright and axe-core for browser tests.
 
@@ -52,11 +53,16 @@ Rules that apply to all parts:
 The structure now:
 
 ```text
+assets/controllers/                Stimulus controllers for the map, list, detail, filters and search
+assets/lib/                        JavaScript modules without Stimulus: fields, geometry, Adressevælger
+assets/styles/                     app.css, the design tokens, the base styles and changes to Leaflet
 config/packages/enter.yaml         The HTTP client for Enter
 config/schema/map-config.v1.json   JSON Schema for config, version 1
 migrations/                        Doctrine migrations for MariaDB
 src/Command/                       Console commands, for example app:map-config:import
 src/Controller/DataController.php  GET /data/{dataSet}.geojson
+src/Controller/EmbedController.php GET /embed/leaflet/{id}
+src/Embed/                         EmbedOptionsParser reads the embed options from the query string
 src/Enter/                         EnterClient reads from Enter. DataProxy validates the request.
 src/Entity/MapConfiguration.php    The stored configuration, on itk-dev/entity-bundle
 src/MapConfig/                     MapConfigParser, the config value objects and MapConfigurationFactory
@@ -65,14 +71,15 @@ tests/Unit/                        Unit tests
 tests/Integration/                 Tests that boot the kernel or send requests
 tests/Support/FakeEnter.php        A fake Enter for tests, on MockHttpClient
 tests/Support/Database.php         Makes an empty SQLite database for a test
+templates/components/              Twig components: Layout, Map, Search, Form, Icon and Heading
+templates/embed/                   The embed page and the page for a map that is not available
+translations/                      The texts of the pages, in Danish and English
 ```
 
 The structure that the plan adds later:
 
 ```text
-src/Controller/                    EmbedController, BuilderController
-templates/                         Twig templates and Twig components for the sidebar, list and detail view
-assets/controllers/                Stimulus controllers for the map, list, detail, search and filters
+src/Controller/                    BuilderController, and /embed/septima
 ```
 
 Update this section when the structure changes.
@@ -81,6 +88,45 @@ In tests, do not send requests to a real Enter. Use `FakeEnter`.
 
 The test environment uses SQLite, because CI runs the tests without MariaDB. A test that uses the database calls
 `Database::reset()` first. The schema comes from the entities, so write a migration for MariaDB for each change.
+
+## Frontend
+
+The rules come from `itk-dev/aibibliotek`. The plan has the full text in "Frontend".
+
+### Tools and CDNs
+
+- Get JavaScript and CSS packages from npm, with a pinned `version` in `importmap.php`. Add them with
+  `bin/console importmap:require`. The site serves them from its own domain.
+- Do not load scripts, styles or fonts from a CDN. The only exception is the Septima Widget.
+- After a change to a template or a CSS file, run `task assets:build`. The tests need the built CSS.
+
+### Twig components
+
+- Before you write raw HTML for a common shape, look in `templates/components/`. Use `<twig:…>`.
+- If a call site needs more, add a prop, a variant or `{{ attributes }}` to the component.
+- Before a PR, search the diff for raw `<button`, `<h1` to `<h6`, `<label`, `<input` and `role="alert"`. Each
+  must be a `<twig:…>` call, or have a comment that tells why it stays raw.
+- Text that people read goes through `|trans`, in `translations/messages.da.yaml` and `messages.en.yaml`.
+
+### Stimulus
+
+- The HTML from the server is the source. A controller adds behaviour.
+- Markup that a controller adds comes from a `<template>` that a Twig component renders. The controller fills it
+  with `textContent`. Do not use `innerHTML` with data.
+- The `map` controller holds the state. The other controllers send events to it and get calls through outlets.
+
+### CSS and Tailwind
+
+- Write utility classes in the Twig component. There is no CSS file for each component.
+- A variant is a map of complete class names. Do not make a class name from parts, for example `'bg-' ~ colour`.
+- Components use only the tokens in `assets/styles/theme.css`. No hex values in a component.
+- A value from `config`, for example the colour of a layer, is a CSS variable: `style="--layer-colour: …"` and
+  `bg-(--layer-colour)`.
+- Use `@apply` only for markup that we do not make, for example Leaflet, in `assets/styles/vendor/`.
+- The CSS of Leaflet is not in a cascade layer, so the changes to it in `assets/styles/vendor/leaflet.css` are not
+  in a layer either.
+- JSON from `map_json` must keep `{}` as an object. Give Stimulus the `stdClass` objects. A PHP array that is empty
+  becomes `[]`.
 
 ## Coding standards
 

@@ -68,11 +68,38 @@ If you change `docker-compose.override.yml` while the containers run, run `docke
 
 ### Map configurations
 
-Until the builder exists, import a map configuration from a JSON file. The command gives the id of the stored
-configuration.
+Until the builder exists, import map configurations from JSON files. The command gives the embed URL of each map.
+The files in `tests/Fixtures/map-config/` are test data, not real maps.
 
 ```shell
-task console -- app:map-config:import tests/Fixtures/map-config/toilets.json
+task console -- app:map-config:import tests/Fixtures/map-config/*.json
+```
+
+To see the stored maps and their embed URLs:
+
+```shell
+task console -- app:map-config:list
+```
+
+The URLs start with `DEFAULT_URI` from `.env`. The page takes the embed options in the query string, for example
+`?lang=en&sidebar=right`.
+
+### Frontend
+
+The frontend uses AssetMapper, Stimulus, Twig components and Tailwind CSS. There is no Node build step. Tailwind
+runs as a standalone binary through `symfonycasts/tailwind-bundle`.
+
+To build the CSS, and to build it again on each change:
+
+```shell
+task assets:build
+task assets:build -- --watch
+```
+
+To add a JavaScript or CSS package from npm, give a version:
+
+```shell
+task console -- importmap:require leaflet@1.9.4
 ```
 
 `Taskfile.yml` holds shortcuts for [Task](https://taskfile.dev/). Run `task` to see the list.

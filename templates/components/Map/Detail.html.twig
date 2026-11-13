@@ -1,0 +1,32 @@
+{% props id, report = null %}
+{# The detail view of a place, over the list. The map-detail controller #}
+{# fills the template and puts it in the host. `report` is the report link #}
+{# of the configuration, or null. #}
+<div id="{{ id }}" {{ stimulus_controller('map-detail', report ? {report: report} : {}) }}>
+    <div data-map-detail-target="host" hidden class="pointer-events-auto fixed inset-0 z-[1000] overflow-y-auto overscroll-contain bg-surface wide:absolute wide:z-[600]"></div>
+    <template data-map-detail-target="template">
+        <div class="relative p-5 pt-16">
+            <twig:Form:IconButton label="{{ 'embed.detail.close'|trans }}" data-action="map-detail#close" class="absolute top-4 right-4">
+                <twig:Icon:Close />
+            </twig:Form:IconButton>
+            <twig:Heading level="2" size="lg" data-field="title" tabindex="-1" class="mb-4"></twig:Heading>
+            <div class="mb-3.5 flex items-start justify-between gap-4">
+                <p data-field="subtitle" class="m-0 font-semibold"></p>
+                <a data-field="route" target="_blank" rel="noopener" class="flex-none text-link underline">{{ 'embed.detail.route'|trans }}</a>
+            </div>
+            <dl data-field="details" class="m-0"></dl>
+            <template data-field="detail-template">
+                <div class="mt-4">
+                    <dt data-field="label" class="mb-1 text-[15px] font-bold"></dt>
+                    <dd data-field="value" class="m-0"></dd>
+                </div>
+            </template>
+            {% if report %}
+                <p class="mt-6 mb-0">
+                    <a data-field="report-link" class="text-link underline">{{ report.label }}</a>
+                    <button type="button" data-field="report-button" class="cursor-pointer border-0 bg-transparent p-0 text-link underline">{{ report.label }}</button>
+                </p>
+            {% endif %}
+        </div>
+    </template>
+</div>

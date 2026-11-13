@@ -1,0 +1,26 @@
+/*
+ * The design tokens. Each token is a role, not a raw colour, and the
+ * components use only these tokens. Each pair of text and background meets
+ * WCAG AA. The values come from the prototypes in itk-enter/enter-map-examples.
+ */
+@theme {
+  --color-surface: #ffffff;
+  --color-surface-2: #f5f5f5; /* hover and selected rows */
+  --color-line: #d9d9d9;
+  --color-ink: #1a1a1a; /* text and headings, 17:1 on surface */
+  --color-text-muted: #595959; /* 7:1 on surface */
+  --color-primary: #3661d8; /* checkboxes and the zoom gate, 5.1:1 on surface */
+  --color-link: #0648ff; /* links, 6.4:1 on surface */
+  --color-focus: #3661d8;
+  --color-marker-selected: #12285e;
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", "Liberation Sans", sans-serif;
+
+  /* The width of the sidebar, as w-panel. */
+  --container-panel: 26.25rem;
+
+  /* Below this width, the sidebar goes under the map. */
+  --breakpoint-wide: 51.25rem;
+}

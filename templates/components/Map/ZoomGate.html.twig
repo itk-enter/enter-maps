@@ -1,0 +1,10 @@
+{# The card that asks the user to search or zoom in, while the map holds #}
+{# the places back. The map controller shows it and sets the progress. #}
+<div data-map-target="gate" hidden class="mx-5 mt-5 rounded border border-line px-[18px] py-4">
+    <twig:Heading level="2" size="md" class="mb-2">{{ 'embed.zoom_gate.title'|trans }}</twig:Heading>
+    <p class="mt-0 mb-4">{{ 'embed.zoom_gate.text'|trans }}</p>
+    <p id="zoom-gate-label" class="mt-0 mb-1.5 text-sm text-text-muted">{{ 'embed.zoom_gate.label'|trans }}</p>
+    <div data-map-target="gateBar" role="progressbar" aria-labelledby="zoom-gate-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" class="h-1.5 overflow-hidden rounded-[3px] bg-surface-2">
+        <span class="block h-full w-[calc(var(--progress,0)*100%)] bg-primary transition-[width] duration-100 ease-linear"></span>
+    </div>
+</div>
