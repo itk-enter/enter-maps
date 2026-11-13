@@ -37,8 +37,8 @@ final readonly class MapConfigurationFactory
         }
 
         // The parser accepted the JSON, so it is an object.
+        /** @var \stdClass $data */
         $data = json_decode($json, false, 512, \JSON_THROW_ON_ERROR);
-        \assert($data instanceof \stdClass);
 
         return new MapConfiguration($data, $renderers, $mapJson);
     }
