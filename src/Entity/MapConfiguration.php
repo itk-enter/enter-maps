@@ -34,9 +34,6 @@ class MapConfiguration extends AbstractITKDevEntity implements TimestampableInte
     use SoftDeletableTrait;
     use TimestampableTrait;
 
-    #[ORM\Column(type: Types::JSON_OBJECT)]
-    private \stdClass $config;
-
     /**
      * @var list<string>
      */
@@ -51,10 +48,13 @@ class MapConfiguration extends AbstractITKDevEntity implements TimestampableInte
      * @param list<Renderer>                      $renderers
      * @param array<string, array<string, mixed>> $mapJson   the result of the converter of each renderer, with the renderer as key
      */
-    public function __construct(\stdClass $config, array $renderers, array $mapJson)
-    {
+    public function __construct(
+        #[ORM\Column(type: Types::JSON_OBJECT)]
+        private \stdClass $config,
+        array $renderers,
+        array $mapJson,
+    ) {
         parent::__construct();
-        $this->config = $config;
         $this->renderers = array_map(static fn (Renderer $renderer): string => $renderer->value, $renderers);
         // Store the same objects that the database gives back after a load.
         $mapJson = json_decode(json_encode((object) $mapJson, \JSON_THROW_ON_ERROR), false, 512, \JSON_THROW_ON_ERROR);
