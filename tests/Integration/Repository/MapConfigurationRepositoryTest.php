@@ -28,7 +28,6 @@ final class MapConfigurationRepositoryTest extends KernelTestCase
     public function testStoresAndFindsAConfiguration(): void
     {
         $config = json_decode('{"version": 1, "title": "Toiletter", "empty": {}, "list": []}', false);
-        \assert($config instanceof \stdClass);
         $id = $this->store(new MapConfiguration($config, [Renderer::Leaflet], ['leaflet' => ['values' => new \stdClass(), 'list' => []]]));
 
         $found = $this->repository->find($id);
