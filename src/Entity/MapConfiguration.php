@@ -56,9 +56,9 @@ class MapConfiguration extends AbstractITKDevEntity implements TimestampableInte
     ) {
         parent::__construct();
         $this->renderers = array_map(static fn (Renderer $renderer): string => $renderer->value, $renderers);
-        // Store the same objects that the database gives back after a load.
+        // Store the same objects that the database gives back after a load. An encoded object decodes to an object.
+        /** @var \stdClass $mapJson */
         $mapJson = json_decode(json_encode((object) $mapJson, \JSON_THROW_ON_ERROR), false, 512, \JSON_THROW_ON_ERROR);
-        \assert($mapJson instanceof \stdClass);
         $this->mapJson = $mapJson;
     }
 
