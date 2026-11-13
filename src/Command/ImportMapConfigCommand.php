@@ -14,45 +14,59 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
- * Stores a map configuration from a JSON file, for the Leaflet renderer. Use
- * it until the builder can make configurations.
+ * Stores map configurations from JSON files, for the Leaflet renderer, and
+ * gives the embed URL of each. Use it until the builder can make
+ * configurations.
+ *
+ * If a file is not valid, the command gives an error for it, imports the
+ * other files and returns a failure.
  */
-#[AsCommand(name: 'app:map-config:import', description: 'Import a map configuration from a JSON file')]
+#[AsCommand(name: 'app:map-config:import', description: 'Import map configurations from JSON files')]
 final readonly class ImportMapConfigCommand
 {
     public function __construct(
         private MapConfigurationFactory $factory,
         private EntityManagerInterface $entityManager,
+        private UrlGeneratorInterface $urlGenerator,
     ) {
     }
 
+    /**
+     * @param list<string> $files
+     */
     public function __invoke(
         SymfonyStyle $io,
-        #[Argument('The JSON file with the map configuration')] string $file,
+        #[Argument('The JSON files with the map configurations')] array $files,
     ): int {
-        try {
-            $json = new Filesystem()->readFile($file);
-        } catch (IOException $exception) {
-            $io->error($exception->getMessage());
+        $result = Command::SUCCESS;
 
-            return Command::FAILURE;
+        foreach ($files as $file) {
+            try {
+                $mapConfiguration = $this->factory->create(new Filesystem()->readFile($file), [Renderer::Leaflet]);
+            } catch (IOException $exception) {
+                $io->error($exception->getMessage());
+                $result = Command::FAILURE;
+
+                continue;
+            } catch (InvalidMapConfigException $exception) {
+                $io->error([\sprintf('%s is not a valid map configuration.', $file), ...$exception->errors]);
+                $result = Command::FAILURE;
+
+                continue;
+            }
+
+            $this->entityManager->persist($mapConfiguration);
+            $this->entityManager->flush();
+
+            $io->success([
+                \sprintf('Imported %s as %s.', $file, $mapConfiguration->getId()),
+                $this->urlGenerator->generate('app_embed_leaflet', ['id' => $mapConfiguration->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
+            ]);
         }
 
-        try {
-            $mapConfiguration = $this->factory->create($json, [Renderer::Leaflet]);
-        } catch (InvalidMapConfigException $exception) {
-            $io->error(['The map configuration is not valid.', ...$exception->errors]);
-
-            return Command::FAILURE;
-        }
-
-        $this->entityManager->persist($mapConfiguration);
-        $this->entityManager->flush();
-
-        $io->success(\sprintf('Imported the map configuration %s.', $mapConfiguration->getId()));
-
-        return Command::SUCCESS;
+        return $result;
     }
 }

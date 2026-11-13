@@ -23,37 +23,39 @@ final class ImportMapConfigCommandTest extends KernelTestCase
         $this->tester = new CommandTester(new Application($kernel)->find('app:map-config:import'));
     }
 
-    public function testImportsAConfiguration(): void
+    public function testImportsTheConfigurationsAndGivesTheirUrls(): void
     {
-        $this->tester->execute(['file' => \dirname(__DIR__, 2).'/Fixtures/map-config/toilets.json']);
+        $this->tester->execute(['files' => [self::fixture('toilets'), self::fixture('toilets-and-parking')]]);
 
         $this->assertSame(Command::SUCCESS, $this->tester->getStatusCode());
         $stored = self::getContainer()->get(MapConfigurationRepository::class)->findAll();
-        $this->assertCount(1, $stored);
-        $this->assertStringContainsString((string) $stored[0]->getId(), $this->tester->getDisplay());
+        $this->assertCount(2, $stored);
+        $display = $this->tester->getDisplay(true);
+        foreach ($stored as $mapConfiguration) {
+            $this->assertStringContainsString('/embed/leaflet/'.$mapConfiguration->getId(), $display);
+        }
     }
 
-    public function testRejectsAConfigurationThatIsNotValid(): void
+    public function testImportsTheValidFilesAndFailsForTheOthers(): void
     {
         $file = tempnam(sys_get_temp_dir(), 'map-config');
         file_put_contents($file, '{"version": 1}');
 
         try {
-            $this->tester->execute(['file' => $file]);
+            $this->tester->execute(['files' => [$file, '/does/not/exist.json', self::fixture('toilets')]]);
         } finally {
             unlink($file);
         }
 
         $this->assertSame(Command::FAILURE, $this->tester->getStatusCode());
-        $this->assertStringContainsString('The map configuration is not valid.', $this->tester->getDisplay());
-        $this->assertSame([], self::getContainer()->get(MapConfigurationRepository::class)->findAll());
+        $display = $this->tester->getDisplay(true);
+        $this->assertStringContainsString('is not a valid map configuration.', $display);
+        $this->assertStringContainsString('Failed to read file', $display);
+        $this->assertCount(1, self::getContainer()->get(MapConfigurationRepository::class)->findAll());
     }
 
-    public function testGivesAnErrorIfTheFileDoesNotExist(): void
+    private static function fixture(string $name): string
     {
-        $this->tester->execute(['file' => '/does/not/exist.json']);
-
-        $this->assertSame(Command::FAILURE, $this->tester->getStatusCode());
-        $this->assertStringContainsString('Failed to read file', $this->tester->getDisplay());
+        return \dirname(__DIR__, 2).'/Fixtures/map-config/'.$name.'.json';
     }
 }
