@@ -41,6 +41,7 @@ final class ListMapConfigCommandTest extends KernelTestCase
         $display = $this->tester->getDisplay(true);
         $this->assertStringContainsString('Toiletter', $display);
         $this->assertStringContainsString('/embed/leaflet/'.$toilets->getId(), $display);
+        $this->assertStringContainsString(strtoupper(bin2hex($toilets->getId()->toBinary())), $display);
         $this->assertStringContainsString('/embed/leaflet/'.$untitled->getId(), $display);
         $this->assertStringNotContainsString((string) $deleted->getId(), $display);
     }

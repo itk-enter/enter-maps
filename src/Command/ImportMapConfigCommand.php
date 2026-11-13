@@ -63,6 +63,7 @@ final readonly class ImportMapConfigCommand
 
             $io->success([
                 \sprintf('Imported %s as %s.', $file, $mapConfiguration->getId()),
+                \sprintf('Id in the database: %s', strtoupper(bin2hex($mapConfiguration->getId()->toBinary()))),
                 $this->urlGenerator->generate('app_embed_leaflet', ['id' => $mapConfiguration->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
             ]);
         }

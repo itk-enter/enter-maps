@@ -33,6 +33,7 @@ final class ImportMapConfigCommandTest extends KernelTestCase
         $display = $this->tester->getDisplay(true);
         foreach ($stored as $mapConfiguration) {
             $this->assertStringContainsString('/embed/leaflet/'.$mapConfiguration->getId(), $display);
+            $this->assertStringContainsString(strtoupper(bin2hex($mapConfiguration->getId()->toBinary())), $display);
         }
     }
 

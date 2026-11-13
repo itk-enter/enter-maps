@@ -14,6 +14,8 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  * Lists the stored map configurations, with the id, the title and the embed
  * URL of each. Deleted configurations are not in the list.
  *
+ * The id is in two forms. The URL uses the ULID. The database keeps it as
+ * 16 bytes, so a database tool shows it as hex, for example with HEX(id).
  * The URLs start with DEFAULT_URI.
  */
 #[AsCommand(name: 'app:map-config:list', description: 'List the map configurations and their embed URLs')]
@@ -32,6 +34,7 @@ final readonly class ListMapConfigCommand
             $title = $mapConfiguration->getConfig()->title ?? null;
             $rows[] = [
                 (string) $mapConfiguration->getId(),
+                strtoupper(bin2hex($mapConfiguration->getId()->toBinary())),
                 \is_string($title) ? $title : '',
                 $this->urlGenerator->generate('app_embed_leaflet', ['id' => $mapConfiguration->getId()], UrlGeneratorInterface::ABSOLUTE_URL),
             ];
@@ -43,7 +46,7 @@ final readonly class ListMapConfigCommand
             return Command::SUCCESS;
         }
 
-        $io->table(['Id', 'Title', 'URL'], $rows);
+        $io->table(['Id', 'Id in the database', 'Title', 'URL'], $rows);
 
         return Command::SUCCESS;
     }
