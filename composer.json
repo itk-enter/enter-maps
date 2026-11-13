@@ -21,9 +21,12 @@
         "symfony/http-client": "~8.1.11",
         "symfony/runtime": "~8.1.11",
         "symfony/security-bundle": "~8.1.11",
+        "symfony/stimulus-bundle": "^3.7",
         "symfony/translation": "~8.1.11",
         "symfony/twig-bundle": "~8.1.9",
-        "symfony/yaml": "~8.1.11"
+        "symfony/ux-twig-component": "^3.7",
+        "symfony/yaml": "~8.1.11",
+        "symfonycasts/tailwind-bundle": "^1.0"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.56.1",

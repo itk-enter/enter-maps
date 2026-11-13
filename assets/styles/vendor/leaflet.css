@@ -1,0 +1,24 @@
+/*
+ * Changes to the markup that Leaflet makes.
+ *
+ * The rules are not in a cascade layer on purpose. The CSS of Leaflet comes
+ * from the importmap without a layer, and CSS that is not in a layer always
+ * wins over CSS in a layer. Thus these rules must also be outside a layer.
+ */
+
+/* The markers are our own markup in a div icon, so Leaflet must not draw a
+ * box around them. */
+.map-marker {
+  background: none;
+  border: 0;
+}
+
+/* Leaflet's credits are links in a line of text, with colour as the only
+ * difference (axe: link-in-text-block). */
+.leaflet-control-attribution a {
+  text-decoration: underline;
+}
+
+.leaflet-container {
+  font: inherit;
+}

@@ -11,10 +11,13 @@ vars:
 tasks:
   default:
     desc: "Run the PHPUnit test suite (no coverage)"
-    cmd:
-      task: :compose
-      vars:
-        TASK_ARGS: exec phpfpm vendor/bin/phpunit
+    cmds:
+      - task: :compose
+        vars:
+          TASK_ARGS: exec phpfpm bin/console tailwind:build
+      - task: :compose
+        vars:
+          TASK_ARGS: exec phpfpm vendor/bin/phpunit
 
   coverage:
     desc: "Run PHPUnit with coverage and check the coverage threshold"
@@ -24,6 +27,14 @@ tasks:
       - task: :compose
         vars:
           TASK_ARGS: run --rm --no-deps phpfpm composer install --no-scripts
+      # The pages in the tests need the packages of the importmap and the
+      # CSS from Tailwind.
+      - task: :compose
+        vars:
+          TASK_ARGS: run --rm --no-deps phpfpm bin/console importmap:install
+      - task: :compose
+        vars:
+          TASK_ARGS: run --rm --no-deps phpfpm bin/console tailwind:build
       # The kernel calls some code in src/Kernel.php only when it builds the
       # container. Remove the test cache, so that the result is the same
       # each time.

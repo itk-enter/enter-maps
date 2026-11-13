@@ -1,0 +1,24 @@
+/*
+ * Base styles for the page in the frame. The page does not get styles from
+ * the page around the frame, so it sets its own font and colours.
+ */
+@layer base {
+  body {
+    @apply m-0 bg-surface font-sans text-ink antialiased;
+  }
+
+  /* One visible focus ring for all interactive elements. */
+  :focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}

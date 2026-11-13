@@ -1,3 +1,10 @@
-body {
-  background-color: skyblue;
-}
+/*
+ * The entry point of the CSS. Tailwind builds it with the files below. The
+ * styles of our own markup are utility classes in the Twig components, so
+ * this file and the files below hold only tokens, base styles and changes
+ * to markup that other code makes.
+ */
+@import "tailwindcss";
+@import "./theme.css";
+@import "./base.css";
+@import "./vendor/leaflet.css";

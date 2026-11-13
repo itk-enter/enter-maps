@@ -31,5 +31,7 @@ steps:
         - itkdev-docker-compose-server run --rm --no-deps phpfpm bin/console cache:clear --no-debug
         - itkdev-docker-compose-server up -d --force-recreate --remove-orphans
         - itkdev-docker-compose-server exec phpfpm bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+        # https://symfony.com/bundles/TailwindBundle/current/index.html
+        - itkdev-docker-compose-server exec phpfpm bin/console tailwind:build --minify
         - itkdev-docker-compose-server exec phpfpm bin/console asset-map:compile
         - itkdev-docker-compose-server exec phpfpm bin/console cache:clear --no-debug
