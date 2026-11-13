@@ -2,8 +2,9 @@ import { Controller } from "@hotwired/stimulus";
 
 /*
  * The detail view of a place, over the list. The map controller calls
- * open(). Focus goes to the title, Escape and the close button close the
- * view, and focus goes back to where it came from.
+ * open(place, { returnFocus }). Focus goes to the title, and Escape and the
+ * close button close the view. Then focus goes to the element that
+ * returnFocus() gives, usually the row of the place in the list.
  *
  * The report link replaces {id} and {seeAlso} with the values of the place.
  * With the target "postMessage", the link is a button that sends
@@ -27,12 +28,12 @@ export default class extends Controller {
     document.removeEventListener("keydown", this.onKeydown);
   }
 
-  open(place, { returnFocusTo }) {
+  open(place, { returnFocus }) {
     const view = this.templateTarget.content.firstElementChild.cloneNode(true);
     const field = (name) => view.querySelector(`[data-field="${name}"]`);
 
     this.place = place;
-    this.returnFocusTo = returnFocusTo;
+    this.returnFocus = returnFocus;
 
     field("title").textContent = place.title;
     field("subtitle").textContent = place.subtitle;
@@ -78,7 +79,7 @@ export default class extends Controller {
               return entry;
             }),
           );
-          valueElement.replaceWith(items);
+          valueElement.replaceChildren(items);
         } else {
           valueElement.textContent = value.text;
         }
@@ -128,8 +129,6 @@ export default class extends Controller {
     document.body.toggleAttribute("data-detail-open", false);
     this.dispatch("close", { detail: { id: this.place?.id } });
 
-    if (this.returnFocusTo && document.contains(this.returnFocusTo)) {
-      this.returnFocusTo.focus();
-    }
+    this.returnFocus?.()?.focus();
   }
 }

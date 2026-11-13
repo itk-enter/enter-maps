@@ -2,7 +2,7 @@
 {# The detail view of a place, over the list. The map-detail controller #}
 {# fills the template and puts it in the host. `report` is the report link #}
 {# of the configuration, or null. #}
-<div id="{{ id }}" {{ stimulus_controller('map-detail', {report: report ?? {}}) }}>
+<div id="{{ id }}" {{ stimulus_controller('map-detail', report ? {report: report} : {}) }}>
     <div data-map-detail-target="host" hidden class="pointer-events-auto fixed inset-0 z-[1000] overflow-y-auto overscroll-contain bg-surface wide:absolute wide:z-[600]"></div>
     <template data-map-detail-target="template">
         <div class="relative p-5 pt-16">

@@ -137,9 +137,7 @@ export default class extends Controller {
       lat: point.lat,
       lon: point.lon,
       title: formatField(layer.row.title, properties, context)?.text ?? "",
-      subtitle: layer.row.subtitle
-        ? (formatField(layer.row.subtitle, properties, context)?.text ?? "")
-        : "",
+      subtitle: this.rowText(layer.row.subtitle, properties, context),
       details: layer.detail
         .map((field) => ({
           label: field.label,
@@ -147,6 +145,17 @@ export default class extends Controller {
         }))
         .filter((detail) => detail.value !== null),
     };
+  }
+
+  /* The subtitle of a row, with its label first if it has one. */
+  rowText(field, properties, context) {
+    const value = field ? formatField(field, properties, context) : null;
+
+    if (!value) {
+      return "";
+    }
+
+    return field.label ? `${field.label}: ${value.text}` : value.text;
   }
 
   /* Zoomed out, the map holds the data back, and the sidebar tells how to
@@ -307,10 +316,16 @@ export default class extends Controller {
     this.render();
 
     if (this.hasMapDetailOutlet) {
+      // The list renders again after the selection, so the detail view asks
+      // for the row when it closes.
       this.mapDetailOutlet.open(place, {
-        returnFocusTo:
-          returnFocusTo ??
-          (this.hasMapListOutlet ? this.mapListOutlet.rowFor(id) : null),
+        returnFocus: () => {
+          if (returnFocusTo && document.contains(returnFocusTo)) {
+            return returnFocusTo;
+          }
+
+          return this.hasMapListOutlet ? this.mapListOutlet.rowFor(id) : null;
+        },
       });
     }
   }
