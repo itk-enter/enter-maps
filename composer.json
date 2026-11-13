@@ -49,6 +49,13 @@
     "conflict": {
         "symfony/symfony": "*"
     },
+    "repositories": [
+        {
+            "name": "entity-bundle",
+            "type": "vcs",
+            "url": "https://github.com/itk-dev/entity-bundle.git"
+        }
+    ],
     "minimum-stability": "stable",
     "prefer-stable": true,
     "autoload": {
@@ -90,10 +97,5 @@
             "assets:install %PUBLIC_DIR%": "symfony-cmd",
             "importmap:install": "symfony-cmd"
         }
-    },
-    "repositories": [{
-        "name": "entity-bundle",
-        "type": "vcs",
-        "url": "https://github.com/itk-dev/entity-bundle.git"
-    }]
+    }
 }
