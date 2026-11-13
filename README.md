@@ -69,6 +69,7 @@ If you change `docker-compose.override.yml` while the containers run, run `docke
 ### Map configurations
 
 Until the builder exists, import map configurations from JSON files. The command gives the embed URL of each map.
+The files in `tests/Fixtures/map-config/` are test data, not real maps.
 
 ```shell
 task console -- app:map-config:import tests/Fixtures/map-config/*.json

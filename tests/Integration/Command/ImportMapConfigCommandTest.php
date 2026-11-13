@@ -50,6 +50,7 @@ final class ImportMapConfigCommandTest extends KernelTestCase
 
         $this->assertSame(Command::FAILURE, $this->tester->getStatusCode());
         $display = $this->tester->getDisplay(true);
+        $this->assertSame(1, substr_count($display, 'This is fixture data'));
         $this->assertStringContainsString('is not a valid map configuration.', $display);
         $this->assertStringContainsString('Failed to read file', $display);
         $this->assertCount(1, self::getContainer()->get(MapConfigurationRepository::class)->findAll());
