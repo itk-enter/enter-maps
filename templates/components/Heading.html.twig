@@ -1,0 +1,11 @@
+{% props level = 2, size = 'md' %}
+{# A heading. `level` gives the element (h1 to h6), and `size` the look, #}
+{# so that the outline of the page and the look do not depend on each other. #}
+{% set sizes = {
+    lg: 'text-xl font-bold',
+    md: 'text-[17px] font-bold',
+    sm: 'text-[15px] font-bold',
+} %}
+<h{{ level }} {{ attributes.defaults({class: 'm-0 ' ~ sizes[size]}) }}>
+    {%- block content %}{% endblock -%}
+</h{{ level }}>

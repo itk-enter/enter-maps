@@ -1,0 +1,5 @@
+{% props legend %}
+<fieldset {{ attributes.defaults({class: 'm-0 border-0 p-0'}) }}>
+    <legend class="p-0 text-sm font-semibold text-text-muted">{{ legend }}</legend>
+    {%- block content %}{% endblock -%}
+</fieldset>

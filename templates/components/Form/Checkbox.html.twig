@@ -1,0 +1,8 @@
+{% props value, checked = false %}
+{# A checkbox with its label. The content of the component is the text of #}
+{# the label, and it can start with a swatch or an icon. `attributes` go on #}
+{# the input, for example Stimulus targets and actions. #}
+<label class="flex items-center gap-2.5 py-1.5">
+    <input type="checkbox" value="{{ value }}" {{ checked ? 'checked' }} {{ attributes.defaults({class: 'size-[17px] accent-primary'}) }}>
+    {%- block content %}{% endblock -%}
+</label>

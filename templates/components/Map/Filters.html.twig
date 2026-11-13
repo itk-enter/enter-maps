@@ -1,0 +1,19 @@
+{% props layers, filters, showLayers = true, activeLayers = null %}
+{# The layer checkboxes and the open filters. The map-filters controller #}
+{# reads them and tells the map. `activeLayers` is null when all layers are #}
+{# on at the start. #}
+<div {{ stimulus_controller('map-filters', {initialLayers: activeLayers ?? layers|map(layer => layer.id)}) }} class="mx-5 mt-5 flex flex-col gap-4 border-b border-line pb-3.5">
+    {% if showLayers %}
+        <twig:Form:Fieldset legend="{{ 'embed.categories.legend'|trans }}">
+            {% for layer in layers %}
+                <twig:Form:Checkbox value="{{ layer.id }}" :checked="activeLayers is null or layer.id in activeLayers" data-map-filters-target="layer" data-action="map-filters#change">
+                    <twig:Map:Swatch colour="{{ layer.colour }}" />
+                    {{ layer.label }}
+                </twig:Form:Checkbox>
+            {% endfor %}
+        </twig:Form:Fieldset>
+    {% endif %}
+    {% for filter in filters %}
+        <twig:Map:FilterGroup :filter="filter" :index="loop.index0" />
+    {% endfor %}
+</div>
