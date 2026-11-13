@@ -75,6 +75,30 @@ configuration.
 task console -- app:map-config:import tests/Fixtures/map-config/toilets.json
 ```
 
+### The map in a browser
+
+The command above gives the id of the configuration. The map is at
+`http://enter-maps.local.itkdev.dk/embed/leaflet/<id>`. The page takes the embed options in the query string, for
+example `?lang=en&sidebar=right`.
+
+### Frontend
+
+The frontend uses AssetMapper, Stimulus, Twig components and Tailwind CSS. There is no Node build step. Tailwind
+runs as a standalone binary through `symfonycasts/tailwind-bundle`.
+
+To build the CSS, and to build it again on each change:
+
+```shell
+task assets:build
+task assets:build -- --watch
+```
+
+To add a JavaScript or CSS package from npm, give a version:
+
+```shell
+task console -- importmap:require leaflet@1.9.4
+```
+
 `Taskfile.yml` holds shortcuts for [Task](https://taskfile.dev/). Run `task` to see the list.
 
 To run a Symfony console command:
