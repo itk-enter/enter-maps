@@ -68,18 +68,20 @@ If you change `docker-compose.override.yml` while the containers run, run `docke
 
 ### Map configurations
 
-Until the builder exists, import a map configuration from a JSON file. The command gives the id of the stored
-configuration.
+Until the builder exists, import map configurations from JSON files. The command gives the embed URL of each map.
 
 ```shell
-task console -- app:map-config:import tests/Fixtures/map-config/toilets.json
+task console -- app:map-config:import tests/Fixtures/map-config/*.json
 ```
 
-### The map in a browser
+To see the stored maps and their embed URLs:
 
-The command above gives the id of the configuration. The map is at
-`http://enter-maps.local.itkdev.dk/embed/leaflet/<id>`. The page takes the embed options in the query string, for
-example `?lang=en&sidebar=right`.
+```shell
+task console -- app:map-config:list
+```
+
+The URLs start with `DEFAULT_URI` from `.env`. The page takes the embed options in the query string, for example
+`?lang=en&sidebar=right`.
 
 ### Frontend
 
