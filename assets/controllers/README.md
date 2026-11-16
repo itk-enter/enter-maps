@@ -13,10 +13,6 @@ The embed page uses [Stimulus](https://stimulus.hotwired.dev/) controllers. Asse
 - Texts come from the translations. Twig gives them to a controller as a `messages` value.
 - The settings of the map come from `map_json.leaflet`. Twig gives them to the `map` controller as the `settings`
   value. The embed options from the query string are the `options` value.
-- Each class, method and function has a JSDoc block. A controller lists its values, targets and outlets.
-- The shared types are JSDoc `@typedef`s in the module that makes them: `Place`, `Layer`, `Settings` and `Options`
-  in `map_controller.js`, `Field` and `Filter` in `fields.js`, `LatLon` in `geo.js` and `Hit` in
-  `adressevaelger.js`. Other files refer to them with `import("…").Place`.
 
 The events and the actions are in `templates/embed/leaflet.html.twig`:
 
@@ -30,23 +26,23 @@ address-search:choose  -> map#origin
 
 ## The controllers
 
-| File | Purpose |
-| --- | --- |
-| `map_controller.js` | Holds the state: the places, the search text, the layers and filters, the chosen address and the selected place. Loads the data from the data proxy, draws the Leaflet map and the markers, and controls the zoom gate. Tells the list and the detail view what to show. |
-| `map_list_controller.js` | The list of the places that the map shows. Fills the rows from a template. A click on a row sends `map-list:select`. |
-| `map_detail_controller.js` | The detail view of a place, over the list. Shows the fields, the route link and the report link. Controls focus, and closes with Escape. Sends `map-detail:close`. |
-| `map_filters_controller.js` | The layer checkboxes and the filters in the sidebar. On each change, sends `map-filters:change` with the layers that are on and the selected codes. |
-| `address_search_controller.js` | The search field. Filters the list as the user types (`address-search:query`), or finds an address with Adressevælger (`address-search:choose`). The address search is an ARIA 1.2 combobox. |
+| File                           | Purpose                                                                                                                                                                                                                                                                  |
+|--------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `map_controller.js`            | Holds the state: the places, the search text, the layers and filters, the chosen address and the selected place. Loads the data from the data proxy, draws the Leaflet map and the markers, and controls the zoom gate. Tells the list and the detail view what to show. |
+| `map_list_controller.js`       | The list of the places that the map shows. Fills the rows from a template. A click on a row sends `map-list:select`.                                                                                                                                                     |
+| `map_detail_controller.js`     | The detail view of a place, over the list. Shows the fields, the route link and the report link. Controls focus, and closes with Escape. Sends `map-detail:close`.                                                                                                       |
+| `map_filters_controller.js`    | The layer checkboxes and the filters in the sidebar. On each change, sends `map-filters:change` with the layers that are on and the selected codes.                                                                                                                      |
+| `address_search_controller.js` | The search field. Filters the list as the user types (`address-search:query`), or finds an address with Adressevælger (`address-search:choose`). The address search is an ARIA 1.2 combobox.                                                                             |
 
 ## The modules in `assets/lib/`
 
 These modules do not use Stimulus, so the controllers share them.
 
-| File | Purpose |
-| --- | --- |
-| `fields.js` | Reads the fields of the configuration from the properties of a feature, formats them as text, and applies the filters. |
-| `geo.js` | Computes the centre of a geometry and the distance between two points, and formats a distance. |
-| `adressevaelger.js` | Calls Adressevælger from Klimadatastyrelsen: a search for addresses, and the position of an address. |
+| File                | Purpose                                                                                                                |
+|---------------------|------------------------------------------------------------------------------------------------------------------------|
+| `fields.js`         | Reads the fields of the configuration from the properties of a feature, formats them as text, and applies the filters. |
+| `geo.js`            | Computes the centre of a geometry and the distance between two points, and formats a distance.                         |
+| `adressevaelger.js` | Calls Adressevælger from Klimadatastyrelsen: a search for addresses, and the position of an address.                   |
 
 ## After a change
 

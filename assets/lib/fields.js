@@ -35,34 +35,6 @@
  */
 
 /**
- * An open filter from map_json.leaflet.
- *
- * @typedef {object} Filter
- * @property {string} type The type of the control.
- * @property {string} label The label.
- * @property {Object<string, string>} values The text of each code.
- * @property {FilterTarget[]} layers The layers that the filter applies to.
- */
-
-/**
- * How a filter reads the value of one layer.
- *
- * @typedef {object} FilterTarget
- * @property {string} layer The id of the layer.
- * @property {string[]} path The keys to the value in the properties.
- * @property {Object<string, *>} dataValues The value in the data of each
- *   code.
- */
-
-/**
- * A filter with the codes that the user selected.
- *
- * @typedef {object} ActiveFilter
- * @property {Filter} filter The filter.
- * @property {string[]} codes The selected codes. Empty means "all".
- */
-
-/**
  * Gives the value at a path.
  *
  * @param {object} properties The properties of a feature.
@@ -175,6 +147,29 @@ export function formatField(field, properties, context) {
       return { text: text(field, value) };
   }
 }
+
+/**
+ * An open filter from map_json.leaflet.
+ *
+ * @typedef {object} Filter
+ * @property {string} type The type of the control.
+ * @property {string} label The label.
+ * @property {Object<string, string>} values The text of each code.
+ * @property {object[]} layers The layers that the filter applies to.
+ * @property {string} layers[].layer The id of the layer.
+ * @property {string[]} layers[].path The keys to the value in the
+ *   properties.
+ * @property {Object<string, *>} layers[].dataValues The value in the data
+ *   of each code.
+ */
+
+/**
+ * A filter with the codes that the user selected.
+ *
+ * @typedef {object} ActiveFilter
+ * @property {Filter} filter The filter.
+ * @property {string[]} codes The selected codes. Empty means "all".
+ */
 
 /**
  * Tells if a place matches each open filter that has selected codes. A
