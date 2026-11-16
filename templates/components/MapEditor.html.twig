@@ -177,19 +177,23 @@
 
                     {# The paths of the data set, next to the fields of the layer. It #}
                     {# stays in view while the editor scrolls through the layer. #}
-                    <aside aria-labelledby="{{ pathList }}-heading" tabindex="0" class="flex max-h-[calc(100dvh-2rem)] flex-col gap-2 overflow-y-auto rounded bg-surface-2 p-3 text-sm text-text-muted wide:sticky wide:top-4 focus-visible:outline-2 focus-visible:outline-focus">
+                    <aside aria-labelledby="{{ pathList }}-heading" tabindex="0" {{ stimulus_controller('clipboard', {copied: 'builder.form.path_copied'|trans, failed: 'builder.form.path_copy_failed'|trans}) }} class="flex max-h-[calc(100dvh-2rem)] flex-col gap-2 overflow-y-auto rounded bg-surface-2 p-3 text-sm text-text-muted wide:sticky wide:top-4 focus-visible:outline-2 focus-visible:outline-focus">
                         <twig:Heading level="4" size="sm" id="{{ pathList }}-heading" class="text-ink">
                             {{- paths is empty ? 'builder.form.paths_title'|trans : 'builder.form.paths'|trans({'%count%': paths|length}) -}}
                         </twig:Heading>
                         {% if paths is not empty %}
                             <p class="m-0 text-xs">{{ 'builder.form.paths_help'|trans({'%count%': constant('App\\Builder\\DataSetFields::SAMPLE_SIZE')}) }}</p>
+                            <p data-clipboard-target="status" role="status" class="m-0 text-xs empty:hidden"></p>
                             <ul class="m-0 flex list-none flex-col gap-2 p-0">
                                 {% for path, example in paths %}
-                                    <li class="break-words">
-                                        <code class="block text-[10px]">{{ path }}</code>
-                                        {% if example is not same as('') %}
-                                            <span class="block text-xs">{{ example }}</span>
-                                        {% endif %}
+                                    <li class="flex items-start gap-1">
+                                        <span class="min-w-0 flex-1 break-words">
+                                            <code class="block text-[10px]">{{ path }}</code>
+                                            {% if example is not same as('') %}
+                                                <span class="block text-xs">{{ example }}</span>
+                                            {% endif %}
+                                        </span>
+                                        <twig:Form:CopyButton text="{{ path }}" label="{{ 'builder.form.path_copy'|trans({'%path%': path}) }}" />
                                     </li>
                                 {% endfor %}
                             </ul>

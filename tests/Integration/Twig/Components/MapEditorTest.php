@@ -211,6 +211,11 @@ final class MapEditorTest extends WebTestCase
         $this->assertSame('Felter i datasættet (2)', $crawler->filter('aside h4')->text());
         $this->assertSame(['address.streetAddress', 'name'], $crawler->filter('aside code')->each(static fn (Crawler $code): string => $code->text()));
         $this->assertStringContainsString('Hack Kampmanns Plads 2', $crawler->filter('aside li')->first()->text());
+        $button = $crawler->filter('aside li button')->first();
+        $this->assertSame('Kopiér address.streetAddress', $button->attr('aria-label'));
+        $this->assertSame('address.streetAddress', $button->attr('data-clipboard-text-param'));
+        $this->assertSame('clipboard#copy', $button->attr('data-action'));
+        $this->assertSame('clipboard', $crawler->filter('aside')->attr('data-controller'));
     }
 
     public function testTellsThatTheDataSetGaveNoPaths(): void

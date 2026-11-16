@@ -141,6 +141,9 @@ builder:
     paths: Fields in the data set (%count%)
     paths_help: The paths and an example from the first %count% places. You can also type a field that is not here.
     paths_empty: Select a data set to see its fields.
+    path_copy: Copy %path%
+    path_copied: "Copied: %text%"
+    path_copy_failed: Could not copy %text%. Select the path, and copy it yourself.
     paths_none: The data set gave no suggestions for paths. Maybe Enter does not answer. You can still type the paths.
     example: Example
     format: Type

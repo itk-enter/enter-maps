@@ -33,7 +33,7 @@ address-search:choose  -> map#origin
 | `map_detail_controller.js`     | The detail view of a place, over the list. Shows the fields, the route link and the report link. Controls focus, and closes with Escape. Sends `map-detail:close`.                                                                                                       |
 | `map_filters_controller.js`    | The layer checkboxes and the filters in the sidebar. On each change, sends `map-filters:change` with the layers that are on and the selected codes.                                                                                                                      |
 | `address_search_controller.js` | The search field. Filters the list as the user types (`address-search:query`), or finds an address with Adressevælger (`address-search:choose`). The address search is an ARIA 1.2 combobox.                                                                             |
-| `clipboard_controller.js`      | In the builder: copies the embed code. On a page without https, it selects the code and uses the old copy command.                                                                                                                                                       |
+| `clipboard_controller.js`      | In the builder: copies the embed code, or the text of a button, for example a path. On a page without https, it uses the old copy command.                                                                                                                               |
 
 ## The modules in `assets/lib/`
 

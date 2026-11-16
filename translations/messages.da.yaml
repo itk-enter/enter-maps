@@ -141,6 +141,9 @@ builder:
     paths: Felter i datasættet (%count%)
     paths_help: Stierne og et eksempel fra de første %count% steder. Du kan også skrive et felt, som ikke står her.
     paths_empty: Vælg et datasæt for at se dets felter.
+    path_copy: Kopiér %path%
+    path_copied: "Kopieret: %text%"
+    path_copy_failed: Kunne ikke kopiere %text%. Markér stien, og kopiér den selv.
     paths_none: Datasættet gav ingen forslag til stier. Enter svarer måske ikke. Du kan stadig skrive stierne.
     example: Eksempel
     format: Type
