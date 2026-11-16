@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Twig\Components;
 
+use App\Builder\DataSetFields;
 use App\Builder\Form\ConditionData;
 use App\Builder\Form\LayerData;
 use App\Builder\Form\MapData;
@@ -76,7 +77,19 @@ final class MapEditor extends AbstractController
         private readonly MapConfigurationFactory $factory,
         private readonly MapConfigurationRepository $repository,
         private readonly TranslatorInterface $translator,
+        private readonly DataSetFields $dataSetFields,
     ) {
+    }
+
+    /**
+     * The paths of the properties of a data set, for the suggestions of the
+     * path fields of a layer.
+     *
+     * @return array<string, string> the example of each path
+     */
+    public function paths(?string $dataSetId): array
+    {
+        return $this->dataSetFields->paths($dataSetId);
     }
 
     /**

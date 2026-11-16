@@ -15,5 +15,14 @@ framework:
         #app: cache.adapter.apcu
 
         # Namespaced pools use the above "app" backend by default
-        #pools:
-        #my.dedicated.cache: null
+        pools:
+            # The paths of the properties of each data set, for the map form.
+            cache.data_set_fields:
+                default_lifetime: 600
+
+when@test:
+    framework:
+        cache:
+            pools:
+                cache.data_set_fields:
+                    adapter: cache.adapter.array

@@ -62,13 +62,50 @@
                         {{ form_row(layer.icon) }}
                     </div>
 
+                    {# The paths in the first entities of the data set are suggestions #}
+                    {# for each path field of the layer, and a list with examples. #}
+                    {% set paths = this.paths(layer.dataSet.vars.value) %}
+                    {% set pathList = 'paths-' ~ layer.vars.name %}
+                    {% set pathAttr = paths is empty ? {} : {list: pathList} %}
+                    {% if paths is not empty %}
+                        <datalist id="{{ pathList }}">
+                            {% for path, example in paths %}
+                                <option value="{{ path }}">{{ example }}</option>
+                            {% endfor %}
+                        </datalist>
+                        <details class="rounded border border-line">
+                            <summary id="{{ pathList }}-heading" class="cursor-pointer p-3 font-semibold">{{ 'builder.form.paths'|trans({'%count%': paths|length}) }}</summary>
+                            <div class="flex flex-col gap-2 px-3 pb-3">
+                                <p class="m-0 text-sm text-text-muted">{{ 'builder.form.paths_help'|trans({'%count%': constant('App\\Builder\\DataSetFields::SAMPLE_SIZE')}) }}</p>
+                                <twig:Table labelledby="{{ pathList }}-heading">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">{{ 'builder.form.path'|trans }}</th>
+                                            <th scope="col">{{ 'builder.form.example'|trans }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for path, example in paths %}
+                                            <tr>
+                                                <td><code>{{ path }}</code></td>
+                                                <td class="break-words">{{ example }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </twig:Table>
+                            </div>
+                        </details>
+                    {% elseif layer.dataSet.vars.value %}
+                        <p class="m-0 text-sm text-text-muted">{{ 'builder.form.paths_none'|trans }}</p>
+                    {% endif %}
+
                     <div class="{{ group }}">
                         <twig:Heading level="4" size="sm">{{ 'builder.form.row'|trans }}</twig:Heading>
                         <p class="m-0 text-sm text-text-muted">{{ 'builder.form.row_help'|trans }}</p>
                         <fieldset class="{{ fieldset }}">
                             <legend class="{{ legend }}">{{ 'builder.form.row_title'|trans }}</legend>
                             <div class="{{ grid }}">
-                                {{ form_row(layer.title.path) }}
+                                {{ form_row(layer.title.path, {attr: pathAttr}) }}
                                 {{ form_row(layer.title.fallback) }}
                                 {{ form_widget(layer.title.extra) }}
                             </div>
@@ -76,7 +113,7 @@
                         <fieldset class="{{ fieldset }}">
                             <legend class="{{ legend }}">{{ 'builder.form.row_subtitle'|trans }}</legend>
                             <div class="{{ grid }}">
-                                {{ form_row(layer.subtitle.path, {required: false}) }}
+                                {{ form_row(layer.subtitle.path, {required: false, attr: pathAttr}) }}
                                 {{ form_row(layer.subtitle.label, {help: 'builder.form.row_subtitle_label_help'}) }}
                                 {{ form_row(layer.subtitle.format) }}
                                 {{ form_row(layer.subtitle.fallback) }}
@@ -97,7 +134,7 @@
                                 </div>
                                 <div class="{{ grid }}">
                                     {{ form_row(field.label, {help: 'builder.form.field_label_help'}) }}
-                                    {{ form_row(field.path) }}
+                                    {{ form_row(field.path, {attr: pathAttr}) }}
                                     {{ form_row(field.format) }}
                                     {{ form_row(field.fallback) }}
                                     {{ form_widget(field.extra) }}
@@ -134,7 +171,7 @@
                                         {{ form_widget(condition.vars.button_delete, {attr: {'aria-label': 'builder.form.condition_delete_label'|trans({'%number%': loop.index})}}) }}
                                     </div>
                                     <div class="{{ grid }}">
-                                        {{ form_row(condition.path) }}
+                                        {{ form_row(condition.path, {attr: pathAttr}) }}
                                         {{ form_row(condition.operator) }}
                                         {% if operator == 'isNull' %}
                                             {% do condition.type.setRendered %}

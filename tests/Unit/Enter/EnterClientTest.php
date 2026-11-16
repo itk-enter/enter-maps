@@ -176,4 +176,19 @@ final class EnterClientTest extends TestCase
 
         new EnterClient($client)->getFeatures(new DataSet('toilets', 'Toilets', null, null), null);
     }
+
+    public function testGetSampleReadsOnePageWithTheLimit(): void
+    {
+        $enter = new FakeEnter();
+        $enter->features['toilets'] = array_map(static fn (int $number): array => FakeEnter::feature('urn:'.$number, ['name' => 'Toilet '.$number]), range(1, 5));
+
+        $features = new EnterClient($enter->client())->getSample(new DataSet('toilets', 'Toilets', 'PublicToilet', null), 3);
+
+        $this->assertSame(['urn:1', 'urn:2', 'urn:3'], array_column($features, 'id'));
+        // The same properties are removed as in getFeatures().
+        $this->assertSame(['name' => 'Toilet 1'], $features[0]['properties']);
+        $this->assertCount(1, $enter->requests);
+        $this->assertStringContainsString('limit=3', $enter->requests[0]);
+        $this->assertStringContainsString('type=PublicToilet', $enter->requests[0]);
+    }
 }

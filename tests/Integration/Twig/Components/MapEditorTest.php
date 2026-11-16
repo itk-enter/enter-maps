@@ -191,6 +191,34 @@ final class MapEditorTest extends WebTestCase
         $this->assertCount(0, $crawler->filter('[id^="map_layers_0_conditions_"]'));
     }
 
+    public function testSuggestsThePathsOfTheDataSet(): void
+    {
+        $this->enter->features['merged-public-toilets'] = [FakeEnter::feature('urn:1', ['name' => 'Dokk1', 'address' => ['streetAddress' => 'Hack Kampmanns Plads 2']])];
+        $map = $this->import('toilets');
+
+        $crawler = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()])->render()->crawler();
+
+        $this->assertSame(['address.streetAddress', 'name'], $crawler->filter('datalist#paths-0 option')->each(
+            static fn (Crawler $option): ?string => $option->attr('value'),
+        ));
+        $this->assertSame('Hack Kampmanns Plads 2', $crawler->filter('datalist#paths-0 option')->first()->text());
+        foreach (['title_path', 'subtitle_path', 'detail_0_path', 'conditions_0_path'] as $field) {
+            $this->assertSame('paths-0', $crawler->filter('#map_layers_0_'.$field)->attr('list'), $field);
+        }
+        $this->assertSame('Felter i datasættet (2)', $crawler->filter('details summary')->text());
+    }
+
+    public function testTellsThatTheDataSetGaveNoPaths(): void
+    {
+        $map = $this->import('toilets');
+
+        $crawler = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()])->render()->crawler();
+
+        $this->assertCount(0, $crawler->filter('datalist'));
+        $this->assertNull($crawler->filter('#map_layers_0_title_path')->attr('list'));
+        $this->assertStringContainsString('Datasættet gav ingen forslag til stier.', $crawler->text());
+    }
+
     public function testKeepsADataSetThatEnterDoesNotList(): void
     {
         $map = $this->import('toilets-and-parking');
