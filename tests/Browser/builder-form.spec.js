@@ -36,14 +36,16 @@ test("makes a new map with a fixed filter", async ({ page }) => {
   await page
     .getByRole("button", { name: "Tilføj betingelse til filteret" })
     .click();
-  await rendered(page);
-  await page.getByLabel("Sti", { exact: true }).last().fill("material");
-  await page.getByLabel("Betingelse", { exact: true }).selectOption("in");
-  await rendered(page);
+  // The locators wait for the card, which comes with the next render.
+  const condition = page.getByRole("group", { name: "Betingelse 1" });
+  await condition.getByLabel("Sti", { exact: true }).fill("material");
+  await condition.getByLabel("Betingelse", { exact: true }).selectOption("in");
 
   // "er en af" takes one value on each line.
-  await expect(page.getByLabel("Værdi", { exact: true })).toHaveCount(0);
-  await page.getByLabel("Værdier").fill("træ\nmetal");
+  await expect(condition.getByLabel("Værdier")).toBeVisible();
+  await expect(condition.getByLabel("Værdi", { exact: true })).toHaveCount(0);
+  await condition.getByLabel("Værdier").fill("træ\nmetal");
+  await rendered(page);
   await expectNoAxeViolations(page);
 
   await page.getByRole("button", { name: "Gem og vis kortet" }).click();
