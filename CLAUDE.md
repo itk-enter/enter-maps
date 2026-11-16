@@ -75,7 +75,7 @@ tests/Support/FakeEnter.php        A fake Enter for tests, on MockHttpClient
 tests/Support/Database.php         Makes an empty SQLite database for a test
 tests/Browser/                     Playwright and axe-core tests of the pages, with stubs for services
 templates/builder/                 The pages of the builder
-templates/components/              Twig components: Layout, Map, Search, Form, Icon and Heading
+templates/components/              Twig components: Layout, Map, Search, Form, Icon, Heading and Table
 templates/embed/                   The embed page and the page for a map that is not available
 translations/                      The texts of the pages, in Danish and English
 ```

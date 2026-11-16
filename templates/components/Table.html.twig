@@ -1,0 +1,13 @@
+{% props labelledby %}
+{# A table that scrolls sideways on a narrow screen. `labelledby` is the id #}
+{# of the visible heading of the table. The content is the thead and the #}
+{# tbody, and the component styles their cells. #}
+{# The wrapper is a region with the heading as its name, so a screen #}
+{# reader can find the table. It is in the tab order, so a keyboard user #}
+{# can scroll it with the arrow keys. Chromium and Firefox do this without #}
+{# tabindex, but Safari does not. #}
+<div role="region" aria-labelledby="{{ labelledby }}" tabindex="0" class="overflow-x-auto rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+    <table aria-labelledby="{{ labelledby }}" {{ attributes.defaults({class: 'w-full border-collapse text-left [&_td]:py-3 [&_td]:pr-4 [&_td]:align-top [&_th]:py-2 [&_th]:pr-4 [&_tr]:border-b [&_tr]:border-line'}) }}>
+        {%- block content %}{% endblock -%}
+    </table>
+</div>

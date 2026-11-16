@@ -17,6 +17,26 @@ test("lists the maps", async ({ page }) => {
   await expectNoAxeViolations(page);
 });
 
+test("scrolls the table with the keyboard on a phone", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto("/builder");
+
+  const region = page.getByRole("region", { name: "Alle kort" });
+  const scroll = () => region.evaluate((element) => element.scrollLeft);
+  expect(
+    await region.evaluate(
+      (element) => element.scrollWidth > element.clientWidth,
+    ),
+    "The table is wider than the screen",
+  ).toBe(true);
+  await expectNoAxeViolations(page);
+
+  await region.focus();
+  await page.keyboard.press("ArrowRight");
+
+  await expect.poll(scroll).toBeGreaterThan(0);
+});
+
 test("shows and copies the embed code", async ({ page }) => {
   await page.goto("/builder");
 

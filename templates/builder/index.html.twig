@@ -3,30 +3,28 @@
 {% block heading %}{{ 'builder.index.title'|trans }}{% endblock %}
 
 {% block content %}
-    <section aria-labelledby="maps-heading" class="flex flex-col gap-4">
+    <section class="flex flex-col gap-4">
         <twig:Heading level="2" id="maps-heading">{{ 'builder.index.maps'|trans }}</twig:Heading>
         {% if maps is empty %}
             <p class="m-0 text-text-muted">{{ 'builder.index.empty'|trans }}</p>
         {% else %}
-            {# The table scrolls sideways on a narrow screen, if it must. #}
-            <div class="overflow-x-auto">
-            <table class="w-full border-collapse text-left">
+            <twig:Table labelledby="maps-heading">
                 <thead>
-                    <tr class="border-b border-line">
-                        <th scope="col" class="py-2 pr-4">{{ 'builder.index.map'|trans }}</th>
-                        <th scope="col" class="py-2 pr-4">{{ 'builder.index.updated'|trans }}</th>
-                        <th scope="col" class="py-2"><span class="sr-only">{{ 'builder.index.actions'|trans }}</span></th>
+                    <tr>
+                        <th scope="col">{{ 'builder.index.map'|trans }}</th>
+                        <th scope="col">{{ 'builder.index.updated'|trans }}</th>
+                        <th scope="col"><span class="sr-only">{{ 'builder.index.actions'|trans }}</span></th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for map in maps %}
-                        <tr class="border-b border-line align-top">
-                            <td class="py-3 pr-4">
+                        <tr>
+                            <td>
                                 <span class="block font-semibold">{{ map.config.title }}</span>
                                 <span class="block text-sm break-all text-text-muted">{{ map.id }}</span>
                             </td>
-                            <td class="py-3 pr-4 whitespace-nowrap">{{ map.updatedAt|date('d.m.Y H:i') }}</td>
-                            <td class="py-3">
+                            <td class="whitespace-nowrap">{{ map.updatedAt|date('d.m.Y H:i') }}</td>
+                            <td>
                                 <ul class="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0">
                                     <li><a href="{{ path('app_embed_leaflet', {id: map.id}) }}" target="_blank" rel="noopener" aria-label="{{ 'builder.index.open_label'|trans({'%title%': map.config.title}) }}" class="text-link underline">{{ 'builder.index.open'|trans }}</a></li>
                                     <li><a href="{{ path('app_builder_embed', {id: map.id}) }}" aria-label="{{ 'builder.index.embed_label'|trans({'%title%': map.config.title}) }}" class="text-link underline">{{ 'builder.index.embed'|trans }}</a></li>
@@ -36,8 +34,7 @@
                         </tr>
                     {% endfor %}
                 </tbody>
-            </table>
-            </div>
+            </twig:Table>
         {% endif %}
     </section>
 
