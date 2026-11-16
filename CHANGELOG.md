@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-18](https://github.com/itk-enter/enter-maps/pull/18)
+  Added browser tests with Playwright and axe-core, and the `task test:browser` command
 * [PR-17](https://github.com/itk-enter/enter-maps/pull/17)
   Added the embed page for Leaflet at `/embed/leaflet/{id}`, with Tailwind, Stimulus and Twig components
 * [PR-16](https://github.com/itk-enter/enter-maps/pull/16)
