@@ -55,7 +55,7 @@ The structure now:
 
 ```text
 assets/controllers/                Stimulus controllers for the map, list, detail, filters and search. See its README.
-assets/lib/                        JavaScript modules without Stimulus: fields, geometry, Adressevælger
+assets/lib/                        JavaScript modules without Stimulus: fields and Adressevælger
 assets/styles/                     app.css, the design tokens, the base styles and changes to Leaflet
 config/packages/enter.yaml         The HTTP client for Enter
 config/schema/map-config.v1.json   JSON Schema for config, version 1
@@ -92,7 +92,7 @@ The test environment uses SQLite, because CI runs the tests without MariaDB. A t
 
 ## Frontend
 
-The rules come from `itk-dev/aibibliotek`. The plan has the full text in "Frontend".
+The rules come from `itk-dev/aibibliotek`.
 
 ### Tools and CDNs
 
