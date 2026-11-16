@@ -3,12 +3,12 @@
 {# that its operator and type need. #}
 {% set section = 'flex flex-col gap-4' %}
 {% set box = 'flex flex-col gap-4 rounded border border-line p-4' %}
-{% set grid = 'grid gap-4 sm:grid-cols-2' %}
+{% set grid = 'grid grid-cols-1 gap-4 sm:grid-cols-2' %}
 {% set group = 'flex flex-col gap-3 border-t border-line pt-4' %}
 {% set fieldset = 'm-0 flex flex-col gap-3 border-0 p-0' %}
 {% set legend = 'mb-2 p-0 font-semibold' %}
 {% set card = 'm-0 flex flex-col gap-3 rounded border border-line bg-surface-2 p-3' %}
-<div {{ attributes.defaults({class: 'max-w-3xl'}) }}>
+<div {{ attributes }}>
     {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col gap-8', 'data-action': 'live#action:prevent', 'data-live-action-param': 'save', 'data-live-then-param': 'preview'}}) }}
         {% if saveErrors is not empty %}
             <twig:Layout:ErrorList title="{{ 'builder.form.not_saved'|trans }}" :errors="saveErrors" />
@@ -33,7 +33,7 @@
         <section aria-labelledby="view-heading" class="{{ section }}">
             <twig:Heading level="2" id="view-heading">{{ 'builder.form.view'|trans }}</twig:Heading>
             <p class="m-0 text-sm text-text-muted">{{ 'builder.form.view_help'|trans }}</p>
-            <div class="grid gap-4 sm:grid-cols-3">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 {{ form_row(form.viewLongitude) }}
                 {{ form_row(form.viewLatitude) }}
                 {{ form_row(form.viewZoom) }}
@@ -55,6 +55,8 @@
                     {{ form_widget(layer.id) }}
                     {{ form_widget(layer.extra) }}
                     {{ form_widget(layer.rawFilter) }}
+                    <div class="grid grid-cols-1 items-start gap-6 wide:grid-cols-[minmax(0,1fr)_16rem]">
+                    <div class="flex min-w-0 flex-col gap-4">
                     <div class="{{ grid }}">
                         {{ form_row(layer.label) }}
                         {{ form_row(layer.dataSet) }}
@@ -73,30 +75,6 @@
                                 <option value="{{ path }}">{{ example }}</option>
                             {% endfor %}
                         </datalist>
-                        <details class="rounded border border-line">
-                            <summary id="{{ pathList }}-heading" class="cursor-pointer p-3 font-semibold">{{ 'builder.form.paths'|trans({'%count%': paths|length}) }}</summary>
-                            <div class="flex flex-col gap-2 px-3 pb-3">
-                                <p class="m-0 text-sm text-text-muted">{{ 'builder.form.paths_help'|trans({'%count%': constant('App\\Builder\\DataSetFields::SAMPLE_SIZE')}) }}</p>
-                                <twig:Table labelledby="{{ pathList }}-heading">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">{{ 'builder.form.path'|trans }}</th>
-                                            <th scope="col">{{ 'builder.form.example'|trans }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for path, example in paths %}
-                                            <tr>
-                                                <td><code>{{ path }}</code></td>
-                                                <td class="break-words">{{ example }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </twig:Table>
-                            </div>
-                        </details>
-                    {% elseif layer.dataSet.vars.value %}
-                        <p class="m-0 text-sm text-text-muted">{{ 'builder.form.paths_none'|trans }}</p>
                     {% endif %}
 
                     <div class="{{ group }}">
@@ -194,6 +172,33 @@
                             <div>{{ form_widget(layer.conditions.vars.button_add) }}</div>
                             {% do layer.conditions.setRendered %}
                         {% endif %}
+                    </div>
+                    </div>
+
+                    {# The paths of the data set, next to the fields of the layer. It #}
+                    {# stays in view while the editor scrolls through the layer. #}
+                    <aside aria-labelledby="{{ pathList }}-heading" tabindex="0" class="flex max-h-[calc(100dvh-2rem)] flex-col gap-2 overflow-y-auto rounded bg-surface-2 p-3 text-sm text-text-muted wide:sticky wide:top-4 focus-visible:outline-2 focus-visible:outline-focus">
+                        <twig:Heading level="4" size="sm" id="{{ pathList }}-heading" class="text-ink">
+                            {{- paths is empty ? 'builder.form.paths_title'|trans : 'builder.form.paths'|trans({'%count%': paths|length}) -}}
+                        </twig:Heading>
+                        {% if paths is not empty %}
+                            <p class="m-0 text-xs">{{ 'builder.form.paths_help'|trans({'%count%': constant('App\\Builder\\DataSetFields::SAMPLE_SIZE')}) }}</p>
+                            <ul class="m-0 flex list-none flex-col gap-2 p-0">
+                                {% for path, example in paths %}
+                                    <li class="break-words">
+                                        <code class="block">{{ path }}</code>
+                                        {% if example is not same as('') %}
+                                            <span class="block text-xs">{{ example }}</span>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% elseif layer.dataSet.vars.value %}
+                            <p class="m-0">{{ 'builder.form.paths_none'|trans }}</p>
+                        {% else %}
+                            <p class="m-0">{{ 'builder.form.paths_empty'|trans }}</p>
+                        {% endif %}
+                    </aside>
                     </div>
                 </div>
             {% endfor %}

@@ -137,8 +137,10 @@ builder:
     field_label_help: The heading above the value in the detail view.
     path: Path
     path_help: Select a suggestion from the data set, or type the path, for example address.streetAddress.
+    paths_title: Fields in the data set
     paths: Fields in the data set (%count%)
-    paths_help: The paths, and an example of a value, from the first %count% places in the data set. You can still type a field that is not in them.
+    paths_help: The paths and an example from the first %count% places. You can also type a field that is not here.
+    paths_empty: Select a data set to see its fields.
     paths_none: The data set gave no suggestions for paths. Maybe Enter does not answer. You can still type the paths.
     example: Example
     format: Type

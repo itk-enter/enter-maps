@@ -137,8 +137,10 @@ builder:
     field_label_help: Overskriften over værdien i detaljevisningen.
     path: Sti
     path_help: Vælg et forslag fra datasættet, eller skriv stien, fx address.streetAddress.
+    paths_title: Felter i datasættet
     paths: Felter i datasættet (%count%)
-    paths_help: Stierne og et eksempel på en værdi fra de første %count% steder i datasættet. Et felt, som mangler i dem, kan du stadig skrive.
+    paths_help: Stierne og et eksempel fra de første %count% steder. Du kan også skrive et felt, som ikke står her.
+    paths_empty: Vælg et datasæt for at se dets felter.
     paths_none: Datasættet gav ingen forslag til stier. Enter svarer måske ikke. Du kan stadig skrive stierne.
     example: Eksempel
     format: Type

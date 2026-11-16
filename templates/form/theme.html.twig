@@ -4,7 +4,7 @@
 {% use 'form_div_layout.html.twig' %}
 
 {%- block form_row_render -%}
-    {%- set row_attr = row_attr|merge({class: (row_attr.class|default('') ~ ' flex flex-col gap-1')|trim}) -%}
+    {%- set row_attr = row_attr|merge({class: (row_attr.class|default('') ~ ' flex min-w-0 flex-col gap-1')|trim}) -%}
     <div{% with {attr: row_attr} %}{{ block('attributes') }}{% endwith %}>
         {{- form_label(form) -}}
         {{- form_widget(form, widget_attr) -}}
@@ -79,7 +79,7 @@
 {%- endblock textarea_widget -%}
 
 {%- block choice_widget_collapsed -%}
-    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' min-h-10 rounded border border-line bg-surface px-2 text-ink aria-invalid:border-danger')|trim}) -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' min-h-10 w-full min-w-0 rounded border border-line bg-surface px-2 text-ink aria-invalid:border-danger')|trim}) -%}
     {{- parent() -}}
 {%- endblock choice_widget_collapsed -%}
 
