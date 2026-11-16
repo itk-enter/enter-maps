@@ -190,7 +190,9 @@ command and open <http://localhost:9323>:
 task test:browser:report
 ```
 
-The site does not serve `var/`, so the report is not on the address of the site. The `Browser tests` workflow runs the same task, and uploads the report if a test fails.
+The site does not serve `var/`, so the report is not on the address of the site.
+
+The `Browser tests` workflow runs the same tests, and uploads the report if a test fails.
 
 The GitHub Actions workflows in `.github/workflows/` run the same checks.
 
