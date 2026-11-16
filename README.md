@@ -70,13 +70,12 @@ If you change `docker-compose.override.yml` while the containers run, run `docke
 
 The builder at <http://enter-maps.local.itkdev.dk/builder> lists the maps. On the list, you can:
 
-- Import a map from a JSON file.
-- Show a map, or export its configuration as a JSON file.
+- Show a map.
+- Get the embed code of a map: the `<iframe>` tag for the page that shows the map.
 - Delete a map, and restore a deleted map.
 
-The form that makes a new map comes later. Until then, import map configurations from JSON files, in the builder or
-with a command. The command gives the embed URL of each map. The files in `tests/Fixtures/map-config/` are test
-data, not real maps.
+The form that makes a new map comes later. Until then, import map configurations from JSON files with a command. The
+command gives the embed URL of each map. The files in `tests/Fixtures/map-config/` are test data, not real maps.
 
 ```shell
 task console -- app:map-config:import tests/Fixtures/map-config/*.json

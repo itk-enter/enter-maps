@@ -53,21 +53,20 @@ Rules that apply to all parts:
 The structure now:
 
 ```text
-assets/controllers/                Stimulus controllers for the map, list, detail, filters and search. See its README.
+assets/controllers/                Stimulus controllers for the map and the builder. See its README.
 assets/lib/                        JavaScript modules without Stimulus: fields and Adressevælger
 assets/styles/                     app.css, the design tokens, the base styles and changes to Leaflet
 config/packages/enter.yaml         The HTTP client for Enter
 config/schema/map-config.v1.json   JSON Schema for config, version 1
 migrations/                        Doctrine migrations for MariaDB
-src/Builder/                       The import and the export of a map configuration as JSON
+src/Builder/                       The import of a map configuration, and the embed code of a map
 src/Command/                       Console commands, for example app:map-config:import
-src/Controller/BuilderController.php /builder: the list of the maps, import, export, delete and restore
+src/Controller/BuilderController.php /builder: the list of the maps, the embed code, delete and restore
 src/Controller/DataController.php  GET /data/{dataSet}.geojson
 src/Controller/EmbedController.php GET /embed/leaflet/{id}
 src/Embed/                         EmbedOptionsParser reads the embed options from the query string
 src/Enter/                         EnterClient reads from Enter. DataProxy validates the request.
 src/Entity/MapConfiguration.php    The stored configuration, on itk-dev/entity-bundle
-src/Form/                          The Symfony forms of the builder
 src/MapConfig/                     MapConfigParser, the config value objects and MapConfigurationFactory
 src/Renderer/                      The converter of each renderer, the base maps and the icons
 tests/Unit/                        Unit tests
@@ -78,7 +77,6 @@ tests/Browser/                     Playwright and axe-core tests of the pages, w
 templates/builder/                 The pages of the builder
 templates/components/              Twig components: Layout, Map, Search, Form, Icon and Heading
 templates/embed/                   The embed page and the page for a map that is not available
-templates/form/theme.html.twig     The form theme: the classes of the design tokens on the Symfony forms
 translations/                      The texts of the pages, in Danish and English
 ```
 
