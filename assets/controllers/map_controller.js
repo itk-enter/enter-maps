@@ -1,7 +1,6 @@
 import { Controller } from "@hotwired/stimulus";
 import * as L from "leaflet";
 import { formatField, matchesFilters } from "../lib/fields.js";
-import { centroid, distanceInMetres } from "../lib/geo.js";
 
 /**
  * A layer from map_json.leaflet.
@@ -214,7 +213,10 @@ export default class extends Controller {
    */
   toPlace(feature, layer, index, context) {
     const properties = feature.properties ?? {};
-    const point = centroid(feature.geometry);
+    // The centre of the bounds. For an area, the centre can be outside a
+    // shape that is not convex. That is close enough for the list and the
+    // markers.
+    const point = L.geoJSON(feature.geometry).getBounds().getCenter();
 
     return {
       id: feature.id ?? `${layer.id}-${index}`,
@@ -222,7 +224,7 @@ export default class extends Controller {
       properties,
       geometry: feature.geometry,
       lat: point.lat,
-      lon: point.lon,
+      lon: point.lng,
       title: formatField(layer.row.title, properties, context)?.text ?? "",
       subtitle: this.rowText(layer.row.subtitle, properties, context),
       details: layer.detail
@@ -333,7 +335,10 @@ export default class extends Controller {
     }
 
     places.forEach((place) => {
-      place.distance = distanceInMetres(this.state.origin, place);
+      place.distance = this.map.distance(
+        [this.state.origin.lat, this.state.origin.lon],
+        [place.lat, place.lon],
+      );
     });
 
     return places

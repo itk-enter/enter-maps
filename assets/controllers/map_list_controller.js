@@ -1,5 +1,4 @@
 import { Controller } from "@hotwired/stimulus";
-import { formatDistance } from "../lib/geo.js";
 
 /**
  * The list of the places that the map shows. The map controller calls
@@ -89,13 +88,36 @@ export default class extends Controller {
     if (place.distance === undefined) {
       field("distance").remove();
     } else {
-      field("distance").textContent = formatDistance(
-        place.distance,
-        document.documentElement.lang,
-      );
+      field("distance").textContent = this.formatDistance(place.distance);
     }
 
     return item;
+  }
+
+  /**
+   * Formats a distance as "120 m" or "1,4 km", in the language of the page.
+   * Distances under 1 km are rounded to 10 m.
+   *
+   * @param {number} metres The distance, in metres.
+   * @returns {string} The text.
+   */
+  formatDistance(metres) {
+    const locale = document.documentElement.lang;
+
+    if (metres < 1000) {
+      return new Intl.NumberFormat(locale, {
+        style: "unit",
+        unit: "meter",
+        maximumFractionDigits: 0,
+      }).format(Math.round(metres / 10) * 10);
+    }
+
+    return new Intl.NumberFormat(locale, {
+      style: "unit",
+      unit: "kilometer",
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    }).format(metres / 1000);
   }
 
   /**

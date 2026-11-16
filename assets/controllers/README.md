@@ -38,10 +38,12 @@ address-search:choose  -> map#origin
 
 These modules do not use Stimulus, so the controllers share them.
 
+Do not write geometry or projection calculations here. Use Leaflet, for example `getBounds().getCenter()` and
+`map.distance()`, or a package from npm.
+
 | File                | Purpose                                                                                                                |
 |---------------------|------------------------------------------------------------------------------------------------------------------------|
 | `fields.js`         | Reads the fields of the configuration from the properties of a feature, formats them as text, and applies the filters. |
-| `geo.js`            | Computes the centre of a geometry and the distance between two points, and formats a distance.                         |
 | `adressevaelger.js` | Calls Adressevælger from Klimadatastyrelsen: a search for addresses, and the position of an address.                   |
 
 ## After a change
