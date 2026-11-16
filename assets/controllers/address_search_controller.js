@@ -14,15 +14,25 @@ import { isAddress, position, search } from "../lib/adressevaelger.js";
  * empty text. To choose an address sends address-search:choose with
  * { lat, lon, label }.
  *
- * Values: local and address (the types of search that are on).
+ * Values: local and address (the types of search that are on), and token
+ * (the token of Adressevælger, from ADRESSEVAELGER_TOKEN).
  * Targets: input, listbox, option (the option template) and error.
  */
 
+/**
+ * The time to wait after the last key before a search, in milliseconds. One
+ * search for each word, not one for each letter.
+ */
 const DELAY = 250;
+
+/**
+ * The minimum number of characters before a search. Shorter texts give too
+ * many suggestions to be useful.
+ */
 const MIN_LENGTH = 3;
 
 export default class extends Controller {
-  static values = { local: Boolean, address: Boolean };
+  static values = { local: Boolean, address: Boolean, token: String };
 
   static targets = ["input", "listbox", "option", "error"];
 
@@ -101,7 +111,7 @@ export default class extends Controller {
     }
 
     try {
-      const found = await search(text);
+      const found = await search(text, this.tokenValue);
 
       // A slow answer to an earlier key must not replace a newer answer.
       if (current !== this.request) {
@@ -212,7 +222,7 @@ export default class extends Controller {
     }
 
     try {
-      const point = await position(hit);
+      const point = await position(hit, this.tokenValue);
 
       this.errorTarget.hidden = true;
       this.inputTarget.value = hit.titel;

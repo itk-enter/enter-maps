@@ -2,9 +2,8 @@
  * @file Address search on Adressevælger from Klimadatastyrelsen.
  *
  * There are two calls: a search that gives labels and ids, then a lookup of
- * the access point of the chosen id. The token is not an API key. It is
- * necessary, but Klimadatastyrelsen does not manage it yet, and asks all
- * users to send this value.
+ * the access point of the chosen id. Each call sends a token. The token
+ * comes from ADRESSEVAELGER_TOKEN in .env, through the search controller.
  */
 
 /**
@@ -18,9 +17,11 @@
  *   streets.
  */
 
+// The address of the API of Adressevælger.
 const BASE = "https://adressevaelger.dk";
-const TOKEN = "adressevaelger123";
+// The search gives only addresses in this municipality. 0751 is Aarhus.
 const MUNICIPALITY_CODE = "0751";
+// The maximum number of suggestions under the search field.
 const SUGGESTION_COUNT = 5;
 
 /**
@@ -39,12 +40,13 @@ export function isAddress(hit) {
  * Finds addresses and streets in the municipality.
  *
  * @param {string} text The text that the user typed.
+ * @param {string} token The token of Adressevælger.
  * @returns {Promise<Hit[]>} The first suggestions.
  * @throws {Error} If Adressevælger gives an error.
  */
-export async function search(text) {
+export async function search(text, token) {
   const response = await fetch(
-    `${BASE}/husnumre/soeg?kommunekode=${MUNICIPALITY_CODE}&token=${TOKEN}&tekst=${encodeURIComponent(text)}`,
+    `${BASE}/husnumre/soeg?kommunekode=${MUNICIPALITY_CODE}&token=${encodeURIComponent(token)}&tekst=${encodeURIComponent(text)}`,
   );
 
   if (!response.ok) {
@@ -60,13 +62,14 @@ export async function search(text) {
  * Gives the access point of an address.
  *
  * @param {Hit} hit An address. See isAddress().
- * @returns {Promise<import("./geo.js").LatLon>} The access point, in WGS84.
+ * @param {string} token The token of Adressevælger.
+ * @returns {Promise<{lat: number, lon: number}>} The access point, in WGS84.
  * @throws {Error} If Adressevælger gives an error, or if the address has no
  *   access point.
  */
-export async function position(hit) {
+export async function position(hit, token) {
   const response = await fetch(
-    `${BASE}/husnumre/${encodeURIComponent(hit.id)}?token=${TOKEN}`,
+    `${BASE}/husnumre/${encodeURIComponent(hit.id)}?token=${encodeURIComponent(token)}`,
   );
 
   if (!response.ok) {
@@ -90,7 +93,7 @@ export async function position(hit) {
  *
  * @param {number} east The easting, in metres.
  * @param {number} north The northing, in metres.
- * @returns {import("./geo.js").LatLon} The position.
+ * @returns {{lat: number, lon: number}} The position.
  */
 function utm32ToWgs84(east, north) {
   const a = 6378137;

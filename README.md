@@ -208,6 +208,9 @@ become a problem, add a cache to the proxy.
 On the server, set `ENTER_BASE_URI` in `.env.local` to the address of Enter. On staging, also set
 `ENTER_BASIC_AUTH` to `user:password`, because the staging site of Enter is behind basic auth.
 
+The address search sends `ADRESSEVAELGER_TOKEN` from `.env` to Adressevælger. If Klimadatastyrelsen gives the project
+its own token, set it in `.env.local`.
+
 ## Related projects
 
 - [itk-enter/enter](https://github.com/itk-enter/enter): the data platform that this project reads from.

@@ -1,5 +1,8 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        # The browser sends the token to Adressevælger. See .env.
+        adressevaelger_token: '%env(ADRESSEVAELGER_TOKEN)%'
 
 when@test:
     twig:
