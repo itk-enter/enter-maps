@@ -168,10 +168,12 @@ task test:browser
 
 You need only Docker. The task does these steps:
 
-1. It starts the `browser-site` container: the PHP web server in the test environment, with `var/browser.db`. Your
-   dev database does not change.
-2. It imports the fixtures in `tests/Fixtures/map-config`.
-3. It runs the tests in the `playwright` container.
+1. It asks you to continue, because the next step deletes all data in the dev database.
+2. It deletes the data, runs the migrations and imports the fixtures in `tests/Fixtures/map-config`.
+3. It runs the tests in the `playwright` container against the dev site.
+
+After the tests, the dev database holds only the fixtures. To run the task without the question, give `--yes` to
+Task: `task --yes test:browser`.
 
 The tests do not call Enter, Adressevælger or the tiles. `tests/Browser/support.js` gives fixed answers.
 

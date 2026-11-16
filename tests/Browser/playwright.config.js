@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 /**
  * @file The configuration of the browser tests. "task test:browser" runs
- * them in the playwright container against the browser-site container.
+ * them in the playwright container against the dev site.
  * The report and the traces go to var/browser/.
  */
 export default defineConfig({
@@ -16,7 +16,7 @@ export default defineConfig({
   ],
   outputDir: "../../var/browser/results",
   use: {
-    baseURL: process.env.BASE_URL ?? "http://browser-site:8000",
+    baseURL: process.env.BASE_URL ?? "http://nginx:8080",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },

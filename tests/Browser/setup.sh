@@ -1,12 +1,12 @@
 #!/bin/sh
-# Makes an empty database for the browser tests and imports the fixtures.
-# Writes the id of each map to var/browser/maps.json, for example
-# {"toilets": "01M7…"}. "task test:browser" runs this script in the
-# browser-site container.
+# Deletes all data in the dev database, runs the migrations and imports the
+# fixtures. Writes the id of each map to var/browser/maps.json, for example
+# {"toilets": "01M7…"}. "task test:browser" asks the user first, and then
+# runs this script in the phpfpm container.
 set -eu
 
-rm -f var/browser.db
-bin/console doctrine:schema:create --quiet
+bin/console doctrine:schema:drop --full-database --force --quiet
+bin/console doctrine:migrations:migrate --no-interaction --quiet
 mkdir -p var/browser
 
 COLUMNS=200 bin/console app:map-config:import tests/Fixtures/map-config/*.json \

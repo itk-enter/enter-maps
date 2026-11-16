@@ -1,6 +1,6 @@
 /**
- * @file Waits until the site of the browser tests answers. The task starts
- * the PHP web server just before the tests.
+ * @file Waits until the site answers. The first request after a change also
+ * builds the Symfony cache, so it can be slow.
  */
 
 const ATTEMPTS = 30;
