@@ -106,7 +106,7 @@ final class MapEditor extends AbstractController
         $json = json_encode($this->mapper->toConfig($data, $map?->getConfig()), \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
 
         try {
-            if (null === $map) {
+            if (!$map instanceof MapConfiguration) {
                 $map = $this->factory->create($json, [Renderer::Leaflet]);
             } else {
                 $this->factory->update($map, $json);
@@ -130,7 +130,7 @@ final class MapEditor extends AbstractController
 
     private function map(): ?MapConfiguration
     {
-        if (null === $this->map && null !== $this->mapId) {
+        if (!$this->map instanceof MapConfiguration && null !== $this->mapId) {
             $this->map = $this->repository->find($this->mapId);
         }
 

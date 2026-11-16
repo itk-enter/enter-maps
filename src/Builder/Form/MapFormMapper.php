@@ -46,7 +46,7 @@ final readonly class MapFormMapper
     public function toData(?\stdClass $config): MapData
     {
         $data = new MapData();
-        if (null === $config) {
+        if (!$config instanceof \stdClass) {
             $data->layers = [new LayerData()];
 
             return $data;
@@ -119,7 +119,7 @@ final readonly class MapFormMapper
         }
 
         // The keys of the map that the form does not edit, for example "filters" and "report".
-        $extra = null === $original ? [] : $this->extra($original, self::MAP_KEYS);
+        $extra = $original instanceof \stdClass ? $this->extra($original, self::MAP_KEYS) : [];
 
         return $this->toObject($config + $extra);
     }
@@ -229,7 +229,7 @@ final readonly class MapFormMapper
         $conditions = [];
         foreach ($comparisons as $comparison) {
             $condition = $this->conditionToData($this->object($comparison));
-            if (null === $condition) {
+            if (!$condition instanceof ConditionData) {
                 $data->rawFilter = $this->json($filter);
 
                 return;

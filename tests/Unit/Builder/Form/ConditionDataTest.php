@@ -30,7 +30,7 @@ final class ConditionDataTest extends TestCase
         $actual = [];
         foreach ($violations as $violation) {
             /* @var ConstraintViolationInterface $violation */
-            $actual[$violation->getPropertyPath()] = (string) $violation->getMessageTemplate();
+            $actual[$violation->getPropertyPath()] = $violation->getMessageTemplate();
         }
         $this->assertSame($errors, $actual);
     }
