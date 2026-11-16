@@ -66,3 +66,10 @@ tasks:
       - docker compose exec -T phpfpm bin/console tailwind:build
       - docker compose exec -T phpfpm tests/Browser/setup.sh
       - docker compose run --rm --no-deps playwright sh -c "npm ci --no-audit --no-fund --loglevel=error && npx playwright test {{.CLI_ARGS}}"
+
+  browser:report:
+    desc: "Show the report of the last browser tests on http://localhost:9323"
+    # The playwright container serves the report, so the trace viewer works
+    # and Node is not necessary on the host. Stop it with Ctrl+C.
+    cmds:
+      - docker compose run --rm -p 9323:9323 playwright npx playwright show-report ../../var/browser/report --host 0.0.0.0

@@ -183,8 +183,14 @@ To run some of the tests, give Playwright options after `--`:
 task test:browser -- --grep detail
 ```
 
-If a test fails, open `var/browser/report/index.html` in a browser. The report has a screenshot and a trace of each
-failed test. The `Browser tests` workflow runs the same task, and uploads the report if a test fails.
+If a test fails, look at the report. It has a screenshot and a trace of each failed test. To see it, run this
+command and open <http://localhost:9323>:
+
+```shell
+task test:browser:report
+```
+
+The site does not serve `var/`, so the report is not on the address of the site. The `Browser tests` workflow runs the same task, and uploads the report if a test fails.
 
 The GitHub Actions workflows in `.github/workflows/` run the same checks.
 
