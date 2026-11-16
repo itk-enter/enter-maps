@@ -14,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\HeaderUtils;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -109,7 +110,7 @@ final class BuilderController extends AbstractController
      * The CSRF token is not valid, usually because the session expired. The
      * user tries again from the list.
      */
-    private function expired(): \Symfony\Component\HttpFoundation\RedirectResponse
+    private function expired(): RedirectResponse
     {
         $this->addFlash('error', $this->translator->trans('builder.expired'));
 
