@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-20](https://github.com/itk-enter/enter-maps/pull/20)
+  Added the map form in the builder, with a fixed filter for each layer
 * [PR-19](https://github.com/itk-enter/enter-maps/pull/19)
   Added the list of maps in the builder at `/builder`, with the embed code, delete and restore
 * [PR-18](https://github.com/itk-enter/enter-maps/pull/18)
