@@ -92,7 +92,7 @@ final class BuilderController extends AbstractController
     }
 
     #[Route('/{id}/restore', name: 'app_builder_restore', methods: [Request::METHOD_POST])]
-    public function restore(Request $request, string $id): Response
+    public function restore(Request $request, string $id): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('restore-map', $request->getPayload()->getString('_token'))) {
             return $this->expired();
