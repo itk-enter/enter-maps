@@ -32,7 +32,8 @@ Rules that apply to all parts:
 - Validate `config` against the JSON Schema in `config/schema/`. Do not remove support for an old schema version,
   because embed codes stay on other sites for a long time.
 - Field definitions in `config` are data, not code. Do not put JavaScript functions into `config`.
-- The map must have zero axe-core violations on both renderers.
+- The map must have no accessibility errors on both renderers. There are no browser tests for now, so check by
+  hand.
 
 ## Tech stack
 
@@ -46,7 +47,7 @@ Rules that apply to all parts:
 - Leaflet 1.9.x from the importmap.
 - Septima Widget as an ES module from its CDN, with a pinned version. This is the only CDN.
 - Adressevælger from Klimadatastyrelsen for address search.
-- PHPUnit for unit tests. Playwright and axe-core for browser tests.
+- PHPUnit for unit tests. There are no browser tests for now.
 
 ## Project structure
 
