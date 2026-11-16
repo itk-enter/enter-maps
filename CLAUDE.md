@@ -18,6 +18,8 @@ The project has three parts:
 - **The map**, `/embed/{renderer}`. The settings come from the URL (`c`) or from a stored configuration (`{id}`). The
   renderers are `leaflet` and `septima`.
 - **The builder**, `/builder`. A Live Component form that stores a `MapConfiguration` and gives the embed code.
+  `MapFormMapper` keeps the parts of `config` that the form does not edit. If you add a field to the form, add its key
+  to the known keys of the mapper.
 - **The data proxy**, `/data/{dataSet}.geojson`. It reads from Enter, pages through the results and returns GeoJSON.
 
 Rules that apply to all parts:
@@ -60,6 +62,7 @@ config/packages/enter.yaml         The HTTP client for Enter
 config/schema/map-config.v1.json   JSON Schema for config, version 1
 migrations/                        Doctrine migrations for MariaDB
 src/Builder/                       The import of a map configuration, and the embed code of a map
+src/Builder/Form/                  The data of the map form, and MapFormMapper between the form and config
 src/Command/                       Console commands, for example app:map-config:import
 src/Controller/BuilderController.php /builder: the list of the maps, the embed code, delete and restore
 src/Controller/DataController.php  GET /data/{dataSet}.geojson
@@ -67,8 +70,10 @@ src/Controller/EmbedController.php GET /embed/leaflet/{id}
 src/Embed/                         EmbedOptionsParser reads the embed options from the query string
 src/Enter/                         EnterClient reads from Enter. DataProxy validates the request.
 src/Entity/MapConfiguration.php    The stored configuration, on itk-dev/entity-bundle
+src/Form/                          The Symfony form types of the map form
 src/MapConfig/                     MapConfigParser, the config value objects and MapConfigurationFactory
 src/Renderer/                      The converter of each renderer, the base maps and the icons
+src/Twig/Components/MapEditor.php  The Live Component of the map form
 tests/Unit/                        Unit tests
 tests/Integration/                 Tests that boot the kernel or send requests
 tests/Support/FakeEnter.php        A fake Enter for tests, on MockHttpClient
@@ -77,13 +82,14 @@ tests/Browser/                     Playwright and axe-core tests of the pages, w
 templates/builder/                 The pages of the builder
 templates/components/              Twig components: Layout, Map, Search, Form, Icon, Heading and Table
 templates/embed/                   The embed page and the page for a map that is not available
+templates/form/theme.html.twig     The form theme: the classes of the design tokens on the Symfony forms
 translations/                      The texts of the pages, in Danish and English
 ```
 
 The structure that the plan adds later:
 
 ```text
-src/Controller/                    The form and the preview of the builder, and /embed/septima
+src/Controller/                    /embed/septima
 ```
 
 Update this section when the structure changes.
