@@ -191,4 +191,30 @@ final class EnterClientTest extends TestCase
         $this->assertStringContainsString('limit=3', $enter->requests[0]);
         $this->assertStringContainsString('type=PublicToilet', $enter->requests[0]);
     }
+
+    public function testCountEntitiesGivesTheNumberOfEachDataSet(): void
+    {
+        $enter = new FakeEnter();
+        $enter->features['toilets'] = [FakeEnter::feature('urn:1'), FakeEnter::feature('urn:2')];
+        $enter->failingDataSets = ['broken'];
+
+        $counts = new EnterClient($enter->client())->countEntities([
+            new DataSet('toilets', 'Toilets', 'PublicToilet', 'https://example.com/context.jsonld'),
+            new DataSet('benches', 'Benches', null, null),
+            new DataSet('broken', 'Broken', null, null),
+        ]);
+
+        $this->assertSame(['toilets' => 2, 'benches' => 0, 'broken' => null], $counts);
+        $this->assertStringContainsString('count=true', $enter->requests[0]);
+        $this->assertStringContainsString('limit=0', $enter->requests[0]);
+        // The count uses the context of the data set, as the other requests do.
+        $this->assertStringContainsString('context.jsonld', implode("\n", $enter->options[0]['headers'] ?? []));
+    }
+
+    public function testCountEntitiesGivesNullWithoutTheHeader(): void
+    {
+        $client = new MockHttpClient(new MockResponse('', ['http_code' => 200]), 'http://enter.example');
+
+        $this->assertSame(['toilets' => null], new EnterClient($client)->countEntities([new DataSet('toilets', 'Toilets', null, null)]));
+    }
 }

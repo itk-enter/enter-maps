@@ -111,6 +111,7 @@ builder:
     layer_label: Name of the layer
     data_set: Data set
     data_set_select: Select a data set
+    data_set_count: "{0} no places|{1} 1 place|]1,Inf[ %count% places"
     data_set_unavailable: Enter does not answer, so type the id of the data set.
     colour: Colour
     icon: Icon

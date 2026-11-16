@@ -111,6 +111,7 @@ builder:
     layer_label: Navn på laget
     data_set: Datasæt
     data_set_select: Vælg et datasæt
+    data_set_count: "{0} ingen steder|{1} 1 sted|]1,Inf[ %count% steder"
     data_set_unavailable: Enter svarer ikke, så skriv id'et på datasættet.
     colour: Farve
     icon: Ikon

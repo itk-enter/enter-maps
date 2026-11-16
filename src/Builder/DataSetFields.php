@@ -39,7 +39,7 @@ final readonly class DataSetFields
 
     public function __construct(
         private EnterClient $enter,
-        #[Autowire(service: 'cache.data_set_fields')]
+        #[Autowire(service: 'cache.builder')]
         private CacheItemPoolInterface $cache,
     ) {
     }

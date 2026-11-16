@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Form;
 
+use App\Builder\DataSetChoices;
 use App\Builder\Form\LayerData;
-use App\Enter\EnterClient;
-use App\Enter\EnterUnavailableException;
 use App\Renderer\Icons;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -22,9 +21,10 @@ use Symfony\UX\LiveComponent\Form\Type\LiveCollectionType;
 /**
  * One layer in the form of a map.
  *
- * The data set is a select with the data sets of Enter. If Enter does not
- * answer, it is a text field, so the editor can still save the map. A data
- * set that Enter does not list stays in the select.
+ * The data set is a select with the data sets of Enter and their number of
+ * entities. If Enter does not answer, it is a text field, so the editor can
+ * still save the map. A data set that Enter does not list stays in the
+ * select.
  */
 final class LayerType extends AbstractType
 {
@@ -38,7 +38,7 @@ final class LayerType extends AbstractType
     private bool $dataSetsLoaded = false;
 
     public function __construct(
-        private readonly EnterClient $enter,
+        private readonly DataSetChoices $dataSetChoices,
         private readonly Icons $icons,
     ) {
     }
@@ -127,7 +127,7 @@ final class LayerType extends AbstractType
     }
 
     /**
-     * Reads /sources.json once for each request.
+     * Reads the choices once for each request.
      *
      * @return array<string, string>|null
      */
@@ -135,15 +135,7 @@ final class LayerType extends AbstractType
     {
         if (!$this->dataSetsLoaded) {
             $this->dataSetsLoaded = true;
-            try {
-                $this->dataSets = [];
-                foreach ($this->enter->getDataSets() as $dataSet) {
-                    $this->dataSets[\sprintf('%s (%s)', $dataSet->title, $dataSet->id)] = $dataSet->id;
-                }
-                ksort($this->dataSets);
-            } catch (EnterUnavailableException) {
-                $this->dataSets = null;
-            }
+            $this->dataSets = $this->dataSetChoices->choices();
         }
 
         return $this->dataSets;
