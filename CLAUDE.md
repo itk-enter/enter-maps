@@ -32,8 +32,7 @@ Rules that apply to all parts:
 - Validate `config` against the JSON Schema in `config/schema/`. Do not remove support for an old schema version,
   because embed codes stay on other sites for a long time.
 - Field definitions in `config` are data, not code. Do not put JavaScript functions into `config`.
-- The map must have no accessibility errors on both renderers. There are no browser tests for now, so check by
-  hand.
+- The map must have zero axe-core violations on both renderers. The browser tests check this.
 
 ## Tech stack
 
@@ -47,7 +46,7 @@ Rules that apply to all parts:
 - Leaflet 1.9.x from the importmap.
 - Septima Widget as an ES module from its CDN, with a pinned version. This is the only CDN.
 - Adressevælger from Klimadatastyrelsen for address search. `proj4` from the importmap changes its positions to WGS84.
-- PHPUnit for unit tests. There are no browser tests for now.
+- PHPUnit for unit tests. Playwright and axe-core for browser tests, in `tests/Browser/`.
 
 ## Project structure
 
@@ -72,6 +71,7 @@ tests/Unit/                        Unit tests
 tests/Integration/                 Tests that boot the kernel or send requests
 tests/Support/FakeEnter.php        A fake Enter for tests, on MockHttpClient
 tests/Support/Database.php         Makes an empty SQLite database for a test
+tests/Browser/                     Playwright and axe-core tests of the embed pages, with stubs for services
 templates/components/              Twig components: Layout, Map, Search, Form, Icon and Heading
 templates/embed/                   The embed page and the page for a map that is not available
 translations/                      The texts of the pages, in Danish and English
@@ -134,8 +134,9 @@ The rules come from `itk-dev/aibibliotek`.
 The ITK Dev templates supply the coding standards and the Taskfile tasks. PHPStan runs at level 6 without a baseline.
 Do not add a baseline file. Correct the error.
 
-Before you make a pull request, run `task coding-standards:check`, `task code-analysis`, `task rector:check` and
-`task test:coverage`. Commit the changes from `task rector:apply` separately, for example "Applied Rector".
+Before you make a pull request, run `task coding-standards:check`, `task code-analysis`, `task rector:check`,
+`task test:coverage` and `task test:browser`. Commit the changes from `task rector:apply` separately, for example
+"Applied Rector".
 
 The test coverage of `src/` must not be lower than `COVERAGE_THRESHOLD` in `task/test.yml`. Do not write the value
 in other files. Write a test for each new class in `src/`. Put unit tests in `tests/Unit` and integration tests in
