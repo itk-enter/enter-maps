@@ -1,6 +1,5 @@
 twig:
     file_name_pattern: '*.twig'
-    form_themes: ['form/theme.html.twig']
     globals:
         # The browser sends the token to Adressevælger. See .env.
         adressevaelger_token: '%env(ADRESSEVAELGER_TOKEN)%'

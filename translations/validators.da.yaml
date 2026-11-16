@@ -1,4 +1,0 @@
-builder:
-  import:
-    no_file: Vælg en fil.
-    not_json: Filen skal være en JSON-fil (.json).

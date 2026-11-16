@@ -4,16 +4,10 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Builder\MapConfigurationExporter;
-use App\Builder\MapConfigurationImporter;
+use App\Builder\EmbedCode;
 use App\Entity\MapConfiguration;
-use App\Form\ImportMapConfigurationType;
-use App\MapConfig\InvalidMapConfigException;
 use App\Repository\MapConfigurationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormError;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,56 +16,31 @@ use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * The list of the maps in the builder, with import, export, delete and restore.
+ * The list of the maps in the builder, with the embed code, delete and restore.
  */
 #[Route('/builder', requirements: ['id' => Requirement::ULID])]
 final class BuilderController extends AbstractController
 {
     public function __construct(
         private readonly MapConfigurationRepository $repository,
-        private readonly MapConfigurationImporter $importer,
-        private readonly MapConfigurationExporter $exporter,
+        private readonly EmbedCode $embedCode,
         private readonly TranslatorInterface $translator,
     ) {
     }
 
-    #[Route('', name: 'app_builder', methods: [Request::METHOD_GET, Request::METHOD_POST])]
-    public function index(Request $request): Response
+    #[Route('', name: 'app_builder', methods: [Request::METHOD_GET])]
+    public function index(): Response
     {
-        $form = $this->createForm(ImportMapConfigurationType::class);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            /** @var UploadedFile $file */
-            $file = $form->get('file')->getData();
-
-            try {
-                $map = $this->importer->import($file->getContent());
-                $this->addFlash('success', $this->translator->trans('builder.import.done', ['%title%' => $this->title($map)]));
-
-                return $this->redirectToRoute('app_builder');
-            } catch (InvalidMapConfigException $exception) {
-                $form->get('file')->addError(new FormError($this->translator->trans('builder.import.not_valid')));
-                foreach ($exception->errors as $error) {
-                    $form->get('file')->addError(new FormError($error));
-                }
-            }
-        }
-
         return $this->render('builder/index.html.twig', [
-            'form' => $form,
             'maps' => $this->repository->findActive(),
             'deleted' => $this->repository->findDeleted(),
-        ], new Response(status: $form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK));
+        ]);
     }
 
-    #[Route('/{id}/export', name: 'app_builder_export', methods: [Request::METHOD_GET])]
-    public function export(MapConfiguration $map): Response
+    #[Route('/{id}/embed', name: 'app_builder_embed', methods: [Request::METHOD_GET])]
+    public function embed(MapConfiguration $map): Response
     {
-        return new Response($this->exporter->json($map), headers: [
-            'Content-Type' => 'application/json',
-            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $this->exporter->filename($map)),
-        ]);
+        return $this->render('builder/embed.html.twig', ['map' => $map, 'code' => $this->embedCode->html($map)]);
     }
 
     #[Route('/{id}/delete', name: 'app_builder_delete', methods: [Request::METHOD_GET, Request::METHOD_POST])]

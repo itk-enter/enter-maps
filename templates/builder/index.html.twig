@@ -29,7 +29,7 @@
                             <td class="py-3">
                                 <ul class="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0">
                                     <li><a href="{{ path('app_embed_leaflet', {id: map.id}) }}" target="_blank" rel="noopener" aria-label="{{ 'builder.index.open_label'|trans({'%title%': map.config.title}) }}" class="text-link underline">{{ 'builder.index.open'|trans }}</a></li>
-                                    <li><a href="{{ path('app_builder_export', {id: map.id}) }}" aria-label="{{ 'builder.index.export_label'|trans({'%title%': map.config.title}) }}" class="text-link underline">{{ 'builder.index.export'|trans }}</a></li>
+                                    <li><a href="{{ path('app_builder_embed', {id: map.id}) }}" aria-label="{{ 'builder.index.embed_label'|trans({'%title%': map.config.title}) }}" class="text-link underline">{{ 'builder.index.embed'|trans }}</a></li>
                                     <li><a href="{{ path('app_builder_delete', {id: map.id}) }}" aria-label="{{ 'builder.index.delete_label'|trans({'%title%': map.config.title}) }}" class="text-danger underline">{{ 'builder.index.delete'|trans }}</a></li>
                                 </ul>
                             </td>
@@ -39,15 +39,6 @@
             </table>
             </div>
         {% endif %}
-    </section>
-
-    <section aria-labelledby="import-heading" class="flex flex-col gap-4">
-        <twig:Heading level="2" id="import-heading">{{ 'builder.import.title'|trans }}</twig:Heading>
-        {{ form_start(form, {attr: {class: 'max-w-xl'}}) }}
-            {{ form_errors(form) }}
-            {{ form_row(form.file) }}
-            <twig:Form:Button>{{ 'builder.import.submit'|trans }}</twig:Form:Button>
-        {{ form_end(form) }}
     </section>
 
     {% if deleted is not empty %}

@@ -41,25 +41,25 @@ builder:
   index:
     title: Maps
     maps: All maps
-    empty: There are no maps yet. Import a map below.
+    empty: There are no maps yet. Until the form is ready, the command app:map-config:import imports a map from a JSON file.
     map: Map
     updated: Changed
     actions: Actions
     open: Show the map
     open_label: Show the map "%title%" (opens in a new window)
-    export: Export
-    export_label: Export the map "%title%"
+    embed: Embed code
+    embed_label: Embed code of the map "%title%"
     delete: Delete
     delete_label: Delete the map "%title%"
     deleted: Deleted maps
     deleted_at: Deleted %date%
-  import:
-    title: Import a map
-    file: JSON file with the configuration of the map
-    help: For example a file that you exported. The map gets a new id and a new address.
-    submit: Import
-    done: The map "%title%" is imported.
-    not_valid: The file is not a valid map configuration.
+  embed:
+    title: Embed code of "%title%"
+    text: Copy the code, and put it into the HTML of the page that must show the map.
+    copy: Copy the code
+    copied: The code is copied.
+    failed: The code could not be copied. Select the code, and copy it yourself.
+    back: Back to all maps
   delete:
     title: Delete the map "%title%"?
     text: The map disappears from all sites that show it. The sites show "The map is not available" instead.

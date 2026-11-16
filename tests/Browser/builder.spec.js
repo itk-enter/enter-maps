@@ -1,29 +1,9 @@
 /**
- * @file Browser tests of the list of maps in the builder. The tests import
- * their own map, so that they do not change the fixture maps of the other
- * tests.
+ * @file Browser tests of the list of maps in the builder. The delete test
+ * restores the map at the end, so the other tests can still use it.
  */
 
-import { readFileSync } from "node:fs";
-import { expect, expectNoAxeViolations, test } from "./support.js";
-
-const fixture = readFileSync(
-  new URL("../Fixtures/map-config/toilets.json", import.meta.url),
-);
-
-/**
- * @param {import("@playwright/test").Page} page The page.
- * @param {string} name The file name.
- * @param {Buffer|string} content The content of the file.
- */
-async function importFile(page, name, content) {
-  await page.getByLabel("JSON-fil med kortets konfiguration").setInputFiles({
-    name,
-    mimeType: "application/json",
-    buffer: Buffer.from(content),
-  });
-  await page.getByRole("button", { name: "Importér" }).click();
-}
+import { expect, expectNoAxeViolations, maps, test } from "./support.js";
 
 test("lists the maps", async ({ page }) => {
   await page.goto("/builder");
@@ -31,36 +11,44 @@ test("lists the maps", async ({ page }) => {
   await expect(
     page.getByRole("heading", { level: 1, name: "Kort" }),
   ).toBeVisible();
-  const maps = page.getByRole("region", { name: "Alle kort" });
-  await expect(maps).toContainText("Toiletter i Aarhus");
-  await expect(maps).toContainText("Tilgængelighed i midtbyen");
+  const list = page.getByRole("region", { name: "Alle kort" });
+  await expect(list).toContainText("Toiletter i Aarhus");
+  await expect(list).toContainText("Tilgængelighed i midtbyen");
   await expectNoAxeViolations(page);
 });
 
-test("tells why a file is not a valid map", async ({ page }) => {
+test("shows and copies the embed code", async ({ page }) => {
   await page.goto("/builder");
 
-  await importFile(page, "map.json", '{"version": 1}');
+  await page
+    .getByRole("link", { name: 'Embedkode til kortet "Toiletter i Aarhus"' })
+    .click();
 
-  const field = page.getByLabel("JSON-fil med kortets konfiguration");
-  await expect(field).toHaveAttribute("aria-invalid", "true");
-  await expect(field).toHaveAccessibleDescription(
-    /Filen er ikke en gyldig kortkonfiguration/,
-  );
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: 'Embedkode til "Toiletter i Aarhus"',
+    }),
+  ).toBeVisible();
+  const code = page.locator("pre code");
+  await expect(code).toContainText(`/embed/leaflet/${maps.toilets}"`);
+  await expect(code).toContainText('title="Toiletter i Aarhus"');
   await expectNoAxeViolations(page);
+
+  await page.getByRole("button", { name: "Kopiér koden" }).click();
+
+  // The test site uses http, so the controller selects the code and uses the
+  // old copy command. The real site uses https and the clipboard API.
+  await expect(page.getByRole("status")).toHaveText("Koden er kopieret.");
+  expect(await page.evaluate(() => window.getSelection().toString())).toBe(
+    await code.textContent(),
+  );
 });
 
-test("imports, deletes and restores a map", async ({ page }) => {
-  const title = "Toiletter til sletning";
-  const config = { ...JSON.parse(fixture), title };
+test("deletes and restores a map", async ({ page }) => {
+  const title = "Tilgængelighed i midtbyen";
 
   await page.goto("/builder");
-  await importFile(page, "map.json", JSON.stringify(config));
-
-  await expect(page.getByRole("status")).toHaveText(
-    `Kortet "${title}" er importeret.`,
-  );
-
   await page.getByRole("link", { name: `Slet kortet "${title}"` }).click();
 
   await expect(
