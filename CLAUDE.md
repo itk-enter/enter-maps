@@ -46,7 +46,7 @@ Rules that apply to all parts:
 - `symfony/http-client` with a scoped client for Enter, and Symfony Cache for the data proxy.
 - Leaflet 1.9.x from the importmap.
 - Septima Widget as an ES module from its CDN, with a pinned version. This is the only CDN.
-- Adressevælger from Klimadatastyrelsen for address search.
+- Adressevælger from Klimadatastyrelsen for address search. `proj4` from the importmap changes its positions to WGS84.
 - PHPUnit for unit tests. There are no browser tests for now.
 
 ## Project structure

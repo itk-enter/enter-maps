@@ -41,10 +41,10 @@ These modules do not use Stimulus, so the controllers share them.
 Do not write geometry or projection calculations here. Use Leaflet, for example `getBounds().getCenter()` and
 `map.distance()`, or a package from npm.
 
-| File                | Purpose                                                                                                                |
-|---------------------|------------------------------------------------------------------------------------------------------------------------|
-| `fields.js`         | Reads the fields of the configuration from the properties of a feature, formats them as text, and applies the filters. |
-| `adressevaelger.js` | Calls Adressevælger from Klimadatastyrelsen: a search for addresses, and the position of an address.                   |
+| File                | Purpose                                                                                                                                                       |
+|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `fields.js`         | Reads the fields of the configuration from the properties of a feature, formats them as text, and applies the filters.                                        |
+| `adressevaelger.js` | Calls Adressevælger from Klimadatastyrelsen: a search for addresses, and the position of an address. `proj4` changes the position from UTM zone 32N to WGS84. |
 
 ## After a change
 

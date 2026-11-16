@@ -28,4 +28,7 @@ return [
     '@hotwired/stimulus' => ['version' => '3.2.2'],
     'leaflet' => ['version' => '1.9.4'],
     'leaflet/dist/leaflet.css' => ['version' => '1.9.4', 'type' => 'css'],
+    'proj4' => ['version' => '2.22.0'],
+    'wkt-parser' => ['version' => '1.5.6'],
+    'mgrs' => ['version' => '1.0.0'],
 ];
