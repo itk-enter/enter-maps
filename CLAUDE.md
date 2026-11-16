@@ -53,7 +53,7 @@ Rules that apply to all parts:
 The structure now:
 
 ```text
-assets/controllers/                Stimulus controllers for the map, list, detail, filters and search
+assets/controllers/                Stimulus controllers for the map, list, detail, filters and search. See its README.
 assets/lib/                        JavaScript modules without Stimulus: fields, geometry, Adressevælger
 assets/styles/                     app.css, the design tokens, the base styles and changes to Leaflet
 config/packages/enter.yaml         The HTTP client for Enter
