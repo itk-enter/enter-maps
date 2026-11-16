@@ -1,0 +1,100 @@
+{# The form theme of the builder. It adds the classes of the design #}
+{# tokens. The form_row block of Symfony connects the help and the errors #}
+{# to the field with aria-describedby, so the theme keeps it. #}
+{% use 'form_div_layout.html.twig' %}
+
+{%- block form_row_render -%}
+    {%- set row_attr = row_attr|merge({class: (row_attr.class|default('') ~ ' flex flex-col gap-1')|trim}) -%}
+    <div{% with {attr: row_attr} %}{{ block('attributes') }}{% endwith %}>
+        {{- form_label(form) -}}
+        {{- form_help(form) -}}
+        {{- form_widget(form, widget_attr) -}}
+        {{- form_errors(form) -}}
+    </div>
+{%- endblock form_row_render -%}
+
+{# A checkbox has the box first and the label after it. #}
+{%- block checkbox_row -%}
+    {%- set widget_attr = {attr: {'aria-describedby': help ? id ~ '_help' : null}|filter(value => value is not null)} -%}
+    <div class="flex flex-col gap-1">
+        <div class="flex items-center gap-2.5">
+            {{- form_widget(form, widget_attr) -}}
+            {{- form_label(form, null, {label_attr: {class: 'font-normal'}}) -}}
+        </div>
+        {{- form_help(form) -}}
+        {{- form_errors(form) -}}
+    </div>
+{%- endblock checkbox_row -%}
+
+{%- block checkbox_widget -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' size-[17px] accent-primary')|trim}) -%}
+    {{- parent() -}}
+{%- endblock checkbox_widget -%}
+
+{%- block radio_widget -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' size-[17px] accent-primary')|trim}) -%}
+    {{- parent() -}}
+{%- endblock radio_widget -%}
+
+{# A group of radio buttons is a fieldset, and its label is the legend. #}
+{%- block choice_row -%}
+    {%- if expanded -%}
+        <fieldset class="m-0 flex flex-col gap-1 border-0 p-0"{% if help %} aria-describedby="{{ id }}_help"{% endif %}>
+            <legend class="mb-1 p-0 font-semibold">{{ label|trans(label_translation_parameters, translation_domain) }}</legend>
+            {{- form_help(form) -}}
+            {%- for child in form -%}
+                <div class="flex items-center gap-2.5">
+                    {{- form_widget(child) -}}
+                    {{- form_label(child, null, {label_attr: {class: 'font-normal'}}) -}}
+                </div>
+            {%- endfor -%}
+            {{- form_errors(form) -}}
+        </fieldset>
+    {%- else -%}
+        {{- block('form_row') -}}
+    {%- endif -%}
+{%- endblock choice_row -%}
+
+{%- block form_label -%}
+    {%- set label_attr = label_attr|merge({class: (label_attr.class|default('font-semibold'))|trim}) -%}
+    {{- parent() -}}
+{%- endblock form_label -%}
+
+{%- block form_help -%}
+    {%- set help_attr = help_attr|merge({class: (help_attr.class|default('') ~ ' m-0 text-sm text-text-muted')|trim}) -%}
+    {{- parent() -}}
+{%- endblock form_help -%}
+
+{%- block form_widget_simple -%}
+    {%- if type|default('text') != 'hidden' -%}
+        {%- set classes = type|default('text') == 'color' ? 'h-10 w-16 rounded border border-line bg-surface p-1' : 'min-h-10 rounded border border-line bg-surface px-2 py-1.5 text-ink aria-invalid:border-danger' -%}
+        {%- set attr = attr|merge({class: (attr.class|default('') ~ ' ' ~ classes)|trim}) -%}
+    {%- endif -%}
+    {{- parent() -}}
+{%- endblock form_widget_simple -%}
+
+{%- block textarea_widget -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' min-h-20 rounded border border-line bg-surface px-2 py-1.5 text-ink aria-invalid:border-danger')|trim}) -%}
+    {{- parent() -}}
+{%- endblock textarea_widget -%}
+
+{%- block choice_widget_collapsed -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' min-h-10 rounded border border-line bg-surface px-2 text-ink aria-invalid:border-danger')|trim}) -%}
+    {{- parent() -}}
+{%- endblock choice_widget_collapsed -%}
+
+{# The add and delete buttons of a collection. They are secondary buttons. #}
+{%- block button_widget -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' inline-flex min-h-10 cursor-pointer items-center justify-center rounded border border-line bg-surface px-4 font-semibold text-ink')|trim}) -%}
+    {{- parent() -}}
+{%- endblock button_widget -%}
+
+{%- block form_errors -%}
+    {%- if errors|length > 0 -%}
+        <ul class="m-0 mt-1 list-none p-0 text-danger">
+            {%- for error in errors -%}
+                <li id="{{ id ~ '_error' ~ loop.index }}">{{ error.message }}</li>
+            {%- endfor -%}
+        </ul>
+    {%- endif -%}
+{%- endblock form_errors -%}

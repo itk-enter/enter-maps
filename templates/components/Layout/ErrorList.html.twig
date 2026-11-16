@@ -1,0 +1,11 @@
+{% props title, errors %}
+{# A list of errors at the top of a form, as an alert, so that a screen #}
+{# reader reads it at once. #}
+<div role="alert" {{ attributes.defaults({class: 'rounded border-l-4 border-danger bg-surface-2 px-4 py-3'}) }}>
+    <p class="m-0 font-semibold">{{ title }}</p>
+    <ul class="m-0 mt-2 pl-5">
+        {% for error in errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+</div>

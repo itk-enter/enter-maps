@@ -41,7 +41,7 @@ builder:
   index:
     title: Maps
     maps: All maps
-    empty: There are no maps yet. Until the form is ready, the command app:map-config:import imports a map from a JSON file.
+    empty: There are no maps yet.
     map: Map
     updated: Changed
     actions: Actions
@@ -71,3 +71,108 @@ builder:
     submit: Restore
     label: Restore the map "%title%"
     done: The map "%title%" is restored.
+  form:
+    new_title: New map
+    edit_title: Edit the map "%title%"
+    new: New map
+    edit: Edit
+    edit_label: Edit the map "%title%"
+    general: General
+    title: Title
+    title_help: The map shows the title, and the embed code uses it as the title of the iframe.
+    description: Description
+    locale: Language
+    locale_da: Danish
+    locale_en: English
+    sidebar: Sidebar
+    position: Position
+    position_left: To the left of the map
+    position_right: To the right of the map
+    list: Show the list of places
+    categories: The user can turn the layers on and off
+    search: Search field
+    search_none: No search field
+    search_local: Search the places
+    search_address: Search for an address
+    search_both: Search the places and for an address
+    view: View
+    view_help: Fill in all three fields, or leave them empty. If they are empty, the map shows all the places.
+    longitude: Longitude
+    latitude: Latitude
+    zoom: Zoom
+    zoom_gate: Show the places from zoom
+    zoom_gate_help: For data sets with many places. Leave the field empty to always show the places.
+    layers: Layers
+    layer_heading: "Layer %number%: %label%"
+    layer_new: New layer
+    layer_add: Add a layer
+    layer_delete: Remove the layer
+    layer_delete_label: Remove the layer (layer %number%)
+    layer_label: Name of the layer
+    data_set: Data set
+    data_set_select: Select a data set
+    data_set_unavailable: Enter does not answer, so type the id of the data set.
+    colour: Colour
+    icon: Icon
+    icon_default: Default (pin)
+    icon_toilet: Toilet
+    icon_parking: Parking
+    icon_handicap_parking: Disabled parking
+    icon_bench: Bench
+    icon_pin: Pin
+    row: The row in the list
+    row_title: Title
+    row_title_path: Path to the title
+    row_subtitle: Subtitle
+    row_subtitle_path: Path to the subtitle
+    detail: Fields in the detail view
+    field_add: Add a field
+    field_delete: Remove the field
+    field_delete_label: Remove the field (field %number%)
+    field_label: Label
+    path: Path
+    path_help: For example name or address.streetAddress
+    format: Type
+    format_text: Text
+    format_list: List
+    format_boolean: Yes/no
+    format_number: Number
+    format_date: Date
+    format_link: Link
+    fallback: Text if the value is missing
+    filter: Fixed filter
+    filter_help: The map shows only the places that match. Without conditions, the map shows all of the data set.
+    filter_raw: The filter has groups, so the form cannot edit it. A save keeps it as it is.
+    combine: The conditions
+    combine_and: All conditions must match
+    combine_or: At least one condition must match
+    condition_add: Add a condition
+    condition_delete: Remove the condition
+    condition_delete_label: Remove the condition (condition %number%)
+    operator: Condition
+    operator_eq: is equal to
+    operator_ne: is not
+    operator_lt: is less than
+    operator_le: is at most
+    operator_gt: is more than
+    operator_ge: is at least
+    operator_in: is one of
+    operator_null: is missing
+    type: Type of the value
+    type_text: Text
+    type_number: Number
+    type_boolean: Yes/no
+    value: Value
+    values: Values
+    values_help: One value on each line.
+    "yes": "Yes"
+    "no": "No"
+    save_preview: Save and show the map
+    save_embed: Save and show the embed code
+    cancel: Cancel
+    saved: The map "%title%" is saved.
+    not_saved: The map is not saved. Correct these errors.
+  preview:
+    title: The map "%title%"
+    edit: Edit the map
+    embed: Show the embed code

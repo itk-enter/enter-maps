@@ -1,0 +1,9 @@
+builder:
+  form:
+    error:
+      required: Fill in the field.
+      path: Type a path with letters, digits and _, and with a full stop between the parts, for example address.streetAddress.
+      number: Type a number, for example 2 or 2.5.
+      boolean: Type true or false on each line.
+      view: Fill in the longitude, the latitude and the zoom, or leave all three empty.
+      no_layer: The map must have at least one layer.

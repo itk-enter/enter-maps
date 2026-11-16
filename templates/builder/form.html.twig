@@ -1,0 +1,13 @@
+{% extends 'builder/layout.html.twig' %}
+
+{% block heading %}
+    {%- if map -%}
+        {{ 'builder.form.edit_title'|trans({'%title%': map.config.title}) }}
+    {%- else -%}
+        {{ 'builder.form.new_title'|trans }}
+    {%- endif -%}
+{% endblock %}
+
+{% block content %}
+    <twig:MapEditor mapId="{{ map ? map.id : null }}" />
+{% endblock %}

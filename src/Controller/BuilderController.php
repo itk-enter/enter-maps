@@ -16,7 +16,8 @@ use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * The list of the maps in the builder, with the embed code, delete and restore.
+ * The pages of the builder: the list of the maps, the form, the preview, the
+ * embed code, delete and restore.
  */
 #[Route('/builder', requirements: ['id' => Requirement::ULID])]
 final class BuilderController extends AbstractController
@@ -35,6 +36,24 @@ final class BuilderController extends AbstractController
             'maps' => $this->repository->findActive(),
             'deleted' => $this->repository->findDeleted(),
         ]);
+    }
+
+    #[Route('/new', name: 'app_builder_new', methods: [Request::METHOD_GET])]
+    public function new(): Response
+    {
+        return $this->render('builder/form.html.twig', ['map' => null]);
+    }
+
+    #[Route('/{id}/edit', name: 'app_builder_edit', methods: [Request::METHOD_GET])]
+    public function edit(MapConfiguration $map): Response
+    {
+        return $this->render('builder/form.html.twig', ['map' => $map]);
+    }
+
+    #[Route('/{id}/preview', name: 'app_builder_preview', methods: [Request::METHOD_GET])]
+    public function preview(MapConfiguration $map): Response
+    {
+        return $this->render('builder/preview.html.twig', ['map' => $map, 'code' => $this->embedCode->html($map)]);
     }
 
     #[Route('/{id}/embed', name: 'app_builder_embed', methods: [Request::METHOD_GET])]

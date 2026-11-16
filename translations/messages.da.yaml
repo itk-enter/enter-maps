@@ -41,7 +41,7 @@ builder:
   index:
     title: Kort
     maps: Alle kort
-    empty: Der er ingen kort endnu. Indtil formularen er klar, importerer kommandoen app:map-config:import et kort fra en JSON-fil.
+    empty: Der er ingen kort endnu.
     map: Kort
     updated: Ændret
     actions: Handlinger
@@ -71,3 +71,108 @@ builder:
     submit: Gendan
     label: Gendan kortet "%title%"
     done: Kortet "%title%" er gendannet.
+  form:
+    new_title: Nyt kort
+    edit_title: Ret kortet "%title%"
+    new: Nyt kort
+    edit: Ret
+    edit_label: Ret kortet "%title%"
+    general: Generelt
+    title: Titel
+    title_help: Kortet viser titlen, og embedkoden bruger den som titel på iframen.
+    description: Beskrivelse
+    locale: Sprog
+    locale_da: Dansk
+    locale_en: Engelsk
+    sidebar: Sidepanel
+    position: Placering
+    position_left: Til venstre for kortet
+    position_right: Til højre for kortet
+    list: Vis listen over steder
+    categories: Brugeren kan slå lagene til og fra
+    search: Søgefelt
+    search_none: Intet søgefelt
+    search_local: Søg i stederne
+    search_address: Søg efter adresse
+    search_both: Søg i stederne og efter adresse
+    view: Visning
+    view_help: Udfyld alle tre felter, eller lad dem være tomme. Er de tomme, viser kortet alle stederne.
+    longitude: Længdegrad
+    latitude: Breddegrad
+    zoom: Zoom
+    zoom_gate: Vis først stederne fra zoom
+    zoom_gate_help: Til datasæt med mange steder. Lad feltet være tomt for altid at vise stederne.
+    layers: Lag
+    layer_heading: "Lag %number%: %label%"
+    layer_new: Nyt lag
+    layer_add: Tilføj lag
+    layer_delete: Fjern laget
+    layer_delete_label: Fjern laget (lag %number%)
+    layer_label: Navn på laget
+    data_set: Datasæt
+    data_set_select: Vælg et datasæt
+    data_set_unavailable: Enter svarer ikke, så skriv id'et på datasættet.
+    colour: Farve
+    icon: Ikon
+    icon_default: Standard (nål)
+    icon_toilet: Toilet
+    icon_parking: Parkering
+    icon_handicap_parking: Handicapparkering
+    icon_bench: Bænk
+    icon_pin: Nål
+    row: Rækken i listen
+    row_title: Titel
+    row_title_path: Sti til titlen
+    row_subtitle: Undertitel
+    row_subtitle_path: Sti til undertitlen
+    detail: Felter i detaljevisningen
+    field_add: Tilføj felt
+    field_delete: Fjern feltet
+    field_delete_label: Fjern feltet (felt %number%)
+    field_label: Etiket
+    path: Sti
+    path_help: Fx name eller address.streetAddress
+    format: Type
+    format_text: Tekst
+    format_list: Liste
+    format_boolean: Ja/nej
+    format_number: Tal
+    format_date: Dato
+    format_link: Link
+    fallback: Tekst, hvis værdien mangler
+    filter: Fast filter
+    filter_help: Kortet viser kun de steder, som passer. Uden betingelser viser kortet hele datasættet.
+    filter_raw: Filteret har grupper, så formularen kan ikke redigere det. Det bliver gemt uændret.
+    combine: Betingelserne
+    combine_and: Alle betingelser skal passe
+    combine_or: Mindst én betingelse skal passe
+    condition_add: Tilføj betingelse
+    condition_delete: Fjern betingelsen
+    condition_delete_label: Fjern betingelsen (betingelse %number%)
+    operator: Betingelse
+    operator_eq: er lig med
+    operator_ne: er ikke
+    operator_lt: er mindre end
+    operator_le: er højst
+    operator_gt: er større end
+    operator_ge: er mindst
+    operator_in: er en af
+    operator_null: mangler
+    type: Type af værdi
+    type_text: Tekst
+    type_number: Tal
+    type_boolean: Ja/nej
+    value: Værdi
+    values: Værdier
+    values_help: Én værdi på hver linje.
+    "yes": Ja
+    "no": Nej
+    save_preview: Gem og vis kortet
+    save_embed: Gem og vis embedkode
+    cancel: Annullér
+    saved: Kortet "%title%" er gemt.
+    not_saved: Kortet blev ikke gemt. Ret disse fejl.
+  preview:
+    title: Kortet "%title%"
+    edit: Ret kortet
+    embed: Vis embedkode

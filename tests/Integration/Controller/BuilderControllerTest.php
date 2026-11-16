@@ -9,6 +9,7 @@ use App\Builder\MapConfigurationImporter;
 use App\Entity\MapConfiguration;
 use App\Repository\MapConfigurationRepository;
 use App\Tests\Support\Database;
+use App\Tests\Support\FakeEnter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -48,9 +49,45 @@ final class BuilderControllerTest extends WebTestCase
         $this->assertStringContainsString('Toiletter i Aarhus', $row->text());
         $this->assertStringContainsString((string) $map->getId(), $row->text());
         $this->assertSame(
-            ['/embed/leaflet/'.$map->getId(), '/builder/'.$map->getId().'/embed', '/builder/'.$map->getId().'/delete'],
+            ['/builder/'.$map->getId().'/edit', '/embed/leaflet/'.$map->getId(), '/builder/'.$map->getId().'/embed', '/builder/'.$map->getId().'/delete'],
             $row->filter('a')->each(static fn (Crawler $link): ?string => $link->attr('href')),
         );
+    }
+
+    public function testShowsTheFormOfANewMap(): void
+    {
+        $this->useFakeEnter();
+
+        $this->browser->request('GET', '/builder/new');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextSame('h1', 'Nyt kort');
+        $this->assertSelectorExists('form [name="map[title]"]');
+        $this->assertSelectorTextSame('h3', 'Lag 1: Nyt lag');
+    }
+
+    public function testShowsTheFormOfAStoredMap(): void
+    {
+        $this->useFakeEnter();
+        $map = $this->import('toilets');
+
+        $this->browser->request('GET', '/builder/'.$map->getId().'/edit');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextSame('h1', 'Ret kortet "Toiletter i Aarhus"');
+        $this->assertInputValueSame('map[title]', 'Toiletter i Aarhus');
+    }
+
+    public function testShowsThePreviewOfAMap(): void
+    {
+        $map = $this->import('toilets');
+
+        $crawler = $this->browser->request('GET', '/builder/'.$map->getId().'/preview');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextSame('h1', 'Kortet "Toiletter i Aarhus"');
+        $this->assertStringEndsWith('/embed/leaflet/'.$map->getId(), (string) $crawler->filter('main iframe')->attr('src'));
+        $this->assertSame('/builder/'.$map->getId().'/edit', $crawler->selectLink('Ret kortet')->attr('href'));
     }
 
     public function testShowsTheEmbedCode(): void
@@ -71,8 +108,10 @@ final class BuilderControllerTest extends WebTestCase
 
     public function testDoesNotFindAnUnknownMap(): void
     {
-        $this->browser->request('GET', '/builder/'.self::UNKNOWN_ID.'/embed');
-        $this->assertResponseStatusCodeSame(404);
+        foreach (['embed', 'edit', 'preview'] as $page) {
+            $this->browser->request('GET', '/builder/'.self::UNKNOWN_ID.'/'.$page);
+            $this->assertResponseStatusCodeSame(404, $page);
+        }
 
         $this->browser->request('GET', '/builder/'.self::UNKNOWN_ID.'/delete');
         $this->assertResponseStatusCodeSame(404);
@@ -136,6 +175,13 @@ final class BuilderControllerTest extends WebTestCase
         $this->browser->request('POST', '/builder/'.$map->getId().'/restore', ['_token' => $token]);
 
         $this->assertResponseStatusCodeSame(404);
+    }
+
+    private function useFakeEnter(): void
+    {
+        $enter = new FakeEnter();
+        $enter->dataSets = [['id' => 'merged-public-toilets', 'title' => 'Toiletter']];
+        self::getContainer()->set('enter.client', $enter->client());
     }
 
     private function import(string $fixture): MapConfiguration

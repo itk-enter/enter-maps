@@ -13,8 +13,8 @@
             <a href="{{ path('app_builder') }}" class="font-bold text-ink no-underline">{{ 'builder.name'|trans }}</a>
         </div>
     </header>
-    <main id="content" class="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8">
-        <twig:Heading level="1" size="lg">{{ heading }}</twig:Heading>
+    <main id="content" aria-labelledby="page-heading" class="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8">
+        <twig:Heading level="1" size="lg" id="page-heading">{{ heading }}</twig:Heading>
         <twig:Layout:Flashes />
         {% block content %}{% endblock %}
     </main>
