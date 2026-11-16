@@ -34,3 +34,40 @@ embed:
   boolean:
     "yes": Ja
     "no": Nej
+builder:
+  name: Kortbygger
+  skip_link: Spring til indholdet
+  expired: Siden var udløbet, så handlingen blev ikke udført. Prøv igen.
+  index:
+    title: Kort
+    maps: Alle kort
+    empty: Der er ingen kort endnu. Importér et kort nedenfor.
+    map: Kort
+    updated: Ændret
+    actions: Handlinger
+    open: Vis kort
+    open_label: Vis kort "%title%" (åbner i et nyt vindue)
+    export: Eksportér
+    export_label: Eksportér kortet "%title%"
+    delete: Slet
+    delete_label: Slet kortet "%title%"
+    deleted: Slettede kort
+    deleted_at: Slettet %date%
+  import:
+    title: Importér et kort
+    file: JSON-fil med kortets konfiguration
+    help: Fx en fil, som du har eksporteret. Kortet får et nyt id og en ny adresse.
+    submit: Importér
+    done: Kortet "%title%" er importeret.
+    not_valid: Filen er ikke en gyldig kortkonfiguration.
+  delete:
+    title: Slet kortet "%title%"?
+    text: Kortet forsvinder fra alle sider, som viser det. Siderne viser i stedet "Kortet er ikke tilgængeligt".
+    restore: Du kan gendanne kortet under "Slettede kort". Så kommer det tilbage på siderne med samme adresse.
+    submit: Slet kortet
+    cancel: Annullér
+    done: Kortet "%title%" er slettet.
+  restore:
+    submit: Gendan
+    label: Gendan kortet "%title%"
+    done: Kortet "%title%" er gendannet.

@@ -1,0 +1,16 @@
+{% extends 'builder/layout.html.twig' %}
+
+{% block heading %}{{ 'builder.delete.title'|trans({'%title%': map.config.title}) }}{% endblock %}
+
+{% block content %}
+    <div class="flex max-w-2xl flex-col gap-4">
+        <p class="m-0">{{ 'builder.delete.text'|trans }}</p>
+        <p class="m-0">{{ 'builder.delete.restore'|trans }}</p>
+        <form method="post" action="{{ path('app_builder_delete', {id: map.id}) }}" class="flex flex-wrap gap-3">
+            {# Raw input: a hidden field for the CSRF token. #}
+            <input type="hidden" name="_token" value="{{ csrf_token('delete-map') }}">
+            <twig:Form:Button variant="danger">{{ 'builder.delete.submit'|trans }}</twig:Form:Button>
+            <twig:Form:Button variant="secondary" href="{{ path('app_builder') }}">{{ 'builder.delete.cancel'|trans }}</twig:Form:Button>
+        </form>
+    </div>
+{% endblock %}

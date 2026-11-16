@@ -1,0 +1,15 @@
+{% props variant = 'primary', href = null, type = 'submit' %}
+{# A button. With `href`, it is a link that looks like a button. `variant` #}
+{# is primary, secondary or danger. `attributes` go on the element. #}
+{% set variants = {
+    primary: 'border-primary bg-primary text-on-primary',
+    secondary: 'border-line bg-surface text-ink',
+    danger: 'border-danger bg-danger text-on-primary',
+} %}
+{% set classes = 'inline-flex min-h-10 cursor-pointer items-center justify-center rounded border px-4 font-semibold no-underline ' ~ variants[variant] %}
+{% set content %}{% block content %}{% endblock %}{% endset %}
+{% if href %}
+    <a href="{{ href }}" {{ attributes.defaults({class: classes}) }}>{{ content }}</a>
+{% else %}
+    <button type="{{ type }}" {{ attributes.defaults({class: classes}) }}>{{ content }}</button>
+{% endif %}

@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Builder\MapConfigurationImporter;
 use App\MapConfig\InvalidMapConfigException;
-use App\MapConfig\MapConfigurationFactory;
-use App\Renderer\Renderer;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -42,8 +40,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 final readonly class ImportMapConfigCommand
 {
     public function __construct(
-        private MapConfigurationFactory $factory,
-        private EntityManagerInterface $entityManager,
+        private MapConfigurationImporter $importer,
         private UrlGeneratorInterface $urlGenerator,
         #[Autowire('%kernel.project_dir%/tests/Fixtures')]
         private string $fixtureDirectory,
@@ -61,7 +58,7 @@ final readonly class ImportMapConfigCommand
 
         foreach ($files as $file) {
             try {
-                $mapConfiguration = $this->factory->create(new Filesystem()->readFile($file), [Renderer::Leaflet]);
+                $mapConfiguration = $this->importer->import(new Filesystem()->readFile($file));
             } catch (IOException $exception) {
                 $io->error($exception->getMessage());
                 $result = Command::FAILURE;
@@ -73,9 +70,6 @@ final readonly class ImportMapConfigCommand
 
                 continue;
             }
-
-            $this->entityManager->persist($mapConfiguration);
-            $this->entityManager->flush();
 
             $io->success([
                 \sprintf('Imported %s as %s.', $file, $mapConfiguration->getId()),

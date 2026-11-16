@@ -34,3 +34,40 @@ embed:
   boolean:
     "yes": "Yes"
     "no": "No"
+builder:
+  name: Map builder
+  skip_link: Skip to the content
+  expired: The page expired, so the action did not run. Try again.
+  index:
+    title: Maps
+    maps: All maps
+    empty: There are no maps yet. Import a map below.
+    map: Map
+    updated: Changed
+    actions: Actions
+    open: Show the map
+    open_label: Show the map "%title%" (opens in a new window)
+    export: Export
+    export_label: Export the map "%title%"
+    delete: Delete
+    delete_label: Delete the map "%title%"
+    deleted: Deleted maps
+    deleted_at: Deleted %date%
+  import:
+    title: Import a map
+    file: JSON file with the configuration of the map
+    help: For example a file that you exported. The map gets a new id and a new address.
+    submit: Import
+    done: The map "%title%" is imported.
+    not_valid: The file is not a valid map configuration.
+  delete:
+    title: Delete the map "%title%"?
+    text: The map disappears from all sites that show it. The sites show "The map is not available" instead.
+    restore: You can restore the map under "Deleted maps". Then it comes back on the sites, with the same address.
+    submit: Delete the map
+    cancel: Cancel
+    done: The map "%title%" is deleted.
+  restore:
+    submit: Restore
+    label: Restore the map "%title%"
+    done: The map "%title%" is restored.

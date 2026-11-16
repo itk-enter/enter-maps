@@ -1,0 +1,73 @@
+{% extends 'builder/layout.html.twig' %}
+
+{% block heading %}{{ 'builder.index.title'|trans }}{% endblock %}
+
+{% block content %}
+    <section aria-labelledby="maps-heading" class="flex flex-col gap-4">
+        <twig:Heading level="2" id="maps-heading">{{ 'builder.index.maps'|trans }}</twig:Heading>
+        {% if maps is empty %}
+            <p class="m-0 text-text-muted">{{ 'builder.index.empty'|trans }}</p>
+        {% else %}
+            {# The table scrolls sideways on a narrow screen, if it must. #}
+            <div class="overflow-x-auto">
+            <table class="w-full border-collapse text-left">
+                <thead>
+                    <tr class="border-b border-line">
+                        <th scope="col" class="py-2 pr-4">{{ 'builder.index.map'|trans }}</th>
+                        <th scope="col" class="py-2 pr-4">{{ 'builder.index.updated'|trans }}</th>
+                        <th scope="col" class="py-2"><span class="sr-only">{{ 'builder.index.actions'|trans }}</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for map in maps %}
+                        <tr class="border-b border-line align-top">
+                            <td class="py-3 pr-4">
+                                <span class="block font-semibold">{{ map.config.title }}</span>
+                                <span class="block text-sm break-all text-text-muted">{{ map.id }}</span>
+                            </td>
+                            <td class="py-3 pr-4 whitespace-nowrap">{{ map.updatedAt|date('d.m.Y H:i') }}</td>
+                            <td class="py-3">
+                                <ul class="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0">
+                                    <li><a href="{{ path('app_embed_leaflet', {id: map.id}) }}" target="_blank" rel="noopener" aria-label="{{ 'builder.index.open_label'|trans({'%title%': map.config.title}) }}" class="text-link underline">{{ 'builder.index.open'|trans }}</a></li>
+                                    <li><a href="{{ path('app_builder_export', {id: map.id}) }}" aria-label="{{ 'builder.index.export_label'|trans({'%title%': map.config.title}) }}" class="text-link underline">{{ 'builder.index.export'|trans }}</a></li>
+                                    <li><a href="{{ path('app_builder_delete', {id: map.id}) }}" aria-label="{{ 'builder.index.delete_label'|trans({'%title%': map.config.title}) }}" class="text-danger underline">{{ 'builder.index.delete'|trans }}</a></li>
+                                </ul>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        {% endif %}
+    </section>
+
+    <section aria-labelledby="import-heading" class="flex flex-col gap-4">
+        <twig:Heading level="2" id="import-heading">{{ 'builder.import.title'|trans }}</twig:Heading>
+        {{ form_start(form, {attr: {class: 'max-w-xl'}}) }}
+            {{ form_errors(form) }}
+            {{ form_row(form.file) }}
+            <twig:Form:Button>{{ 'builder.import.submit'|trans }}</twig:Form:Button>
+        {{ form_end(form) }}
+    </section>
+
+    {% if deleted is not empty %}
+        <section aria-labelledby="deleted-heading" class="flex flex-col gap-4">
+            <twig:Heading level="2" id="deleted-heading">{{ 'builder.index.deleted'|trans }}</twig:Heading>
+            <ul class="m-0 flex list-none flex-col gap-3 p-0">
+                {% for map in deleted %}
+                    <li class="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-3">
+                        <span>
+                            <span class="block font-semibold">{{ map.config.title }}</span>
+                            <span class="block text-sm text-text-muted">{{ 'builder.index.deleted_at'|trans({'%date%': map.deletedAt|date('d.m.Y H:i')}) }}</span>
+                        </span>
+                        <form method="post" action="{{ path('app_builder_restore', {id: map.id}) }}">
+                            {# Raw input: a hidden field for the CSRF token. #}
+                            <input type="hidden" name="_token" value="{{ csrf_token('restore-map') }}">
+                            <twig:Form:Button variant="secondary" aria-label="{{ 'builder.restore.label'|trans({'%title%': map.config.title}) }}">{{ 'builder.restore.submit'|trans }}</twig:Form:Button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+{% endblock %}

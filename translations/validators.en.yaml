@@ -1,0 +1,4 @@
+builder:
+  import:
+    no_file: Select a file.
+    not_json: The file must be a JSON file (.json).
