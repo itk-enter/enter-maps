@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-19](https://github.com/itk-enter/enter-maps/pull/19)
+  Added the list of maps in the builder at `/builder`, with import, export, delete and restore
 * [PR-18](https://github.com/itk-enter/enter-maps/pull/18)
   Added browser tests with Playwright and axe-core, and the `task test:browser` command
 * [PR-17](https://github.com/itk-enter/enter-maps/pull/17)
