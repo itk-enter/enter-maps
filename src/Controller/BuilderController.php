@@ -109,7 +109,7 @@ final class BuilderController extends AbstractController
      * The CSRF token is not valid, usually because the session expired. The
      * user tries again from the list.
      */
-    private function expired(): Response
+    private function expired(): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         $this->addFlash('error', $this->translator->trans('builder.expired'));
 
