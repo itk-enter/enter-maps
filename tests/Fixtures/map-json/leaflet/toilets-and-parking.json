@@ -1,0 +1,194 @@
+{
+    "title": "Tilgængelighed i midtbyen",
+    "description": "Offentlige toiletter og handicapparkering i Aarhus midtby.",
+    "locale": "da-DK",
+    "view": null,
+    "minZoom": null,
+    "baseMap": {
+        "url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "attribution": "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a>",
+        "maxZoom": 19
+    },
+    "sidebar": {
+        "position": "left",
+        "list": true,
+        "categories": true,
+        "localSearch": false,
+        "addressSearch": false
+    },
+    "layers": [
+        {
+            "id": "toilets",
+            "label": "Offentlige toiletter",
+            "url": "/data/merged-public-toilets.geojson",
+            "colour": "#6b3fa0",
+            "icon": "toilet",
+            "row": {
+                "title": {
+                    "path": [
+                        "name"
+                    ],
+                    "label": null,
+                    "fallback": "Toilet",
+                    "format": "text",
+                    "values": {}
+                },
+                "subtitle": {
+                    "path": [
+                        "address",
+                        "streetAddress"
+                    ],
+                    "label": null,
+                    "fallback": "Adresse ikke registreret",
+                    "format": "text",
+                    "values": {}
+                }
+            },
+            "detail": [
+                {
+                    "path": [
+                        "openingHours"
+                    ],
+                    "label": "Åbningstider",
+                    "fallback": null,
+                    "format": "list",
+                    "values": {}
+                },
+                {
+                    "path": [
+                        "wheelchairAccessible"
+                    ],
+                    "label": "Kørestolsadgang",
+                    "fallback": "Ikke registreret",
+                    "format": "text",
+                    "values": {
+                        "yes": "Ja",
+                        "limited": "Delvist",
+                        "no": "Nej"
+                    }
+                },
+                {
+                    "path": [
+                        "isAccessibleForFree"
+                    ],
+                    "label": "Gratis",
+                    "fallback": null,
+                    "format": "boolean",
+                    "values": {}
+                }
+            ]
+        },
+        {
+            "id": "parking",
+            "label": "Handicapparkering",
+            "url": "/data/merged-handicap-parking-spots.geojson",
+            "colour": "#1f6fb2",
+            "icon": "parking",
+            "row": {
+                "title": {
+                    "path": [
+                        "address",
+                        "streetAddress"
+                    ],
+                    "label": null,
+                    "fallback": "Handicapparkering",
+                    "format": "text",
+                    "values": {}
+                },
+                "subtitle": {
+                    "path": [
+                        "totalSpotNumber"
+                    ],
+                    "label": "Pladser",
+                    "fallback": null,
+                    "format": "number",
+                    "values": {}
+                }
+            },
+            "detail": [
+                {
+                    "path": [
+                        "totalSpotNumber"
+                    ],
+                    "label": "Antal pladser",
+                    "fallback": null,
+                    "format": "number",
+                    "values": {}
+                },
+                {
+                    "path": [
+                        "maximumParkingDuration"
+                    ],
+                    "label": "Maks. parkeringstid",
+                    "fallback": "Ingen grænse",
+                    "format": "text",
+                    "values": {}
+                },
+                {
+                    "path": [
+                        "fee"
+                    ],
+                    "label": "Betaling",
+                    "fallback": null,
+                    "format": "text",
+                    "values": {
+                        "no": "Gratis",
+                        "yes": "Betaling"
+                    }
+                }
+            ]
+        }
+    ],
+    "filters": [
+        {
+            "type": "toggle",
+            "label": "Kun gratis",
+            "values": {
+                "free": "Kun gratis"
+            },
+            "layers": [
+                {
+                    "layer": "toilets",
+                    "path": [
+                        "isAccessibleForFree"
+                    ],
+                    "dataValues": {
+                        "free": true
+                    }
+                },
+                {
+                    "layer": "parking",
+                    "path": [
+                        "fee"
+                    ],
+                    "dataValues": {
+                        "free": "no"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "select",
+            "label": "Kørestolsadgang til toilettet",
+            "values": {
+                "yes": "Ja",
+                "limited": "Delvist",
+                "no": "Nej"
+            },
+            "layers": [
+                {
+                    "layer": "toilets",
+                    "path": [
+                        "wheelchairAccessible"
+                    ],
+                    "dataValues": {
+                        "yes": "yes",
+                        "limited": "limited",
+                        "no": "no"
+                    }
+                }
+            ]
+        }
+    ],
+    "report": null
+}

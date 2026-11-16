@@ -1,0 +1,104 @@
+{
+    "title": "Toiletter i Aarhus",
+    "description": "Offentlige toiletter, som er gratis at bruge.",
+    "locale": "da-DK",
+    "view": {
+        "center": [
+            56.15355,
+            10.21432
+        ],
+        "zoom": 14
+    },
+    "minZoom": 15,
+    "baseMap": {
+        "url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "attribution": "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a>",
+        "maxZoom": 19
+    },
+    "sidebar": {
+        "position": "left",
+        "list": true,
+        "categories": true,
+        "localSearch": true,
+        "addressSearch": true
+    },
+    "layers": [
+        {
+            "id": "toilets",
+            "label": "Offentlige toiletter",
+            "url": "/data/merged-public-toilets.geojson?filter=%7B%22op%22:%22%3D%22,%22args%22:%5B%7B%22property%22:%22isAccessibleForFree%22%7D,true%5D%7D",
+            "colour": "#6b3fa0",
+            "icon": "toilet",
+            "row": {
+                "title": {
+                    "path": [
+                        "name"
+                    ],
+                    "label": null,
+                    "fallback": "Toilet",
+                    "format": "text",
+                    "values": {}
+                },
+                "subtitle": {
+                    "path": [
+                        "address",
+                        "streetAddress"
+                    ],
+                    "label": null,
+                    "fallback": "Adresse ikke registreret",
+                    "format": "text",
+                    "values": {}
+                }
+            },
+            "detail": [
+                {
+                    "path": [
+                        "description"
+                    ],
+                    "label": "Beskrivelse",
+                    "fallback": null,
+                    "format": "text",
+                    "values": {}
+                },
+                {
+                    "path": [
+                        "openingHours"
+                    ],
+                    "label": "Åbningstider",
+                    "fallback": null,
+                    "format": "list",
+                    "values": {}
+                }
+            ]
+        }
+    ],
+    "filters": [
+        {
+            "type": "select",
+            "label": "Kørestolsadgang",
+            "values": {
+                "yes": "Ja",
+                "limited": "Delvist",
+                "no": "Nej"
+            },
+            "layers": [
+                {
+                    "layer": "toilets",
+                    "path": [
+                        "wheelchairAccessible"
+                    ],
+                    "dataValues": {
+                        "yes": "yes",
+                        "limited": "limited",
+                        "no": "no"
+                    }
+                }
+            ]
+        }
+    ],
+    "report": {
+        "label": "Ret eller tilføj oplysninger",
+        "url": "https://example.aarhus.dk/form?entity={id}&sources={seeAlso}",
+        "target": "_blank"
+    }
+}
