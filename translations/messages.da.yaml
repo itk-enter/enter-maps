@@ -105,7 +105,7 @@ builder:
     layers: Lag
     layer_heading: "Lag %number%: %label%"
     layer_new: Nyt lag
-    layer_add: Tilføj lag
+    layer_add: Tilføj et lag til kortet
     layer_delete: Fjern laget
     layer_delete_label: Fjern laget (lag %number%)
     layer_label: Navn på laget
@@ -121,15 +121,19 @@ builder:
     icon_bench: Bænk
     icon_pin: Nål
     row: Rækken i listen
+    row_help: Hvert sted er en række i listen, med titlen med fed og undertitlen under den. Skriv stien til den værdi i datasættet, som rækken skal vise.
     row_title: Titel
-    row_title_path: Sti til titlen
-    row_subtitle: Undertitel
-    row_subtitle_path: Sti til undertitlen
-    detail: Felter i detaljevisningen
-    field_add: Tilføj felt
+    row_subtitle: Undertitel (valgfri)
+    row_subtitle_label_help: 'Står foran værdien, fx Pladser giver "Pladser: 2".'
+    detail: Detaljevisningen
+    detail_help: Felterne vises, når brugeren vælger et sted på kortet eller i listen, i denne rækkefølge.
+    detail_empty: Der er ingen felter endnu.
+    field_heading: Felt %number%
+    field_add: Tilføj felt til detaljevisningen
     field_delete: Fjern feltet
     field_delete_label: Fjern feltet (felt %number%)
     field_label: Etiket
+    field_label_help: Overskriften over værdien i detaljevisningen.
     path: Sti
     path_help: Fx name eller address.streetAddress
     format: Type
@@ -146,7 +150,8 @@ builder:
     combine: Betingelserne
     combine_and: Alle betingelser skal passe
     combine_or: Mindst én betingelse skal passe
-    condition_add: Tilføj betingelse
+    condition_heading: Betingelse %number%
+    condition_add: Tilføj betingelse til filteret
     condition_delete: Fjern betingelsen
     condition_delete_label: Fjern betingelsen (betingelse %number%)
     operator: Betingelse

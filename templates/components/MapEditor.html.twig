@@ -4,6 +4,10 @@
 {% set section = 'flex flex-col gap-4' %}
 {% set box = 'flex flex-col gap-4 rounded border border-line p-4' %}
 {% set grid = 'grid gap-4 sm:grid-cols-2' %}
+{% set group = 'flex flex-col gap-3 border-t border-line pt-4' %}
+{% set fieldset = 'm-0 flex flex-col gap-3 border-0 p-0' %}
+{% set legend = 'mb-2 p-0 font-semibold' %}
+{% set card = 'm-0 flex flex-col gap-3 rounded border border-line bg-surface-2 p-3' %}
 <div {{ attributes.defaults({class: 'max-w-3xl'}) }}>
     {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col gap-8', 'data-action': 'live#action:prevent', 'data-live-action-param': 'save', 'data-live-then-param': 'preview'}}) }}
         {% if saveErrors is not empty %}
@@ -42,9 +46,12 @@
             {% for layer in form.layers %}
                 {% set number = loop.index %}
                 <div class="{{ box }}">
-                    <twig:Heading level="3" size="md">
-                        {{- 'builder.form.layer_heading'|trans({'%number%': number, '%label%': layer.label.vars.value ?: 'builder.form.layer_new'|trans}) -}}
-                    </twig:Heading>
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <twig:Heading level="3" size="md">
+                            {{- 'builder.form.layer_heading'|trans({'%number%': number, '%label%': layer.label.vars.value ?: 'builder.form.layer_new'|trans}) -}}
+                        </twig:Heading>
+                        {{ form_widget(layer.vars.button_delete, {attr: {'aria-label': 'builder.form.layer_delete_label'|trans({'%number%': number})}}) }}
+                    </div>
                     {{ form_widget(layer.id) }}
                     {{ form_widget(layer.extra) }}
                     {{ form_widget(layer.rawFilter) }}
@@ -55,76 +62,102 @@
                         {{ form_row(layer.icon) }}
                     </div>
 
-                    <twig:Heading level="4" size="sm">{{ 'builder.form.row'|trans }}</twig:Heading>
-                    <div class="{{ grid }}">
-                        {{ form_row(layer.title.path, {label: 'builder.form.row_title_path'}) }}
-                        {{ form_row(layer.title.fallback) }}
-                        {{ form_widget(layer.title.extra) }}
-                    </div>
-                    <div class="{{ grid }}">
-                        {{ form_row(layer.subtitle.path, {label: 'builder.form.row_subtitle_path'}) }}
-                        {{ form_row(layer.subtitle.label) }}
-                        {{ form_row(layer.subtitle.format) }}
-                        {{ form_row(layer.subtitle.fallback) }}
-                        {{ form_widget(layer.subtitle.extra) }}
-                    </div>
-
-                    <twig:Heading level="4" size="sm">{{ 'builder.form.detail'|trans }}</twig:Heading>
-                    {% for field in layer.detail %}
-                        <div class="grid gap-4 border-t border-line pt-4 sm:grid-cols-2">
-                            {{ form_row(field.label) }}
-                            {{ form_row(field.path) }}
-                            {{ form_row(field.format) }}
-                            {{ form_row(field.fallback) }}
-                            {{ form_widget(field.extra) }}
-                            <div>{{ form_widget(field.vars.button_delete, {attr: {'aria-label': 'builder.form.field_delete_label'|trans({'%number%': loop.index})}}) }}</div>
-                        </div>
-                    {% endfor %}
-                    <div>{{ form_widget(layer.detail.vars.button_add) }}</div>
-                    {% do layer.detail.setRendered %}
-
-                    <twig:Heading level="4" size="sm">{{ 'builder.form.filter'|trans }}</twig:Heading>
-                    <p class="m-0 text-sm text-text-muted">{{ 'builder.form.filter_help'|trans }}</p>
-                    {% if layer.rawFilter.vars.value %}
-                        <p class="m-0">{{ 'builder.form.filter_raw'|trans }}</p>
-                        <pre class="m-0 overflow-x-auto rounded bg-surface-2 p-3 text-sm whitespace-pre-wrap"><code>{{ layer.rawFilter.vars.value }}</code></pre>
-                        {% do layer.combine.setRendered %}
-                        {% do layer.conditions.setRendered %}
-                    {% else %}
-                        {% if layer.conditions|length > 1 %}
-                            {{ form_row(layer.combine) }}
-                        {% else %}
-                            {% do layer.combine.setRendered %}
-                        {% endif %}
-                        {% for condition in layer.conditions %}
-                            {% set operator = condition.operator.vars.value %}
-                            {% set type = condition.type.vars.value %}
-                            <div class="grid gap-4 border-t border-line pt-4 sm:grid-cols-2">
-                                {{ form_row(condition.path) }}
-                                {{ form_row(condition.operator) }}
-                                {% if operator == 'isNull' %}
-                                    {% do condition.type.setRendered %}
-                                {% else %}
-                                    {{ form_row(condition.type) }}
-                                {% endif %}
-                                {% if operator == 'in' %}
-                                    {{ form_row(condition.values) }}
-                                {% elseif operator != 'isNull' and type == 'boolean' %}
-                                    {{ form_row(condition.flag) }}
-                                {% elseif operator != 'isNull' %}
-                                    {{ form_row(condition.value) }}
-                                {% endif %}
-                                {% do condition.value.setRendered %}
-                                {% do condition.flag.setRendered %}
-                                {% do condition.values.setRendered %}
-                                <div>{{ form_widget(condition.vars.button_delete, {attr: {'aria-label': 'builder.form.condition_delete_label'|trans({'%number%': loop.index})}}) }}</div>
+                    <div class="{{ group }}">
+                        <twig:Heading level="4" size="sm">{{ 'builder.form.row'|trans }}</twig:Heading>
+                        <p class="m-0 text-sm text-text-muted">{{ 'builder.form.row_help'|trans }}</p>
+                        <fieldset class="{{ fieldset }}">
+                            <legend class="{{ legend }}">{{ 'builder.form.row_title'|trans }}</legend>
+                            <div class="{{ grid }}">
+                                {{ form_row(layer.title.path) }}
+                                {{ form_row(layer.title.fallback) }}
+                                {{ form_widget(layer.title.extra) }}
                             </div>
-                        {% endfor %}
-                        <div>{{ form_widget(layer.conditions.vars.button_add) }}</div>
-                        {% do layer.conditions.setRendered %}
-                    {% endif %}
+                        </fieldset>
+                        <fieldset class="{{ fieldset }}">
+                            <legend class="{{ legend }}">{{ 'builder.form.row_subtitle'|trans }}</legend>
+                            <div class="{{ grid }}">
+                                {{ form_row(layer.subtitle.path, {required: false}) }}
+                                {{ form_row(layer.subtitle.label, {help: 'builder.form.row_subtitle_label_help'}) }}
+                                {{ form_row(layer.subtitle.format) }}
+                                {{ form_row(layer.subtitle.fallback) }}
+                                {{ form_widget(layer.subtitle.extra) }}
+                            </div>
+                        </fieldset>
+                    </div>
 
-                    <div class="border-t border-line pt-4">{{ form_widget(layer.vars.button_delete, {attr: {'aria-label': 'builder.form.layer_delete_label'|trans({'%number%': number})}}) }}</div>
+                    <div class="{{ group }}">
+                        <twig:Heading level="4" size="sm">{{ 'builder.form.detail'|trans }}</twig:Heading>
+                        <p class="m-0 text-sm text-text-muted">{{ 'builder.form.detail_help'|trans }}</p>
+                        {% for field in layer.detail %}
+                            <fieldset class="{{ card }}">
+                                <legend class="sr-only">{{ 'builder.form.field_heading'|trans({'%number%': loop.index}) }}</legend>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span aria-hidden="true" class="font-semibold">{{ 'builder.form.field_heading'|trans({'%number%': loop.index}) }}</span>
+                                    {{ form_widget(field.vars.button_delete, {attr: {'aria-label': 'builder.form.field_delete_label'|trans({'%number%': loop.index})}}) }}
+                                </div>
+                                <div class="{{ grid }}">
+                                    {{ form_row(field.label, {help: 'builder.form.field_label_help'}) }}
+                                    {{ form_row(field.path) }}
+                                    {{ form_row(field.format) }}
+                                    {{ form_row(field.fallback) }}
+                                    {{ form_widget(field.extra) }}
+                                </div>
+                            </fieldset>
+                        {% else %}
+                            <p class="m-0">{{ 'builder.form.detail_empty'|trans }}</p>
+                        {% endfor %}
+                        <div>{{ form_widget(layer.detail.vars.button_add) }}</div>
+                        {% do layer.detail.setRendered %}
+                    </div>
+
+                    <div class="{{ group }}">
+                        <twig:Heading level="4" size="sm">{{ 'builder.form.filter'|trans }}</twig:Heading>
+                        <p class="m-0 text-sm text-text-muted">{{ 'builder.form.filter_help'|trans }}</p>
+                        {% if layer.rawFilter.vars.value %}
+                            <p class="m-0">{{ 'builder.form.filter_raw'|trans }}</p>
+                            <pre class="m-0 overflow-x-auto rounded bg-surface-2 p-3 text-sm whitespace-pre-wrap"><code>{{ layer.rawFilter.vars.value }}</code></pre>
+                            {% do layer.combine.setRendered %}
+                            {% do layer.conditions.setRendered %}
+                        {% else %}
+                            {% if layer.conditions|length > 1 %}
+                                {{ form_row(layer.combine) }}
+                            {% else %}
+                                {% do layer.combine.setRendered %}
+                            {% endif %}
+                            {% for condition in layer.conditions %}
+                                {% set operator = condition.operator.vars.value %}
+                                {% set type = condition.type.vars.value %}
+                                <fieldset class="{{ card }}">
+                                    <legend class="sr-only">{{ 'builder.form.condition_heading'|trans({'%number%': loop.index}) }}</legend>
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span aria-hidden="true" class="font-semibold">{{ 'builder.form.condition_heading'|trans({'%number%': loop.index}) }}</span>
+                                        {{ form_widget(condition.vars.button_delete, {attr: {'aria-label': 'builder.form.condition_delete_label'|trans({'%number%': loop.index})}}) }}
+                                    </div>
+                                    <div class="{{ grid }}">
+                                        {{ form_row(condition.path) }}
+                                        {{ form_row(condition.operator) }}
+                                        {% if operator == 'isNull' %}
+                                            {% do condition.type.setRendered %}
+                                        {% else %}
+                                            {{ form_row(condition.type) }}
+                                        {% endif %}
+                                        {% if operator == 'in' %}
+                                            {{ form_row(condition.values) }}
+                                        {% elseif operator != 'isNull' and type == 'boolean' %}
+                                            {{ form_row(condition.flag) }}
+                                        {% elseif operator != 'isNull' %}
+                                            {{ form_row(condition.value) }}
+                                        {% endif %}
+                                        {% do condition.value.setRendered %}
+                                        {% do condition.flag.setRendered %}
+                                        {% do condition.values.setRendered %}
+                                    </div>
+                                </fieldset>
+                            {% endfor %}
+                            <div>{{ form_widget(layer.conditions.vars.button_add) }}</div>
+                            {% do layer.conditions.setRendered %}
+                        {% endif %}
+                    </div>
                 </div>
             {% endfor %}
             <div>{{ form_widget(form.layers.vars.button_add) }}</div>

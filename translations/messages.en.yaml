@@ -105,7 +105,7 @@ builder:
     layers: Layers
     layer_heading: "Layer %number%: %label%"
     layer_new: New layer
-    layer_add: Add a layer
+    layer_add: Add a layer to the map
     layer_delete: Remove the layer
     layer_delete_label: Remove the layer (layer %number%)
     layer_label: Name of the layer
@@ -121,15 +121,19 @@ builder:
     icon_bench: Bench
     icon_pin: Pin
     row: The row in the list
+    row_help: Each place is a row in the list, with the title in bold and the subtitle below it. Type the path to the value in the data set that the row shows.
     row_title: Title
-    row_title_path: Path to the title
-    row_subtitle: Subtitle
-    row_subtitle_path: Path to the subtitle
-    detail: Fields in the detail view
-    field_add: Add a field
+    row_subtitle: Subtitle (optional)
+    row_subtitle_label_help: 'Comes before the value, for example Spots gives "Spots: 2".'
+    detail: The detail view
+    detail_help: The fields show when the user selects a place on the map or in the list, in this order.
+    detail_empty: There are no fields yet.
+    field_heading: Field %number%
+    field_add: Add a field to the detail view
     field_delete: Remove the field
     field_delete_label: Remove the field (field %number%)
     field_label: Label
+    field_label_help: The heading above the value in the detail view.
     path: Path
     path_help: For example name or address.streetAddress
     format: Type
@@ -146,7 +150,8 @@ builder:
     combine: The conditions
     combine_and: All conditions must match
     combine_or: At least one condition must match
-    condition_add: Add a condition
+    condition_heading: Condition %number%
+    condition_add: Add a condition to the filter
     condition_delete: Remove the condition
     condition_delete_label: Remove the condition (condition %number%)
     operator: Condition

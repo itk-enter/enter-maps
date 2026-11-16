@@ -7,8 +7,8 @@
     {%- set row_attr = row_attr|merge({class: (row_attr.class|default('') ~ ' flex flex-col gap-1')|trim}) -%}
     <div{% with {attr: row_attr} %}{{ block('attributes') }}{% endwith %}>
         {{- form_label(form) -}}
-        {{- form_help(form) -}}
         {{- form_widget(form, widget_attr) -}}
+        {{- form_help(form) -}}
         {{- form_errors(form) -}}
     </div>
 {%- endblock form_row_render -%}
@@ -41,13 +41,13 @@
     {%- if expanded -%}
         <fieldset class="m-0 flex flex-col gap-1 border-0 p-0"{% if help %} aria-describedby="{{ id }}_help"{% endif %}>
             <legend class="mb-1 p-0 font-semibold">{{ label|trans(label_translation_parameters, translation_domain) }}</legend>
-            {{- form_help(form) -}}
             {%- for child in form -%}
                 <div class="flex items-center gap-2.5">
                     {{- form_widget(child) -}}
                     {{- form_label(child, null, {label_attr: {class: 'font-normal'}}) -}}
                 </div>
             {%- endfor -%}
+            {{- form_help(form) -}}
             {{- form_errors(form) -}}
         </fieldset>
     {%- else -%}
@@ -83,11 +83,23 @@
     {{- parent() -}}
 {%- endblock choice_widget_collapsed -%}
 
-{# The add and delete buttons of a collection. They are secondary buttons. #}
-{%- block button_widget -%}
-    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' inline-flex min-h-10 cursor-pointer items-center justify-center rounded border border-line bg-surface px-4 font-semibold text-ink')|trim}) -%}
-    {{- parent() -}}
-{%- endblock button_widget -%}
+{# The add button of a collection has a dashed border and a plus, so that #}
+{# it does not look like the save buttons. The label tells what it adds. #}
+{%- block live_collection_button_add_widget -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' inline-flex min-h-10 cursor-pointer items-center gap-2 rounded border border-dashed border-primary bg-surface px-4 font-semibold text-primary')|trim}) -%}
+    <button type="button" {{ block('button_attributes') }}>
+        <span aria-hidden="true" class="text-lg leading-none">+</span>
+        {{- block('form_label_content') -}}
+    </button>
+{%- endblock live_collection_button_add_widget -%}
+
+{# The delete button of an item is a small text button in the header of the item. #}
+{%- block live_collection_button_delete_widget -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' cursor-pointer border-0 bg-transparent p-1 text-sm font-semibold text-danger underline')|trim}) -%}
+    <button type="button" {{ block('button_attributes') }}>
+        {{- block('form_label_content') -}}
+    </button>
+{%- endblock live_collection_button_delete_widget -%}
 
 {%- block form_errors -%}
     {%- if errors|length > 0 -%}

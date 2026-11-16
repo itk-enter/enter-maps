@@ -27,9 +27,15 @@ test("makes a new map with a fixed filter", async ({ page }) => {
   await page.getByLabel("Søg i stederne", { exact: true }).check();
   await page.getByLabel("Navn på laget").fill("Bænke");
   await page.getByLabel("Datasæt").fill("benches");
-  await page.getByLabel("Sti til titlen").fill("name");
+  // The path of the title is in the group "Titel" under "Rækken i listen".
+  await page
+    .getByRole("group", { name: "Titel", exact: true })
+    .getByLabel("Sti", { exact: true })
+    .fill("name");
 
-  await page.getByRole("button", { name: "Tilføj betingelse" }).click();
+  await page
+    .getByRole("button", { name: "Tilføj betingelse til filteret" })
+    .click();
   await rendered(page);
   await page.getByLabel("Sti", { exact: true }).last().fill("material");
   await page.getByLabel("Betingelse", { exact: true }).selectOption("in");
