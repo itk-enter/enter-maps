@@ -47,3 +47,21 @@ tasks:
       - task: :compose
         vars:
           TASK_ARGS: run --rm --no-deps phpfpm vendor/bin/coverage-check coverage/clover.xml {{.COVERAGE_THRESHOLD}}
+
+  browser:
+    desc: "Run the browser tests with Playwright and axe-core. Give Playwright options after --"
+    # The tests run in the playwright container against the PHP web server
+    # in the browser-site container. The browser-site container uses the
+    # test environment and var/browser.db, so the dev database stays as it
+    # is. The report goes to var/browser/report/index.html.
+    #
+    # The steps do not use the ":compose" task, because it adds the options
+    # after -- to each command. Only Playwright gets them.
+    cmds:
+      - docker compose run --rm --no-deps phpfpm composer install --no-scripts
+      - docker compose run --rm --no-deps phpfpm bin/console importmap:install
+      - docker compose run --rm --no-deps phpfpm bin/console tailwind:build
+      - docker compose run --rm --no-deps browser-site tests/Browser/setup.sh
+      - docker compose up --detach browser-site
+      - defer: docker compose stop browser-site
+      - docker compose run --rm --no-deps playwright sh -c "npm ci --no-audit --no-fund --loglevel=error && npx playwright test {{.CLI_ARGS}}"

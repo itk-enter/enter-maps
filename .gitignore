@@ -32,3 +32,6 @@ plan.md
 /.phpunit.cache/
 /coverage/
 ###< phpunit/phpunit ###
+
+# Browser tests
+/tests/Browser/node_modules/
