@@ -3,7 +3,69 @@ import * as L from "leaflet";
 import { formatField, matchesFilters } from "../lib/fields.js";
 import { centroid, distanceInMetres } from "../lib/geo.js";
 
-/*
+/**
+ * A layer from map_json.leaflet.
+ *
+ * @typedef {object} Layer
+ * @property {string} id The id of the layer.
+ * @property {string} label The label.
+ * @property {string} url The URL of the data proxy for the data set.
+ * @property {string} colour The colour, as a CSS value.
+ * @property {{image: string}|{glyph: string}} icon The icon.
+ * @property {{title: import("../lib/fields.js").Field,
+ *   subtitle: import("../lib/fields.js").Field|null}} row The fields of a
+ *   row in the list.
+ * @property {import("../lib/fields.js").Field[]} detail The fields of the
+ *   detail view.
+ */
+
+/**
+ * The settings of the map, from map_json.leaflet.
+ *
+ * @typedef {object} Settings
+ * @property {string} title The title.
+ * @property {{center: number[], zoom: number}|null} view The start view.
+ * @property {number|null} minZoom Below this zoom, the map holds the data
+ *   back.
+ * @property {{url: string, attribution: string, maxZoom: number}} baseMap
+ *   The tiles.
+ * @property {Layer[]} layers The layers.
+ * @property {import("../lib/fields.js").Filter[]} filters The open filters.
+ * @property {{label: string, url: string, target: string}|null} report The
+ *   report link.
+ */
+
+/**
+ * The embed options from the query string. Null means "use the settings".
+ *
+ * @typedef {object} Options
+ * @property {number|null} zoom The start zoom.
+ * @property {number[]|null} center The start centre, as [lat, lon].
+ * @property {string[]|null} layers The ids of the layers that are on.
+ * @property {string|null} select The id of the place to select.
+ */
+
+/**
+ * A feature of a layer, with what the list, the detail view and the markers
+ * need.
+ *
+ * @typedef {object} Place
+ * @property {string} id The id of the feature, or "<layer>-<index>".
+ * @property {Layer} layer The layer.
+ * @property {object} properties The properties of the feature.
+ * @property {object} geometry The GeoJSON geometry.
+ * @property {number} lat The latitude of the centre.
+ * @property {number} lon The longitude of the centre.
+ * @property {string} title The title.
+ * @property {string} subtitle The subtitle, or "".
+ * @property {{label: string|null,
+ *   value: import("../lib/fields.js").FieldValue}[]} details The fields of
+ *   the detail view that have a value.
+ * @property {number} [distance] The distance to the chosen address, in
+ *   metres.
+ */
+
+/**
  * The map of an embed page. It holds the state: the places, the search
  * text, the layers and filters that are on, the chosen address and the
  * selected place. It draws the markers, and it tells the list and the
@@ -14,6 +76,12 @@ import { centroid, distanceInMetres } from "../lib/geo.js";
  * - map-filters:change changes the layers and the open filters.
  * - address-search:query and address-search:choose change the search text
  *   and the chosen address.
+ *
+ * Values: settings ({@link Settings}), options ({@link Options}) and
+ * messages (the texts of the page).
+ * Targets: map, status, marker (a template for each layer), gate and
+ * gateBar.
+ * Outlets: map-list and map-detail.
  */
 
 const DEFAULT_VIEW = { center: [56.15355, 10.21432], zoom: 15 };
@@ -31,6 +99,7 @@ export default class extends Controller {
 
   static outlets = ["map-list", "map-detail"];
 
+  /** Makes the Leaflet map and starts to load the data. */
   connect() {
     const settings = this.settingsValue;
     const options = this.optionsValue;
@@ -79,10 +148,18 @@ export default class extends Controller {
     this.load();
   }
 
+  /** Removes the Leaflet map. */
   disconnect() {
     this.map.remove();
   }
 
+  /**
+   * Loads the data of each layer from the data proxy. Then shows the places
+   * and selects the place in the "select" option. If a layer fails, the
+   * list shows an error.
+   *
+   * @returns {Promise<void>}
+   */
   async load() {
     const settings = this.settingsValue;
     // Numbers and dates use the language of the page, which "lang" can change.
@@ -124,7 +201,17 @@ export default class extends Controller {
     }
   }
 
-  /* A place holds what the list, the detail view and the markers need. */
+  /**
+   * Makes a place from a feature.
+   *
+   * @param {{id?: string, properties?: object, geometry: object}} feature A
+   *   GeoJSON feature.
+   * @param {Layer} layer The layer of the feature.
+   * @param {number} index The index of the feature in the layer.
+   * @param {import("../lib/fields.js").FormatContext} context The language
+   *   and the texts of the page.
+   * @returns {Place} The place.
+   */
   toPlace(feature, layer, index, context) {
     const properties = feature.properties ?? {};
     const point = centroid(feature.geometry);
@@ -147,7 +234,15 @@ export default class extends Controller {
     };
   }
 
-  /* The subtitle of a row, with its label first if it has one. */
+  /**
+   * Gives the subtitle of a row, with its label first if it has one.
+   *
+   * @param {import("../lib/fields.js").Field|null} field The field.
+   * @param {object} properties The properties of the feature.
+   * @param {import("../lib/fields.js").FormatContext} context The language
+   *   and the texts of the page.
+   * @returns {string} The text, or "".
+   */
   rowText(field, properties, context) {
     const value = field ? formatField(field, properties, context) : null;
 
@@ -158,8 +253,10 @@ export default class extends Controller {
     return field.label ? `${field.label}: ${value.text}` : value.text;
   }
 
-  /* Zoomed out, the map holds the data back, and the sidebar tells how to
-   * get to it. */
+  /**
+   * Updates the zoom gate. Zoomed out, the map holds the data back, and the
+   * sidebar tells how to get to it.
+   */
   updateGate() {
     const minZoom = this.settingsValue.minZoom;
     const steps = minZoom === null ? 0 : minZoom - this.map.getZoom();
@@ -189,7 +286,13 @@ export default class extends Controller {
     }
   }
 
-  /* The list holds what the map shows. */
+  /**
+   * Tells if the list shows a place. The list holds what the map shows.
+   *
+   * @param {Place} place The place.
+   * @returns {boolean} True if the layer is on, the place is in the view, and
+   *   the place matches the filters and the search text.
+   */
   matches(place) {
     if (!this.state.layers.has(place.layer.id)) {
       return false;
@@ -210,6 +313,12 @@ export default class extends Controller {
     return text.includes(this.state.query.toLowerCase());
   }
 
+  /**
+   * Gives the places to show. With a chosen address, gives the nearest
+   * places, sorted by distance.
+   *
+   * @returns {Place[]} The places. Empty behind the zoom gate.
+   */
   visiblePlaces() {
     if (this.state.gated) {
       return [];
@@ -232,6 +341,7 @@ export default class extends Controller {
       .slice(0, NEAREST_COUNT);
   }
 
+  /** Renders the list and the markers from the state. */
   render() {
     this.visible = this.visiblePlaces();
 
@@ -247,6 +357,7 @@ export default class extends Controller {
     this.renderMarkers();
   }
 
+  /** Draws a marker for each visible place, and the area of a polygon. */
   renderMarkers() {
     this.markerLayer.clearLayers();
 
@@ -281,7 +392,14 @@ export default class extends Controller {
     });
   }
 
-  /* The markup of a marker comes from the template of its layer. */
+  /**
+   * Makes the icon of a marker. The markup comes from the template of its
+   * layer.
+   *
+   * @param {Place} place The place.
+   * @param {boolean} selected True if the place is selected.
+   * @returns {L.DivIcon} The icon.
+   */
   markerIcon(place, selected) {
     const template = this.markerTargets.find(
       (candidate) => candidate.dataset.layerId === place.layer.id,
@@ -299,6 +417,14 @@ export default class extends Controller {
     });
   }
 
+  /**
+   * Selects a place, moves the map to it and opens the detail view.
+   *
+   * @param {string} id The id of the place. An unknown id does nothing.
+   * @param {HTMLElement|null} [returnFocusTo] The element that gets focus
+   *   when the detail view closes. Without it, the row of the place gets
+   *   focus.
+   */
   selectPlace(id, returnFocusTo = null) {
     const place = this.state.places.find((candidate) => candidate.id === id);
 
@@ -332,15 +458,27 @@ export default class extends Controller {
 
   /* Actions --------------------------------------------------------------- */
 
+  /**
+   * Action for map-list:select.
+   *
+   * @param {CustomEvent<{id: string, returnFocusTo: HTMLElement}>} event
+   */
   select({ detail }) {
     this.selectPlace(detail.id, detail.returnFocusTo);
   }
 
+  /** Action for map-detail:close. */
   deselect() {
     this.state.selected = null;
     this.renderMarkers();
   }
 
+  /**
+   * Action for map-filters:change.
+   *
+   * @param {CustomEvent<{layers: string[],
+   *   filters: {index: number, codes: string[]}[]}>} event
+   */
   filter({ detail }) {
     this.state.layers = new Set(detail.layers);
     this.state.filters = detail.filters.map(({ index, codes }) => ({
@@ -350,12 +488,22 @@ export default class extends Controller {
     this.render();
   }
 
+  /**
+   * Action for address-search:query. Removes the chosen address.
+   *
+   * @param {CustomEvent<{query: string}>} event
+   */
   query({ detail }) {
     this.state.query = detail.query;
     this.state.origin = null;
     this.render();
   }
 
+  /**
+   * Action for address-search:choose. Removes the search text.
+   *
+   * @param {CustomEvent<{lat: number, lon: number, label: string}>} event
+   */
   origin({ detail }) {
     this.state.origin = detail;
     this.state.query = "";

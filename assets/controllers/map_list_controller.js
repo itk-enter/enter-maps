@@ -1,19 +1,32 @@
 import { Controller } from "@hotwired/stimulus";
 import { formatDistance } from "../lib/geo.js";
 
-/*
+/**
  * The list of the places that the map shows. The map controller calls
  * render(). The markup of a row comes from the row template, and the
  * controller fills it with textContent.
  *
  * A click on a row sends map-list:select with the id of the place and the
  * button, so that the detail view can give focus back to the row.
+ *
+ * Values: messages (the texts of the list).
+ * Targets: box, heading, count, list, empty and row (the row template).
  */
 export default class extends Controller {
   static values = { messages: Object };
 
   static targets = ["box", "heading", "count", "list", "empty", "row"];
 
+  /**
+   * Shows the places.
+   *
+   * @param {import("./map_controller.js").Place[]} places The places.
+   * @param {object} state What the list must show.
+   * @param {boolean} state.gated True behind the zoom gate. Hides the list.
+   * @param {{label: string}|null} state.origin The chosen address, or null.
+   * @param {string|null} state.selected The id of the selected place.
+   * @param {boolean} state.showLayer True if the rows show the layer.
+   */
   render(places, { gated, origin, selected, showLayer }) {
     // Zoomed out, the zoom gate has the message, so the list is hidden.
     this.boxTarget.hidden = gated;
@@ -27,6 +40,7 @@ export default class extends Controller {
     );
   }
 
+  /** Tells that the data did not load. */
   showError() {
     this.boxTarget.hidden = false;
     this.headingTarget.textContent = this.messagesValue.loadError;
@@ -35,6 +49,10 @@ export default class extends Controller {
     this.listTarget.replaceChildren();
   }
 
+  /**
+   * @param {string} id The id of a place.
+   * @returns {HTMLButtonElement|null} The button of the row, or null.
+   */
   rowFor(id) {
     return (
       this.listTarget.querySelector(`button[data-id="${CSS.escape(id)}"]`) ??
@@ -42,6 +60,14 @@ export default class extends Controller {
     );
   }
 
+  /**
+   * Makes a row from the row template.
+   *
+   * @param {import("./map_controller.js").Place} place The place.
+   * @param {string|null} selected The id of the selected place.
+   * @param {boolean} showLayer True if the row shows the layer.
+   * @returns {HTMLElement} The row.
+   */
   row(place, selected, showLayer) {
     const item = this.rowTarget.content.firstElementChild.cloneNode(true);
     const button = item.querySelector("button");
@@ -72,6 +98,11 @@ export default class extends Controller {
     return item;
   }
 
+  /**
+   * Action for a click on a row. Sends map-list:select.
+   *
+   * @param {Event} event The click.
+   */
   choose(event) {
     this.dispatch("select", {
       detail: {

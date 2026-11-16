@@ -1,18 +1,23 @@
 import { Controller } from "@hotwired/stimulus";
 
-/*
+/**
  * The layer checkboxes and the open filters in the sidebar. The server
  * renders the controls. On each change, the controller sends
  * map-filters:change with the ids of the layers that are on, and the
  * selected codes of each open filter: { layers, filters: [{ index, codes }] }.
  *
  * Without the layer checkboxes, the layers in "initialLayers" stay on.
+ *
+ * Values: initialLayers (the ids of the layers that are on at the start).
+ * Targets: layer (a checkbox) and filter (the group of a filter, with
+ * data-index).
  */
 export default class extends Controller {
   static values = { initialLayers: Array };
 
   static targets = ["layer", "filter"];
 
+  /** Action for a change of a control. Sends map-filters:change. */
   change() {
     const layers = this.hasLayerTarget
       ? this.layerTargets

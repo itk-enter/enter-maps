@@ -1,12 +1,74 @@
-/*
- * Reads the fields of the configuration from the properties of a feature.
- *
- * A field is data, not code: { path, label, fallback, format, values }. The
- * converter on the server gives "path" as a list of keys. The result is
- * plain text, so the callers put it into the page with textContent.
+/**
+ * @file Reads the fields of the configuration from the properties of a
+ * feature. A field is data, not code. The result is plain text, so the
+ * callers put it into the page with textContent.
  */
 
-/* The value at a path, or undefined. */
+/**
+ * A field from map_json.leaflet.
+ *
+ * @typedef {object} Field
+ * @property {string[]} path The keys to the value in the properties. The
+ *   converter on the server makes the list from "a.b.c".
+ * @property {string|null} label The label, or null.
+ * @property {string|null} fallback The text if the value is missing, or null.
+ * @property {string|null} format "list", "boolean", "number", "date", "link"
+ *   or null for plain text.
+ * @property {Object<string, string>} values The text of each code.
+ */
+
+/**
+ * A formatted value. "items" is set for a list, and "href" for a link.
+ *
+ * @typedef {object} FieldValue
+ * @property {string} text The value as text.
+ * @property {string[]} [items] The text of each item of a list.
+ * @property {string} [href] The web address of a link.
+ */
+
+/**
+ * What formatField needs from the page.
+ *
+ * @typedef {object} FormatContext
+ * @property {string} locale The language of the page, for numbers and dates.
+ * @property {{yes: string, no: string}} messages The texts of true and false.
+ */
+
+/**
+ * An open filter from map_json.leaflet.
+ *
+ * @typedef {object} Filter
+ * @property {string} type The type of the control.
+ * @property {string} label The label.
+ * @property {Object<string, string>} values The text of each code.
+ * @property {FilterTarget[]} layers The layers that the filter applies to.
+ */
+
+/**
+ * How a filter reads the value of one layer.
+ *
+ * @typedef {object} FilterTarget
+ * @property {string} layer The id of the layer.
+ * @property {string[]} path The keys to the value in the properties.
+ * @property {Object<string, *>} dataValues The value in the data of each
+ *   code.
+ */
+
+/**
+ * A filter with the codes that the user selected.
+ *
+ * @typedef {object} ActiveFilter
+ * @property {Filter} filter The filter.
+ * @property {string[]} codes The selected codes. Empty means "all".
+ */
+
+/**
+ * Gives the value at a path.
+ *
+ * @param {object} properties The properties of a feature.
+ * @param {string[]} path The keys to the value.
+ * @returns {*} The value, or undefined.
+ */
 export function readPath(properties, path) {
   let value = properties;
 
@@ -20,6 +82,10 @@ export function readPath(properties, path) {
   return value;
 }
 
+/**
+ * @param {*} value A value from the properties.
+ * @returns {boolean} True for undefined, null, "" and an empty list.
+ */
 function isEmpty(value) {
   return (
     value === undefined ||
@@ -29,7 +95,11 @@ function isEmpty(value) {
   );
 }
 
-/* The text of a code in "values", or the value itself. */
+/**
+ * @param {Field} field The field.
+ * @param {*} value A value from the properties.
+ * @returns {string} The text of the code in "values", or the value itself.
+ */
 function text(field, value) {
   const key = String(value);
 
@@ -38,10 +108,14 @@ function text(field, value) {
     : String(value);
 }
 
-/*
- * Gives { text } for a field, { text, items } for a list and { text, href }
- * for a link. Gives null if the value is missing and the field has no
- * fallback, so that the caller leaves the row out.
+/**
+ * Formats the value of a field. If the value is missing and the field has no
+ * fallback, the caller leaves the row out.
+ *
+ * @param {Field} field The field.
+ * @param {object} properties The properties of a feature.
+ * @param {FormatContext} context The language and the texts of the page.
+ * @returns {FieldValue|null} The value, or null.
  */
 export function formatField(field, properties, context) {
   const value = readPath(properties, field.path);
@@ -102,9 +176,13 @@ export function formatField(field, properties, context) {
   }
 }
 
-/*
- * True if the place matches each open filter that has selected codes. A
+/**
+ * Tells if a place matches each open filter that has selected codes. A
  * filter does not change the places of a layer that is not in its "layers".
+ *
+ * @param {import("../controllers/map_controller.js").Place} place The place.
+ * @param {ActiveFilter[]} filters The open filters.
+ * @returns {boolean} True if the place matches.
  */
 export function matchesFilters(place, filters) {
   return filters.every(({ filter, codes }) => {

@@ -1,5 +1,5 @@
-/*
- * Address search on Adressevælger from Klimadatastyrelsen.
+/**
+ * @file Address search on Adressevælger from Klimadatastyrelsen.
  *
  * There are two calls: a search that gives labels and ids, then a lookup of
  * the access point of the chosen id. The token is not an API key. It is
@@ -7,17 +7,41 @@
  * users to send this value.
  */
 
+/**
+ * A suggestion from the search.
+ *
+ * @typedef {object} Hit
+ * @property {string} id The id of the house number or the street.
+ * @property {string} titel The label, for example "Rådhuspladsen 2, 8000
+ *   Aarhus C".
+ * @property {string} type "husnummer" for an address. Other values are
+ *   streets.
+ */
+
 const BASE = "https://adressevaelger.dk";
 const TOKEN = "adressevaelger123";
 const MUNICIPALITY_CODE = "0751";
 const SUGGESTION_COUNT = 5;
 
-/* A street has no position and no house number. To choose a street makes
- * the search narrower. It does not choose an address. */
+/**
+ * Tells if a suggestion is an address. A street has no position and no house
+ * number. To choose a street makes the search narrower. It does not choose
+ * an address.
+ *
+ * @param {Hit} hit The suggestion.
+ * @returns {boolean} True for an address.
+ */
 export function isAddress(hit) {
   return hit.type === "husnummer";
 }
 
+/**
+ * Finds addresses and streets in the municipality.
+ *
+ * @param {string} text The text that the user typed.
+ * @returns {Promise<Hit[]>} The first suggestions.
+ * @throws {Error} If Adressevælger gives an error.
+ */
 export async function search(text) {
   const response = await fetch(
     `${BASE}/husnumre/soeg?kommunekode=${MUNICIPALITY_CODE}&token=${TOKEN}&tekst=${encodeURIComponent(text)}`,
@@ -32,7 +56,14 @@ export async function search(text) {
   return (payload.fund || []).slice(0, SUGGESTION_COUNT);
 }
 
-/* The access point of a house number, as { lat, lon } in WGS84. */
+/**
+ * Gives the access point of an address.
+ *
+ * @param {Hit} hit An address. See isAddress().
+ * @returns {Promise<import("./geo.js").LatLon>} The access point, in WGS84.
+ * @throws {Error} If Adressevælger gives an error, or if the address has no
+ *   access point.
+ */
 export async function position(hit) {
   const response = await fetch(
     `${BASE}/husnumre/${encodeURIComponent(hit.id)}?token=${TOKEN}`,
@@ -52,8 +83,15 @@ export async function position(hit) {
   return utm32ToWgs84(point.koordinater.x, point.koordinater.y);
 }
 
-/* Adressevælger gives positions in ETRS89 / UTM zone 32N (EPSG:25832).
- * This is the inverse transverse Mercator on the GRS80 ellipsoid. */
+/**
+ * Changes a position from ETRS89 / UTM zone 32N (EPSG:25832), which
+ * Adressevælger gives, to WGS84. This is the inverse transverse Mercator on
+ * the GRS80 ellipsoid.
+ *
+ * @param {number} east The easting, in metres.
+ * @param {number} north The northing, in metres.
+ * @returns {import("./geo.js").LatLon} The position.
+ */
 function utm32ToWgs84(east, north) {
   const a = 6378137;
   const f = 1 / 298.257222101;

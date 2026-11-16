@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus";
 
-/*
+/**
  * The detail view of a place, over the list. The map controller calls
  * open(place, { returnFocus }). Focus goes to the title, and Escape and the
  * close button close the view. Then focus goes to the element that
@@ -9,12 +9,16 @@ import { Controller } from "@hotwired/stimulus";
  * The report link replaces {id} and {seeAlso} with the values of the place.
  * With the target "postMessage", the link is a button that sends
  * { type: "enter-map:report", id, seeAlso } to the page around the frame.
+ *
+ * Values: report ({ label, url, target }), if the map has a report link.
+ * Targets: host and template (the view template).
  */
 export default class extends Controller {
   static values = { report: Object };
 
   static targets = ["host", "template"];
 
+  /** Closes the view on Escape. */
   connect() {
     this.onKeydown = (event) => {
       if (event.key === "Escape" && !this.hostTarget.hidden) {
@@ -24,10 +28,19 @@ export default class extends Controller {
     document.addEventListener("keydown", this.onKeydown);
   }
 
+  /** Removes the Escape listener. */
   disconnect() {
     document.removeEventListener("keydown", this.onKeydown);
   }
 
+  /**
+   * Shows a place, and moves focus to its title.
+   *
+   * @param {import("./map_controller.js").Place} place The place.
+   * @param {object} options How to close.
+   * @param {function(): (HTMLElement|null)} options.returnFocus Gives the
+   *   element that gets focus when the view closes.
+   */
   open(place, { returnFocus }) {
     const view = this.templateTarget.content.firstElementChild.cloneNode(true);
     const field = (name) => view.querySelector(`[data-field="${name}"]`);
@@ -49,6 +62,13 @@ export default class extends Controller {
     field("title").focus();
   }
 
+  /**
+   * Fills the list of fields. A link and a list get their own markup.
+   *
+   * @param {HTMLElement} list The element that holds the fields.
+   * @param {HTMLTemplateElement} template The template of a field.
+   * @param {import("./map_controller.js").Place} place The place.
+   */
   renderDetails(list, template, place) {
     list.replaceChildren(
       ...place.details.map(({ label, value }) => {
@@ -89,6 +109,14 @@ export default class extends Controller {
     );
   }
 
+  /**
+   * Keeps the report link or the report button, and removes the other.
+   * Removes both if the map has no report link.
+   *
+   * @param {HTMLAnchorElement} link The report link.
+   * @param {HTMLButtonElement} button The report button, for "postMessage".
+   * @param {import("./map_controller.js").Place} place The place.
+   */
   renderReport(link, button, place) {
     const report = this.hasReportValue ? this.reportValue : null;
 
@@ -123,6 +151,10 @@ export default class extends Controller {
     }
   }
 
+  /**
+   * Closes the view, sends map-detail:close and gives focus back. Also the
+   * action of the close button.
+   */
   close() {
     this.hostTarget.hidden = true;
     this.hostTarget.replaceChildren();

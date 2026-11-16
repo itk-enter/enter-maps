@@ -13,6 +13,10 @@ The embed page uses [Stimulus](https://stimulus.hotwired.dev/) controllers. Asse
 - Texts come from the translations. Twig gives them to a controller as a `messages` value.
 - The settings of the map come from `map_json.leaflet`. Twig gives them to the `map` controller as the `settings`
   value. The embed options from the query string are the `options` value.
+- Each class, method and function has a JSDoc block. A controller lists its values, targets and outlets.
+- The shared types are JSDoc `@typedef`s in the module that makes them: `Place`, `Layer`, `Settings` and `Options`
+  in `map_controller.js`, `Field` and `Filter` in `fields.js`, `LatLon` in `geo.js` and `Hit` in
+  `adressevaelger.js`. Other files refer to them with `import("…").Place`.
 
 The events and the actions are in `templates/embed/leaflet.html.twig`:
 
