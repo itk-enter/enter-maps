@@ -1,0 +1,83 @@
+/**
+ * @file Browser tests of the form of a map in the builder. The site has no
+ * Enter, so the data set is a text field.
+ */
+
+import { expect, expectNoAxeViolations, maps, test } from "./support.js";
+
+/**
+ * The form renders again on the server after each change. Wait for it.
+ *
+ * @param {import("@playwright/test").Page} page The page.
+ */
+async function rendered(page) {
+  await page.waitForLoadState("networkidle");
+}
+
+test("makes a new map with a fixed filter", async ({ page }) => {
+  await page.goto("/builder");
+  await page.getByRole("link", { name: "Nyt kort" }).click();
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Nyt kort" }),
+  ).toBeVisible();
+  await expectNoAxeViolations(page);
+
+  await page.getByLabel("Titel", { exact: true }).fill("Bænke i byen");
+  await page.getByLabel("Søg i stederne", { exact: true }).check();
+  await page.getByLabel("Navn på laget").fill("Bænke");
+  await page.getByLabel("Datasæt").fill("benches");
+  await page.getByLabel("Sti til titlen").fill("name");
+
+  await page.getByRole("button", { name: "Tilføj betingelse" }).click();
+  await rendered(page);
+  await page.getByLabel("Sti", { exact: true }).last().fill("material");
+  await page.getByLabel("Betingelse", { exact: true }).selectOption("in");
+  await rendered(page);
+
+  // "er en af" takes one value on each line.
+  await expect(page.getByLabel("Værdi", { exact: true })).toHaveCount(0);
+  await page.getByLabel("Værdier").fill("træ\nmetal");
+  await expectNoAxeViolations(page);
+
+  await page.getByRole("button", { name: "Gem og vis kortet" }).click();
+
+  await expect(page).toHaveURL(/\/builder\/[0-9A-Z]{26}\/preview$/);
+  await expect(page.getByRole("status")).toHaveText(
+    'Kortet "Bænke i byen" er gemt.',
+  );
+  await expect(page.locator('main iframe[title="Bænke i byen"]')).toBeVisible();
+  await expectNoAxeViolations(page);
+});
+
+test("shows the errors next to the fields", async ({ page }) => {
+  await page.goto("/builder/new");
+
+  await page.getByRole("button", { name: "Gem og vis kortet" }).click();
+  await rendered(page);
+
+  const title = page.getByLabel("Titel", { exact: true });
+  await expect(title).toHaveAttribute("aria-invalid", "true");
+  await expect(title).toHaveAccessibleDescription(/Udfyld feltet/);
+  await expect(page).toHaveURL(/\/builder\/new$/);
+  await expectNoAxeViolations(page);
+});
+
+test("edits a map and shows the embed code", async ({ page }) => {
+  await page.goto(`/builder/${maps.toilets}/edit`);
+
+  await expect(page.getByLabel("Titel", { exact: true })).toHaveValue(
+    "Toiletter i Aarhus",
+  );
+  await expect(
+    page.getByRole("heading", { level: 3, name: /Offentlige toiletter/ }),
+  ).toBeVisible();
+  await expectNoAxeViolations(page);
+
+  await page.getByRole("button", { name: "Gem og vis embedkode" }).click();
+
+  await expect(page).toHaveURL(`/builder/${maps.toilets}/embed`);
+  await expect(page.locator("pre code")).toContainText(
+    `/embed/leaflet/${maps.toilets}"`,
+  );
+});
