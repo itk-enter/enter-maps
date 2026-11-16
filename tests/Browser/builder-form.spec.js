@@ -27,7 +27,8 @@ test("makes a new map with a fixed filter", async ({ page }) => {
   await page.getByLabel("Søg i stederne", { exact: true }).check();
   await page.getByLabel("Navn på laget").fill("Bænke");
   await page.getByLabel("Datasæt").fill("benches");
-  // The path of the title is in the group "Titel" under "Rækken i listen".
+  // The path of the title is in the group "Titel" under "Titel og undertitel på
+  // hvert sted".
   await page
     .getByRole("group", { name: "Titel", exact: true })
     .getByLabel("Sti", { exact: true })

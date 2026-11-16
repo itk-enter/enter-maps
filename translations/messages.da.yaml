@@ -120,8 +120,8 @@ builder:
     icon_handicap_parking: Handicapparkering
     icon_bench: Bænk
     icon_pin: Nål
-    row: Rækken i listen
-    row_help: Hvert sted er en række i listen, med titlen med fed og undertitlen under den. Skriv stien til den værdi i datasættet, som rækken skal vise.
+    row: Titel og undertitel på hvert sted
+    row_help: Vises i listen i sidepanelet, øverst i detaljevisningen og når brugeren holder musen over stedet på kortet. Skriv stien til den værdi i datasættet, som skal vises.
     row_title: Titel
     row_subtitle: Undertitel (valgfri)
     row_subtitle_label_help: 'Står foran værdien, fx Pladser giver "Pladser: 2".'

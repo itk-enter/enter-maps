@@ -120,8 +120,8 @@ builder:
     icon_handicap_parking: Disabled parking
     icon_bench: Bench
     icon_pin: Pin
-    row: The row in the list
-    row_help: Each place is a row in the list, with the title in bold and the subtitle below it. Type the path to the value in the data set that the row shows.
+    row: Title and subtitle of each place
+    row_help: Shows in the list in the sidebar, at the top of the detail view, and when the user holds the mouse over the place on the map. Type the path to the value in the data set that must show.
     row_title: Title
     row_subtitle: Subtitle (optional)
     row_subtitle_label_help: 'Comes before the value, for example Spots gives "Spots: 2".'
