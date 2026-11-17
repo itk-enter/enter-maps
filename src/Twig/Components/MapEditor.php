@@ -220,7 +220,7 @@ final class MapEditor extends AbstractController
             // The errors must be visible, so a closed layer with an error opens.
             foreach ($this->getForm()->get('layers') as $key => $layer) {
                 if (!$layer->isValid()) {
-                    $this->openLayer((string) $key);
+                    $this->openLayer($key);
                 }
             }
 
