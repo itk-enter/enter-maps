@@ -10,8 +10,10 @@ use App\Builder\Form\ConditionData;
 use App\Builder\Form\LayerData;
 use App\Builder\Form\MapData;
 use App\Builder\Form\MapFormMapper;
+use App\Builder\LayerDefaults;
 use App\Builder\PreviewStore;
 use App\Entity\MapConfiguration;
+use App\Form\LayerType;
 use App\Form\MapType;
 use App\MapConfig\InvalidMapConfigException;
 use App\MapConfig\MapConfigurationFactory;
@@ -116,7 +118,7 @@ final class MapEditor extends AbstractController
     private ?MapConfiguration $map = null;
 
     /**
-     * @var array<string, array{title: string, label: string}>|null
+     * @var array<string, array{title: string, label: string, type: string|null}>|null
      */
     private ?array $dataSets = null;
 
@@ -130,14 +132,15 @@ final class MapEditor extends AbstractController
         private readonly DataSetFields $dataSetFields,
         private readonly PreviewStore $previews,
         private readonly DataSetChoices $dataSetChoices,
+        private readonly LayerDefaults $layerDefaults,
     ) {
     }
 
     /**
-     * The data sets of Enter, for the check boxes of the data set step.
+     * The data sets of Enter, for the check boxes of the data set step: the
+     * title, the label and the NGSI-LD type of each, with the ID as key.
      *
-     * @return array<string, array{title: string, label: string}>|null the title and the label of each data set, with
-     *                                                                 the ID as key. Null if Enter does not answer.
+     * @return array<string, array{title: string, label: string, type: string|null}>|null null if Enter does not answer
      */
     public function dataSets(): ?array
     {
@@ -233,8 +236,9 @@ final class MapEditor extends AbstractController
 
     /**
      * Adds a layer with a data set, or removes the layers with the data set.
-     * A new map has a layer without a data set, so the first data set goes
-     * into that layer. A new layer gets the title of the data set as label.
+     * If the form has a layer without a data set, the data set goes into that
+     * layer. The layer gets the defaults of the type of the data set (see
+     * LayerDefaults), and the title of the data set as label.
      *
      * @param string $id the ID of the data set
      */
@@ -262,10 +266,11 @@ final class MapEditor extends AbstractController
             $empty = array_key_last($this->layerValues());
         }
 
-        $this->formValues['layers'][$empty]['dataSet'] = $id;
-        if ('' === (string) ($this->formValues['layers'][$empty]['label'] ?? '')) {
-            $this->formValues['layers'][$empty]['label'] = $this->dataSets()[$id]['title'] ?? $id;
-        }
+        $dataSet = $this->dataSets()[$id] ?? null;
+        $layer = $this->mapper->layerToData($this->layerDefaults->forDataSet($id, $dataSet['type'] ?? null));
+        $layer->dataSet = $id;
+        $layer->label = $dataSet['title'] ?? $id;
+        $this->formValues['layers'][$empty] = $this->extractFormValues($this->createForm(LayerType::class, $layer)->createView());
     }
 
     /**

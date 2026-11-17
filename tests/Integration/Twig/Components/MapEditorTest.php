@@ -35,7 +35,7 @@ final class MapEditorTest extends WebTestCase
         $this->enter = new FakeEnter();
         $this->enter->dataSets = [
             ['id' => 'benches', 'title' => 'Bænke'],
-            ['id' => 'merged-public-toilets', 'title' => 'Toiletter'],
+            ['id' => 'merged-public-toilets', 'title' => 'Toiletter', 'model' => 'PublicToilet'],
         ];
         self::getContainer()->set('enter.client', $this->enter->client());
 
@@ -371,7 +371,12 @@ final class MapEditorTest extends WebTestCase
         $crawler = $component->call('toggleDataSet', ['id' => 'merged-public-toilets'])->render()->crawler();
 
         $this->assertSame(['Lag 1: Bænke', 'Lag 2: Toiletter'], $crawler->filter('h3')->each(static fn (Crawler $heading): string => $heading->text()));
-        $this->assertSame('#3661d8', $crawler->filter('#map_layers_1_colour')->attr('value'));
+        // The data sets get the defaults of their type, from map_layer_defaults.yaml.
+        $this->assertSame('#3661d8', $crawler->filter('#map_layers_0_colour')->attr('value'));
+        $this->assertSame('#6b3fa0', $crawler->filter('#map_layers_1_colour')->attr('value'));
+        $this->assertSame('toilet', $crawler->filter('#map_layers_1_icon option[selected]')->attr('value'));
+        $this->assertSame('name', $crawler->filter('#map_layers_1_title_path')->attr('value'));
+        $this->assertSame('Åbningstider', $crawler->filter('#map_layers_1_detail_1_label')->attr('value'));
 
         $crawler = $component->call('toggleDataSet', ['id' => 'benches'])->render()->crawler();
 

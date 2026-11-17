@@ -130,7 +130,11 @@ final readonly class MapFormMapper
         return $this->toObject($config + $extra);
     }
 
-    private function layerToData(\stdClass $layer): LayerData
+    /**
+     * Makes the form data of one layer from a layer of the config, for
+     * example from the defaults of a new layer.
+     */
+    public function layerToData(\stdClass $layer): LayerData
     {
         $data = new LayerData();
         $data->id = $this->string($layer->id ?? null);

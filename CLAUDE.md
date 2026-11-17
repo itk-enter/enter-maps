@@ -59,9 +59,10 @@ assets/controllers/                Stimulus controllers for the map and the buil
 assets/lib/                        JavaScript modules without Stimulus: fields and Adressevælger
 assets/styles/                     app.css, the design tokens, the base styles and changes to Leaflet
 config/packages/enter.yaml         The HTTP client for Enter
+config/packages/map_layer_defaults.yaml The defaults of a new layer in the builder, for each NGSI-LD type
 config/schema/map-config.v1.json   JSON Schema for config, version 1
 migrations/                        Doctrine migrations for MariaDB
-src/Builder/                       Import, embed code, the paths and counts of a data set, and the preview store
+src/Builder/                       Import, embed code, the data sets, the layer defaults and the preview store
 src/Builder/Form/                  The data of the map form, and MapFormMapper between the form and config
 src/Command/                       Console commands, for example app:map-config:import
 src/Controller/BuilderController.php /builder: the list of the maps, the embed code, delete and restore

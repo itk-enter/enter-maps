@@ -22,7 +22,7 @@ final class DataSetChoicesTest extends KernelTestCase
         self::bootKernel();
         $this->enter = new FakeEnter();
         $this->enter->dataSets = [
-            ['id' => 'toilets', 'title' => 'Toiletter'],
+            ['id' => 'toilets', 'title' => 'Toiletter', 'model' => 'PublicToilet'],
             ['id' => 'benches', 'title' => 'Bænke'],
             ['id' => 'one', 'title' => 'Én'],
             ['id' => 'broken', 'title' => 'Fejl'],
@@ -46,10 +46,10 @@ final class DataSetChoicesTest extends KernelTestCase
     public function testGivesTheTitleAndTheLabelOfEachDataSet(): void
     {
         $this->assertSame([
-            'benches' => ['title' => 'Bænke', 'label' => 'Bænke (benches) – ingen steder'],
-            'one' => ['title' => 'Én', 'label' => 'Én (one) – 1 sted'],
-            'broken' => ['title' => 'Fejl', 'label' => 'Fejl (broken)'],
-            'toilets' => ['title' => 'Toiletter', 'label' => 'Toiletter (toilets) – 2 steder'],
+            'benches' => ['title' => 'Bænke', 'label' => 'Bænke (benches) – ingen steder', 'type' => null],
+            'one' => ['title' => 'Én', 'label' => 'Én (one) – 1 sted', 'type' => null],
+            'broken' => ['title' => 'Fejl', 'label' => 'Fejl (broken)', 'type' => null],
+            'toilets' => ['title' => 'Toiletter', 'label' => 'Toiletter (toilets) – 2 steder', 'type' => 'PublicToilet'],
         ], $this->choices->dataSets());
     }
 

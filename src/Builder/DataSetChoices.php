@@ -47,9 +47,10 @@ final readonly class DataSetChoices
     }
 
     /**
-     * @return array<string, array{title: string, label: string}>|null the title and the label of each data set, with
-     *                                                                 the ID as key and sorted by label. Null if Enter
-     *                                                                 does not answer.
+     * The title, the label and the NGSI-LD type of each data set, with the
+     * ID as key and sorted by label.
+     *
+     * @return array<string, array{title: string, label: string, type: string|null}>|null null if Enter does not answer
      */
     public function dataSets(): ?array
     {
@@ -68,7 +69,7 @@ final readonly class DataSetChoices
             if (null !== $count) {
                 $label .= ' – '.$this->translator->trans('builder.form.data_set_count', ['%count%' => $count]);
             }
-            $result[$dataSet->id] = ['title' => $dataSet->title, 'label' => $label];
+            $result[$dataSet->id] = ['title' => $dataSet->title, 'label' => $label, 'type' => $dataSet->model];
         }
         // Sorted as in the language of the page, for example Æ, Ø and Å last in Danish.
         $collator = new \Collator($this->translator->getLocale());
