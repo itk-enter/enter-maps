@@ -113,3 +113,28 @@ test("previews a change without a save", async ({ page }) => {
     "Toiletter i Aarhus",
   );
 });
+
+test("opens and closes a layer, and opens it for an error", async ({
+  page,
+}) => {
+  await page.goto(`/builder/${maps["toilets-and-parking"]}/edit`);
+
+  const toggle = page.getByRole("button", { name: /Lag 1: Offentlige/ });
+  const label = page.getByLabel("Navn på laget").first();
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(label).toBeHidden();
+  await expectNoAxeViolations(page);
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await label.fill("");
+  await toggle.click();
+  await expect(label).toBeHidden();
+
+  await page.getByRole("button", { name: "Gem og vis kortet" }).click();
+
+  // The error is in a closed layer, so the layer opens.
+  await expect(label).toBeVisible();
+  await expect(label).toHaveAttribute("aria-invalid", "true");
+  await expect(page).toHaveURL(`/builder/${maps["toilets-and-parking"]}/edit`);
+});

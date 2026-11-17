@@ -9,5 +9,5 @@
 {% endblock %}
 
 {% block content %}
-    <twig:MapEditor mapId="{{ map ? map.id : null }}" />
+    <twig:MapEditor :mapId="map ? (map.id ~ '') : null" />
 {% endblock %}

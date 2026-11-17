@@ -105,6 +105,7 @@ builder:
     layers: Layers
     layer_heading: "Layer %number%: %label%"
     layer_new: New layer
+    layer_summary: "Data set: %dataSet%"
     layer_add: Add a layer to the map
     layer_delete: Remove the layer
     layer_delete_label: Remove the layer (layer %number%)

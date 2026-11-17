@@ -19,6 +19,7 @@ use App\Repository\MapConfigurationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
@@ -65,6 +66,15 @@ final class MapEditor extends AbstractController
     public ?string $mapId = null;
 
     /**
+     * The keys of the layers that are open. On page load, the layers of a
+     * stored map are closed, and the one layer of a new map is open.
+     *
+     * @var list<string>
+     */
+    #[LiveProp]
+    public array $openLayers = [];
+
+    /**
      * The token of the last preview, or null if the form shows no preview.
      * Each preview has a new token, so the frame loads the new map.
      */
@@ -101,6 +111,14 @@ final class MapEditor extends AbstractController
         return $this->dataSetFields->paths($dataSetId);
     }
 
+    public function mount(?string $mapId = null): void
+    {
+        $this->mapId = '' === $mapId ? null : $mapId;
+        if (null === $this->mapId) {
+            $this->openLayers = ['0'];
+        }
+    }
+
     /**
      * Adds an item to a collection, with the values in NEW_ITEMS.
      */
@@ -113,8 +131,26 @@ final class MapEditor extends AbstractController
         $path = substr($name, \strlen($this->formName));
         $items = $propertyAccessor->getValue($this->formValues, $path);
         if (isset(self::NEW_ITEMS[$collection]) && \is_array($items) && [] !== $items) {
-            $propertyAccessor->setValue($this->formValues, $path.'['.array_key_last($items).']', self::NEW_ITEMS[$collection]);
+            $key = (string) array_key_last($items);
+            $propertyAccessor->setValue($this->formValues, $path.'['.$key.']', self::NEW_ITEMS[$collection]);
+            // A new layer is open, so that the editor can fill it in.
+            if ('[layers]' === $path) {
+                $this->openLayers[] = $key;
+            }
         }
+    }
+
+    /**
+     * Opens or closes a layer of the form.
+     *
+     * @param string $key the key of the layer in the collection
+     */
+    #[LiveAction]
+    public function toggleLayer(#[LiveArg] string $key): void
+    {
+        $this->openLayers = \in_array($key, $this->openLayers, true)
+            ? array_values(array_diff($this->openLayers, [$key]))
+            : [...$this->openLayers, $key];
     }
 
     #[LiveAction]
@@ -131,6 +167,7 @@ final class MapEditor extends AbstractController
             }
         } catch (InvalidMapConfigException $exception) {
             $this->saveErrors = $exception->errors;
+            $this->openLayersOfSchemaErrors($exception->errors);
 
             return null;
         }
@@ -154,6 +191,7 @@ final class MapEditor extends AbstractController
             $draft = $this->factory->create($json, [Renderer::Leaflet]);
         } catch (InvalidMapConfigException $exception) {
             $this->saveErrors = $exception->errors;
+            $this->openLayersOfSchemaErrors($exception->errors);
 
             return;
         }
@@ -172,16 +210,50 @@ final class MapEditor extends AbstractController
     /**
      * Validates the form and gives the config as JSON.
      *
-     * @throws \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException if the form is not valid
+     * @throws UnprocessableEntityHttpException if the form is not valid
      */
     private function submittedConfig(): string
     {
-        $this->submitForm();
+        try {
+            $this->submitForm();
+        } catch (UnprocessableEntityHttpException $exception) {
+            // The errors must be visible, so a closed layer with an error opens.
+            foreach ($this->getForm()->get('layers') as $key => $layer) {
+                if (!$layer->isValid()) {
+                    $this->openLayer((string) $key);
+                }
+            }
+
+            throw $exception;
+        }
 
         /** @var MapData $data */
         $data = $this->getForm()->getData();
 
         return json_encode($this->mapper->toConfig($data, $this->map()?->getConfig()), \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * Opens the layers that the errors of the schema point to, for example
+     * "/layers/1/row/title/path: …". The number is the position of the layer.
+     *
+     * @param list<string> $errors
+     */
+    private function openLayersOfSchemaErrors(array $errors): void
+    {
+        $keys = array_keys($this->getForm()->get('layers')->all());
+        foreach ($errors as $error) {
+            if (1 === preg_match('#^/layers/(\d+)#', $error, $matches) && isset($keys[(int) $matches[1]])) {
+                $this->openLayer((string) $keys[(int) $matches[1]]);
+            }
+        }
+    }
+
+    private function openLayer(string $key): void
+    {
+        if (!\in_array($key, $this->openLayers, true)) {
+            $this->openLayers[] = $key;
+        }
     }
 
     protected function instantiateForm(): FormInterface

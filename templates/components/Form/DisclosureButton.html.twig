@@ -1,0 +1,8 @@
+{% props expanded, controls %}
+{# A button that opens and closes a section, for example a layer of the map #}
+{# form. `controls` is the id of the section. The chevron points down when #}
+{# the section is open. The content is the text of the button. #}
+<button type="button" aria-expanded="{{ expanded ? 'true' : 'false' }}" aria-controls="{{ controls }}" {{ attributes.defaults({class: 'group flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-left font-[inherit] text-[length:inherit] font-bold text-ink'}) }}>
+    <twig:Icon:Chevron class="size-5 flex-none transition-transform group-aria-expanded:rotate-90 motion-reduce:transition-none" />
+    <span>{%- block content %}{% endblock -%}</span>
+</button>

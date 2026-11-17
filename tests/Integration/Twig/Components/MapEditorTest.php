@@ -279,6 +279,65 @@ final class MapEditorTest extends WebTestCase
         $this->assertStringContainsString('Datasættet gav ingen forslag til stier.', $crawler->filter('aside')->text());
     }
 
+    public function testClosesTheLayersOfAStoredMapOnPageLoad(): void
+    {
+        $map = $this->import('toilets-and-parking');
+
+        $crawler = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()])->render()->crawler();
+
+        $this->assertSame(['false', 'false'], $crawler->filter('h3 button')->each(static fn (Crawler $button): ?string => $button->attr('aria-expanded')));
+        $this->assertNotNull($crawler->filter('#layer-0')->attr('hidden'));
+        $this->assertSame('layer-0', $crawler->filter('h3 button')->first()->attr('aria-controls'));
+        $this->assertStringContainsString('Datasæt: merged-public-toilets', $crawler->filter('#layer-0')->ancestors()->first()->text());
+    }
+
+    public function testOpensTheLayerOfANewMap(): void
+    {
+        $crawler = $this->createLiveComponent(MapEditor::class)->render()->crawler();
+
+        $this->assertSame('true', $crawler->filter('h3 button')->attr('aria-expanded'));
+        $this->assertNull($crawler->filter('#layer-0')->attr('hidden'));
+    }
+
+    public function testOpensAndClosesALayer(): void
+    {
+        $map = $this->import('toilets-and-parking');
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+
+        $crawler = $component->call('toggleLayer', ['key' => '1'])->render()->crawler();
+        $this->assertNull($crawler->filter('#layer-1')->attr('hidden'));
+        $this->assertNotNull($crawler->filter('#layer-0')->attr('hidden'));
+
+        $crawler = $component->call('toggleLayer', ['key' => '1'])->render()->crawler();
+        $this->assertNotNull($crawler->filter('#layer-1')->attr('hidden'));
+    }
+
+    public function testOpensANewLayer(): void
+    {
+        $map = $this->import('toilets');
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+
+        $crawler = $component->call('addCollectionItem', ['name' => 'map[layers]'])->render()->crawler();
+
+        $this->assertNotNull($crawler->filter('#layer-0')->attr('hidden'));
+        $this->assertNull($crawler->filter('#layer-1')->attr('hidden'));
+    }
+
+    public function testOpensALayerWithAnErrorOfTheSchema(): void
+    {
+        // An SVG icon that the check rejects. The form keeps it, so the schema reports it.
+        $config = json_decode((string) file_get_contents($this->fixture('toilets')), false);
+        $config->layers[0]->icon = (object) ['svg' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><script>alert(1)</script></svg>'];
+        $map = new MapConfiguration($config, [Renderer::Leaflet], []);
+        self::getContainer()->get(MapConfigurationRepository::class)->save($map);
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+
+        $crawler = $component->call('save')->render()->crawler();
+
+        $this->assertStringContainsString('/layers/0', $crawler->filter('[role="alert"]')->text());
+        $this->assertNull($crawler->filter('#layer-0')->attr('hidden'));
+    }
+
     public function testKeepsADataSetThatEnterDoesNotList(): void
     {
         $map = $this->import('toilets-and-parking');

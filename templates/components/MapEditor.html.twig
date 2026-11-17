@@ -45,13 +45,23 @@
             <twig:Heading level="2" id="layers-heading">{{ 'builder.form.layers'|trans }}</twig:Heading>
             {% for layer in form.layers %}
                 {% set number = loop.index %}
+                {% set key = layer.vars.name %}
+                {% set open = key in openLayers %}
                 <div class="{{ box }}">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <twig:Heading level="3" size="md">
-                            {{- 'builder.form.layer_heading'|trans({'%number%': number, '%label%': layer.label.vars.value ?: 'builder.form.layer_new'|trans}) -}}
+                            <twig:Form:DisclosureButton :expanded="open" controls="layer-{{ key }}" data-action="live#action" data-live-action-param="toggleLayer" data-live-key-param="{{ key }}">
+                                {{- 'builder.form.layer_heading'|trans({'%number%': number, '%label%': layer.label.vars.value ?: 'builder.form.layer_new'|trans}) -}}
+                            </twig:Form:DisclosureButton>
                         </twig:Heading>
                         {{ form_widget(layer.vars.button_delete, {attr: {'aria-label': 'builder.form.layer_delete_label'|trans({'%number%': number})}}) }}
                     </div>
+                    {% if not open and layer.dataSet.vars.value %}
+                        <p class="m-0 text-sm text-text-muted">{{ 'builder.form.layer_summary'|trans({'%dataSet%': layer.dataSet.vars.value}) }}</p>
+                    {% endif %}
+                    {# A closed layer keeps its fields in the page, so that the form #}
+                    {# still has their values. #}
+                    <div id="layer-{{ key }}" class="flex flex-col gap-4" {{ open ? '' : 'hidden' }}>
                     {{ form_widget(layer.id) }}
                     {{ form_widget(layer.extra) }}
                     {{ form_widget(layer.rawFilter) }}
@@ -203,6 +213,7 @@
                             <p class="m-0">{{ 'builder.form.paths_empty'|trans }}</p>
                         {% endif %}
                     </aside>
+                    </div>
                     </div>
                 </div>
             {% endfor %}

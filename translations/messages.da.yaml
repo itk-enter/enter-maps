@@ -105,6 +105,7 @@ builder:
     layers: Lag
     layer_heading: "Lag %number%: %label%"
     layer_new: Nyt lag
+    layer_summary: "Datasæt: %dataSet%"
     layer_add: Tilføj et lag til kortet
     layer_delete: Fjern laget
     layer_delete_label: Fjern laget (lag %number%)
