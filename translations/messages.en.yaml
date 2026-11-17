@@ -78,6 +78,15 @@ builder:
     new: New map
     edit: Edit
     edit_label: Edit the map "%title%"
+    steps: Steps of the form
+    step_settings: Settings
+    step_datasets: Data sets
+    step_layers: Layers
+    step_view: View
+    step_error: (has errors)
+    data_sets: Data sets
+    data_sets_help: Select the data sets of the map. Each data set becomes a layer. If you remove the tick, the form removes the layers with the data set.
+    data_sets_unavailable: Enter does not answer, so the list of data sets is not available. You can add a layer and type the id of the data set under Layers.
     general: General
     title: Title
     title_help: The map shows the title, and the embed code uses it as the title of the iframe.
@@ -91,18 +100,21 @@ builder:
     position_right: To the right of the map
     list: Show the list of places
     categories: The user can turn the layers on and off
+    route_link: Show a link to a route to the place (Google Maps)
+    loading_spinner: Show a spinner over the map until the places are loaded
     search: Search field
     search_none: No search field
     search_local: Search the places
     search_address: Search for an address
     search_both: Search the places and for an address
     view: View
-    view_help: Fill in all three fields, or leave them empty. If they are empty, the map shows all the places.
+    view_help: Move and zoom the map, and click Use the view of the map. You can also fill in the fields. If they are empty, the map shows all the places.
+    view_use: Use the view of the map
     longitude: Longitude
     latitude: Latitude
     zoom: Zoom
-    zoom_gate: Show the places from zoom
-    zoom_gate_help: For data sets with many places. Leave the field empty to always show the places.
+    zoom_gate: Minimum zoom to show the places
+    zoom_gate_help: For data sets with many places. If the map is zoomed out more, it shows no places and asks the user to zoom in or search. Leave the field empty to always show the places.
     layers: Layers
     layer_heading: "Layer %number%: %label%"
     layer_new: New layer
@@ -138,15 +150,11 @@ builder:
     field_label: Label
     field_label_help: The heading above the value in the detail view.
     path: Path
-    path_help: Select a suggestion from the data set, or type the path, for example address.streetAddress.
-    paths_title: Fields in the data set
-    paths: Fields in the data set (%count%)
-    paths_help: The paths and an example from the first %count% places. You can also type a field that is not here.
-    paths_empty: Select a data set to see its fields.
-    path_copy: Copy %path%
-    path_copied: "Copied: %text%"
-    path_copy_failed: Could not copy %text%. Select the path, and copy it yourself.
-    paths_none: The data set gave no suggestions for paths. Maybe Enter does not answer. You can still type the paths.
+    path_help: The property in the data set. The example comes from the first places in the data set.
+    path_select: Select a property
+    path_option: "%path% – for example %example%"
+    paths_empty: Select a data set for the layer to select the properties.
+    paths_none: The data set gave no properties. Maybe Enter does not answer. Type the paths in the fields, for example address.streetAddress.
     example: Example
     format: Type
     format_text: Text
@@ -155,7 +163,9 @@ builder:
     format_number: Number
     format_date: Date
     format_link: Link
+    format_help: Sets how the map shows the value. List shows more than one value, with commas between them. Number and Date use the language of the page. Link makes a link if the value is a web address.
     fallback: Text if the value is missing
+    fallback_help: The map shows this text if the place has no value at the path. Leave the field empty to show nothing.
     filter: Fixed filter
     filter_help: The map shows only the places that match. Without conditions, the map shows all of the data set.
     filter_raw: The filter has groups, so the form cannot edit it. A save keeps it as it is.
@@ -184,10 +194,8 @@ builder:
     values_help: One value on each line.
     "yes": "Yes"
     "no": "No"
-    preview: Preview
-    preview_title: Preview
-    preview_help: The map is not saved. The sites that show the map do not see the changes until you save. Click Preview again after a change.
-    preview_close: Close the preview
+    preview_update: Update the map
+    preview_empty: Select a data set for the layer, and click Update the map to see the map.
     preview_frame: Preview of "%title%"
     save_preview: Save and show the map
     save_embed: Save and show the embed code

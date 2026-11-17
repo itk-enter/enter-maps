@@ -1,6 +1,0 @@
-{% props text, label %}
-{# A small button with a copy icon. It copies `text` with the clipboard #}
-{# controller around it. `label` is the accessible name. #}
-<button type="button" aria-label="{{ label }}" title="{{ label }}" data-action="clipboard#copy" data-clipboard-text-param="{{ text }}" {{ attributes.defaults({class: 'inline-flex size-7 flex-none cursor-pointer items-center justify-center rounded border-0 bg-transparent text-text-muted hover:bg-surface hover:text-ink'}) }}>
-    <twig:Icon:Copy />
-</button>

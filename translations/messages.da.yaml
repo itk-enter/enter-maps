@@ -78,6 +78,15 @@ builder:
     new: Nyt kort
     edit: Ret
     edit_label: Ret kortet "%title%"
+    steps: Trin i formularen
+    step_settings: Indstillinger
+    step_datasets: Datasæt
+    step_layers: Lag
+    step_view: Visning
+    step_error: (har fejl)
+    data_sets: Datasæt
+    data_sets_help: Vælg datasættene til kortet. Hvert datasæt bliver et lag. Fjerner du fluebenet, fjernes lagene med datasættet.
+    data_sets_unavailable: Enter svarer ikke, så listen over datasæt mangler. Du kan tilføje et lag og skrive id'et på datasættet under Lag.
     general: Generelt
     title: Titel
     title_help: Kortet viser titlen, og embedkoden bruger den som titel på iframen.
@@ -91,18 +100,21 @@ builder:
     position_right: Til højre for kortet
     list: Vis listen over steder
     categories: Brugeren kan slå lagene til og fra
+    route_link: Vis et link til en rute til stedet (Google Maps)
+    loading_spinner: Vis en spinner over kortet, indtil stederne er hentet
     search: Søgefelt
     search_none: Intet søgefelt
     search_local: Søg i stederne
     search_address: Søg efter adresse
     search_both: Søg i stederne og efter adresse
     view: Visning
-    view_help: Udfyld alle tre felter, eller lad dem være tomme. Er de tomme, viser kortet alle stederne.
+    view_help: Flyt og zoom kortet, og klik på Brug kortets visning. Du kan også udfylde felterne selv. Er de tomme, viser kortet alle stederne.
+    view_use: Brug kortets visning
     longitude: Længdegrad
     latitude: Breddegrad
     zoom: Zoom
-    zoom_gate: Vis først stederne fra zoom
-    zoom_gate_help: Til datasæt med mange steder. Lad feltet være tomt for altid at vise stederne.
+    zoom_gate: Mindste zoom for at vise stederne
+    zoom_gate_help: Til datasæt med mange steder. Er kortet zoomet længere ud, viser det ingen steder og beder brugeren om at zoome ind eller søge. Lad feltet være tomt for altid at vise stederne.
     layers: Lag
     layer_heading: "Lag %number%: %label%"
     layer_new: Nyt lag
@@ -138,15 +150,11 @@ builder:
     field_label: Etiket
     field_label_help: Overskriften over værdien i detaljevisningen.
     path: Sti
-    path_help: Vælg et forslag fra datasættet, eller skriv stien, fx address.streetAddress.
-    paths_title: Felter i datasættet
-    paths: Felter i datasættet (%count%)
-    paths_help: Stierne og et eksempel fra de første %count% steder. Du kan også skrive et felt, som ikke står her.
-    paths_empty: Vælg et datasæt for at se dets felter.
-    path_copy: Kopiér %path%
-    path_copied: "Kopieret: %text%"
-    path_copy_failed: Kunne ikke kopiere %text%. Markér stien, og kopiér den selv.
-    paths_none: Datasættet gav ingen forslag til stier. Enter svarer måske ikke. Du kan stadig skrive stierne.
+    path_help: Egenskaben i datasættet. Eksemplet kommer fra de første steder i datasættet.
+    path_select: Vælg en egenskab
+    path_option: "%path% – fx %example%"
+    paths_empty: Vælg et datasæt til laget for at vælge egenskaberne.
+    paths_none: Datasættet gav ingen egenskaber. Enter svarer måske ikke. Skriv stierne i felterne, fx address.streetAddress.
     example: Eksempel
     format: Type
     format_text: Tekst
@@ -155,7 +163,9 @@ builder:
     format_number: Tal
     format_date: Dato
     format_link: Link
+    format_help: Bestemmer, hvordan værdien vises. Liste viser flere værdier med komma imellem. Tal og Dato vises på sidens sprog. Link bliver til et link, hvis værdien er en webadresse.
     fallback: Tekst, hvis værdien mangler
+    fallback_help: Vises, når stedet ikke har en værdi på stien. Lad feltet være tomt for ikke at vise noget.
     filter: Fast filter
     filter_help: Kortet viser kun de steder, som passer. Uden betingelser viser kortet hele datasættet.
     filter_raw: Filteret har grupper, så formularen kan ikke redigere det. Det bliver gemt uændret.
@@ -184,10 +194,8 @@ builder:
     values_help: Én værdi på hver linje.
     "yes": Ja
     "no": Nej
-    preview: Forhåndsvis
-    preview_title: Forhåndsvisning
-    preview_help: Kortet er ikke gemt. Siderne, som viser kortet, ser ikke ændringerne, før du gemmer. Klik på Forhåndsvis igen efter en ændring.
-    preview_close: Luk forhåndsvisningen
+    preview_update: Opdater kortet
+    preview_empty: Vælg et datasæt til laget, og klik på Opdater kortet for at se kortet.
     preview_frame: Forhåndsvisning af "%title%"
     save_preview: Gem og vis kortet
     save_embed: Gem og vis embedkode

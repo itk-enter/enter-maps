@@ -73,6 +73,26 @@
     {{- parent() -}}
 {%- endblock form_widget_simple -%}
 
+{# A select with the paths of the data set, and an example of each. A path #}
+{# that is not in the data set stays as the first choice, so that a save #}
+{# keeps it. Without paths, the field is a text field. #}
+{%- block path_widget -%}
+    {%- if paths|default([]) is empty -%}
+        {{- block('form_widget_simple') -}}
+    {%- else -%}
+        {%- set attr = attr|merge({class: (attr.class|default('') ~ ' min-h-10 w-full min-w-0 rounded border border-line bg-surface px-2 text-ink aria-invalid:border-danger')|trim}) -%}
+        <select {{ block('widget_attributes') }}>
+            <option value="">{{ 'builder.form.path_select'|trans }}</option>
+            {%- if value is not same as('') and value is not null and value not in paths|keys -%}
+                <option value="{{ value }}" selected>{{ value }}</option>
+            {%- endif -%}
+            {%- for path, example in paths -%}
+                <option value="{{ path }}"{% if path == value %} selected{% endif %}>{{ example is same as('') ? path : 'builder.form.path_option'|trans({'%path%': path, '%example%': example}) }}</option>
+            {%- endfor -%}
+        </select>
+    {%- endif -%}
+{%- endblock path_widget -%}
+
 {%- block textarea_widget -%}
     {%- set attr = attr|merge({class: (attr.class|default('') ~ ' min-h-20 rounded border border-line bg-surface px-2 py-1.5 text-ink aria-invalid:border-danger')|trim}) -%}
     {{- parent() -}}

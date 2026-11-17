@@ -27,11 +27,15 @@ final class MapData
 
     public string $locale = 'da-DK';
 
+    public bool $loadingSpinner = false;
+
     public string $sidebarPosition = 'left';
 
     public bool $showList = true;
 
     public bool $categories = false;
+
+    public bool $routeLink = true;
 
     public string $search = self::SEARCH_NONE;
 

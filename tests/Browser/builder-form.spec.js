@@ -1,6 +1,7 @@
 /**
  * @file Browser tests of the form of a map in the builder. The site has no
- * Enter, so the data set is a text field.
+ * Enter, so the data set and the paths are text fields, and the data set
+ * step has no check boxes.
  */
 
 import { expect, expectNoAxeViolations, maps, test } from "./support.js";
@@ -14,6 +15,20 @@ async function rendered(page) {
   await page.waitForLoadState("networkidle");
 }
 
+/**
+ * Shows a step of the form with the menu of the steps.
+ *
+ * @param {import("@playwright/test").Page} page The page.
+ * @param {string} name The name of the step, for example "Lag".
+ */
+async function showStep(page, name) {
+  const button = page
+    .getByRole("navigation", { name: "Trin i formularen" })
+    .getByRole("button", { name, exact: true });
+  await button.click();
+  await expect(button).toHaveAttribute("aria-current", "step");
+}
+
 test("makes a new map with a fixed filter", async ({ page }) => {
   await page.goto("/builder");
   await page.getByRole("link", { name: "Nyt kort" }).click();
@@ -25,8 +40,17 @@ test("makes a new map with a fixed filter", async ({ page }) => {
 
   await page.getByLabel("Titel", { exact: true }).fill("Bænke i byen");
   await page.getByLabel("Søg i stederne", { exact: true }).check();
+  await showStep(page, "Datasæt");
+  await expect(
+    page.getByText("Enter svarer ikke, så listen over datasæt mangler."),
+  ).toBeVisible();
+  await showStep(page, "Lag");
   await page.getByLabel("Navn på laget").fill("Bænke");
-  await page.getByLabel("Datasæt", { exact: true }).fill("benches");
+  // The section of the data set step also has the name "Datasæt".
+  await page
+    .locator("#step-layers")
+    .getByLabel("Datasæt", { exact: true })
+    .fill("benches");
   // The path of the title is in the group "Titel" under "Titel og undertitel på
   // hvert sted".
   await page
@@ -61,10 +85,18 @@ test("makes a new map with a fixed filter", async ({ page }) => {
 
 test("shows the errors next to the fields", async ({ page }) => {
   await page.goto("/builder/new");
+  await showStep(page, "Visning");
 
   await page.getByRole("button", { name: "Gem og vis kortet" }).click();
   await rendered(page);
 
+  // The form shows the first step with an error, and the menu marks it.
+  await expect(
+    page.getByRole("button", { name: "Indstillinger (har fejl)" }),
+  ).toHaveAttribute("aria-current", "step");
+  await expect(
+    page.getByRole("button", { name: "Lag (har fejl)" }),
+  ).toBeVisible();
   const title = page.getByLabel("Titel", { exact: true });
   await expect(title).toHaveAttribute("aria-invalid", "true");
   await expect(title).toHaveAccessibleDescription(/Udfyld feltet/);
@@ -78,6 +110,7 @@ test("edits a map and shows the embed code", async ({ page }) => {
   await expect(page.getByLabel("Titel", { exact: true })).toHaveValue(
     "Toiletter i Aarhus",
   );
+  await showStep(page, "Lag");
   await expect(
     page.getByRole("heading", { level: 3, name: /Offentlige toiletter/ }),
   ).toBeVisible();
@@ -94,8 +127,9 @@ test("edits a map and shows the embed code", async ({ page }) => {
 test("previews a change without a save", async ({ page }) => {
   await page.goto(`/builder/${maps.toilets}/edit`);
   await page.getByLabel("Titel", { exact: true }).fill("Udkast til toiletter");
+  await showStep(page, "Visning");
 
-  await page.getByRole("button", { name: "Forhåndsvis", exact: true }).click();
+  await page.getByRole("button", { name: "Opdater kortet" }).click();
 
   const frame = page.frameLocator(
     'iframe[title="Forhåndsvisning af \\"Udkast til toiletter\\""]',
@@ -104,9 +138,6 @@ test("previews a change without a save", async ({ page }) => {
   await expect(page).toHaveURL(`/builder/${maps.toilets}/edit`);
   await expectNoAxeViolations(page);
 
-  await page.getByRole("button", { name: "Luk forhåndsvisningen" }).click();
-  await expect(page.locator("iframe")).toHaveCount(0);
-
   // The stored map did not change.
   await page.goto("/builder");
   await expect(page.getByRole("region", { name: "Alle kort" })).toContainText(
@@ -114,10 +145,30 @@ test("previews a change without a save", async ({ page }) => {
   );
 });
 
+test("copies the view of the map into the fields", async ({ page }) => {
+  await page.goto(`/builder/${maps.toilets}/edit`);
+  await showStep(page, "Visning");
+  const frame = page.frameLocator("iframe");
+  await expect(frame.locator(".leaflet-container")).toBeVisible();
+
+  await frame.getByRole("button", { name: "Zoom in" }).click();
+
+  // The map sends its view after the zoom ends.
+  await expect(async () => {
+    await page.getByRole("button", { name: "Brug kortets visning" }).click();
+    await expect(page.getByLabel("Zoom", { exact: true })).toHaveValue("15", {
+      timeout: 500,
+    });
+  }).toPass();
+  await expect(page.getByLabel("Længdegrad")).toHaveValue(/^\d+\.\d{5}$/);
+  await expect(page.getByLabel("Breddegrad")).toHaveValue(/^\d+\.\d{5}$/);
+});
+
 test("opens and closes a layer, and opens it for an error", async ({
   page,
 }) => {
   await page.goto(`/builder/${maps["toilets-and-parking"]}/edit`);
+  await showStep(page, "Lag");
 
   const toggle = page.getByRole("button", { name: /Lag 1: Offentlige/ });
   const label = page.getByLabel("Navn på laget").first();
@@ -130,10 +181,12 @@ test("opens and closes a layer, and opens it for an error", async ({
   await label.fill("");
   await toggle.click();
   await expect(label).toBeHidden();
+  await showStep(page, "Indstillinger");
 
   await page.getByRole("button", { name: "Gem og vis kortet" }).click();
 
-  // The error is in a closed layer, so the layer opens.
+  // The error is in a closed layer on another step, so the form shows the
+  // step and opens the layer.
   await expect(label).toBeVisible();
   await expect(label).toHaveAttribute("aria-invalid", "true");
   await expect(page).toHaveURL(`/builder/${maps["toilets-and-parking"]}/edit`);

@@ -50,9 +50,9 @@ final class MapEditorTest extends WebTestCase
         $crawler = $this->createLiveComponent(MapEditor::class)->render()->crawler();
 
         $this->assertSame('Lag 1: Nyt lag', $crawler->filter('h3')->text());
-        // The fields of the data set start empty.
-        $this->assertSame('Felter i datasættet', $crawler->filter('aside h4')->text());
-        $this->assertStringContainsString('Vælg et datasæt for at se dets felter.', $crawler->filter('aside')->text());
+        // The path fields have no choices before the layer has a data set.
+        $this->assertStringContainsString('Vælg et datasæt til laget for at vælge egenskaberne.', $crawler->filter('#layer-0')->text());
+        $this->assertSame('input', $crawler->filter('#map_layers_0_title_path')->nodeName());
         $this->assertSame(['', 'benches', 'merged-public-toilets'], $crawler->filter('#map_layers_0_dataSet option')->each(
             static fn (Crawler $option): ?string => $option->attr('value'),
         ));
@@ -161,15 +161,31 @@ final class MapEditorTest extends WebTestCase
         $this->assertSame('Toiletter i Aarhus', self::getContainer()->get(MapConfigurationRepository::class)->find((string) $map->getId())?->getConfig()->title);
     }
 
-    public function testClosesThePreview(): void
+    public function testShowsTheStoredMapBeforeAPreview(): void
     {
         $map = $this->import('toilets');
         $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
-        $component->call('preview');
 
-        $crawler = $component->call('closePreview')->render()->crawler();
+        $crawler = $component->render()->crawler();
+
+        // The frame loads only on the view step.
+        $this->assertCount(0, $crawler->filter('iframe'));
+
+        $crawler = $component->call('showStep', ['step' => MapEditor::STEP_VIEW])->render()->crawler();
+
+        $this->assertSame('/embed/leaflet/'.$map->getId(), $crawler->filter('iframe')->attr('src'));
+        $this->assertCount(1, $crawler->filter('button[data-action="map-view#use"]'));
+    }
+
+    public function testShowsNoMapForANewMapBeforeAPreview(): void
+    {
+        $component = $this->createLiveComponent(MapEditor::class);
+
+        $crawler = $component->render()->crawler();
 
         $this->assertCount(0, $crawler->filter('iframe'));
+        $this->assertCount(0, $crawler->filter('button[data-action="map-view#use"]'));
+        $this->assertStringContainsString('Opdater kortet', $crawler->filter('#view-heading')->closest('section')?->text() ?? '');
     }
 
     public function testShowsTheErrorsOfTheSchemaInThePreview(): void
@@ -183,7 +199,9 @@ final class MapEditorTest extends WebTestCase
         $crawler = $component->call('preview')->render()->crawler();
 
         $this->assertStringContainsString('/report/url', $crawler->filter('[role="alert"] li')->text());
-        $this->assertCount(0, $crawler->filter('iframe'));
+        // The form shows the step of the error, and the menu marks it.
+        $this->assertSame(MapEditor::STEP_SETTINGS, $component->component()->step);
+        $this->assertStringContainsString('(har fejl)', $crawler->filter('nav [aria-current="step"]')->text());
     }
 
     public function testShowsTheErrorsOfTheSchema(): void
@@ -244,28 +262,23 @@ final class MapEditorTest extends WebTestCase
         $this->assertCount(0, $crawler->filter('[id^="map_layers_0_conditions_"]'));
     }
 
-    public function testSuggestsThePathsOfTheDataSet(): void
+    public function testGivesTheChoicesOfThePathsOfTheDataSet(): void
     {
         $this->enter->features['merged-public-toilets'] = [FakeEnter::feature('urn:1', ['name' => 'Dokk1', 'address' => ['streetAddress' => 'Hack Kampmanns Plads 2']])];
         $map = $this->import('toilets');
 
         $crawler = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()])->render()->crawler();
 
-        $this->assertSame(['address.streetAddress', 'name'], $crawler->filter('datalist#paths-0 option')->each(
-            static fn (Crawler $option): ?string => $option->attr('value'),
-        ));
-        $this->assertSame('Hack Kampmanns Plads 2', $crawler->filter('datalist#paths-0 option')->first()->text());
         foreach (['title_path', 'subtitle_path', 'detail_0_path', 'conditions_0_path'] as $field) {
-            $this->assertSame('paths-0', $crawler->filter('#map_layers_0_'.$field)->attr('list'), $field);
+            $this->assertSame('select', $crawler->filter('#map_layers_0_'.$field)->nodeName(), $field);
         }
-        $this->assertSame('Felter i datasættet (2)', $crawler->filter('aside h4')->text());
-        $this->assertSame(['address.streetAddress', 'name'], $crawler->filter('aside code')->each(static fn (Crawler $code): string => $code->text()));
-        $this->assertStringContainsString('Hack Kampmanns Plads 2', $crawler->filter('aside li')->first()->text());
-        $button = $crawler->filter('aside li button')->first();
-        $this->assertSame('Kopiér address.streetAddress', $button->attr('aria-label'));
-        $this->assertSame('address.streetAddress', $button->attr('data-clipboard-text-param'));
-        $this->assertSame('clipboard#copy', $button->attr('data-action'));
-        $this->assertSame('clipboard', $crawler->filter('aside')->attr('data-controller'));
+        $options = $crawler->filter('#map_layers_0_subtitle_path option');
+        $this->assertSame(['', 'address.streetAddress', 'name'], $options->each(static fn (Crawler $option): ?string => $option->attr('value')));
+        $this->assertSame('address.streetAddress – fx Hack Kampmanns Plads 2', $options->eq(1)->text());
+        $this->assertSame('address.streetAddress', $crawler->filter('#map_layers_0_subtitle_path option[selected]')->attr('value'));
+        // A path that is not in the first entities stays as the first choice.
+        $this->assertSame('description', $crawler->filter('#map_layers_0_detail_0_path option')->eq(1)->attr('value'));
+        $this->assertSame('description', $crawler->filter('#map_layers_0_detail_0_path option[selected]')->attr('value'));
     }
 
     public function testTellsThatTheDataSetGaveNoPaths(): void
@@ -274,9 +287,72 @@ final class MapEditorTest extends WebTestCase
 
         $crawler = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()])->render()->crawler();
 
-        $this->assertCount(0, $crawler->filter('datalist'));
-        $this->assertNull($crawler->filter('#map_layers_0_title_path')->attr('list'));
-        $this->assertStringContainsString('Datasættet gav ingen forslag til stier.', $crawler->filter('aside')->text());
+        $this->assertSame('input', $crawler->filter('#map_layers_0_title_path')->nodeName());
+        $this->assertStringContainsString('Datasættet gav ingen egenskaber.', $crawler->filter('#layer-0')->text());
+    }
+
+    public function testShowsOneStepAtATime(): void
+    {
+        $component = $this->createLiveComponent(MapEditor::class);
+
+        $crawler = $component->render()->crawler();
+
+        $this->assertSame(['Indstillinger', 'Datasæt', 'Lag', 'Visning'], $crawler->filter('nav button')->each(static fn (Crawler $button): string => $button->text()));
+        $this->assertSame('Indstillinger', $crawler->filter('nav [aria-current="step"]')->text());
+        $this->assertNull($crawler->filter('#step-settings')->attr('hidden'));
+        $this->assertNotNull($crawler->filter('#step-layers')->attr('hidden'));
+
+        $crawler = $component->call('showStep', ['step' => MapEditor::STEP_LAYERS])->render()->crawler();
+
+        $this->assertSame('Lag', $crawler->filter('nav [aria-current="step"]')->text());
+        $this->assertNotNull($crawler->filter('#step-settings')->attr('hidden'));
+        $this->assertNull($crawler->filter('#step-layers')->attr('hidden'));
+        // The fields of a hidden step stay in the form.
+        $this->assertCount(1, $crawler->filter('#map_title'));
+
+        // A step that does not exist changes nothing.
+        $component->call('showStep', ['step' => 'unknown']);
+        $this->assertSame(MapEditor::STEP_LAYERS, $component->component()->step);
+    }
+
+    public function testAddsAndRemovesALayerWithEachDataSet(): void
+    {
+        // The client of the test, without a reboot, so that the actions also use the fake Enter.
+        $client = self::getClient();
+        $this->assertInstanceOf(KernelBrowser::class, $client);
+        $client->disableReboot();
+        $component = $this->createLiveComponent(MapEditor::class, [], $client);
+
+        $crawler = $component->render()->crawler();
+
+        $this->assertSame(['Bænke (benches) – ingen steder', 'Toiletter (merged-public-toilets) – ingen steder'], $crawler->filter('#step-datasets label')->each(static fn (Crawler $label): string => $label->text()));
+        $this->assertCount(0, $crawler->filter('#step-datasets input:checked'));
+
+        // The first data set goes into the empty layer of the new map.
+        $crawler = $component->call('toggleDataSet', ['id' => 'benches'])->render()->crawler();
+
+        $this->assertSame(['Lag 1: Bænke'], $crawler->filter('h3')->each(static fn (Crawler $heading): string => $heading->text()));
+        $this->assertSame('benches', $crawler->filter('#map_layers_0_dataSet option[selected]')->attr('value'));
+        $this->assertSame(['benches'], $crawler->filter('#step-datasets input:checked')->each(static fn (Crawler $input): ?string => $input->attr('value')));
+
+        $crawler = $component->call('toggleDataSet', ['id' => 'merged-public-toilets'])->render()->crawler();
+
+        $this->assertSame(['Lag 1: Bænke', 'Lag 2: Toiletter'], $crawler->filter('h3')->each(static fn (Crawler $heading): string => $heading->text()));
+        $this->assertSame('#3661d8', $crawler->filter('#map_layers_1_colour')->attr('value'));
+
+        $crawler = $component->call('toggleDataSet', ['id' => 'benches'])->render()->crawler();
+
+        $this->assertSame(['Lag 1: Toiletter'], $crawler->filter('h3')->each(static fn (Crawler $heading): string => $heading->text()));
+        $this->assertSame(['merged-public-toilets'], $crawler->filter('#step-datasets input:checked')->each(static fn (Crawler $input): ?string => $input->attr('value')));
+    }
+
+    public function testTellsThatTheListOfDataSetsIsNotAvailable(): void
+    {
+        $this->enter->down = true;
+
+        $crawler = $this->createLiveComponent(MapEditor::class)->render()->crawler();
+
+        $this->assertStringContainsString('Enter svarer ikke, så listen over datasæt mangler.', $crawler->filter('#step-datasets')->text());
     }
 
     public function testClosesTheLayersOfAStoredMapOnPageLoad(): void

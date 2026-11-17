@@ -11,8 +11,9 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * The choices of the data set field in the map form: the data sets of Enter,
- * with the number of entities of each.
+ * The data sets of Enter, with the number of entities of each, for the map
+ * form: the choices of the data set field of a layer, and the check boxes of
+ * the data set step.
  *
  * The numbers are in a cache for 10 minutes, because the form renders again
  * after each change. If Enter does not give a number, the label has none,
@@ -40,6 +41,18 @@ final readonly class DataSetChoices
      */
     public function choices(): ?array
     {
+        $dataSets = $this->dataSets();
+
+        return null === $dataSets ? null : array_combine(array_column($dataSets, 'label'), array_keys($dataSets));
+    }
+
+    /**
+     * @return array<string, array{title: string, label: string}>|null the title and the label of each data set, with
+     *                                                                 the ID as key and sorted by label. Null if Enter
+     *                                                                 does not answer.
+     */
+    public function dataSets(): ?array
+    {
         try {
             $dataSets = $this->enter->getDataSets();
         } catch (EnterUnavailableException) {
@@ -48,20 +61,20 @@ final readonly class DataSetChoices
 
         $counts = $this->counts(array_values($dataSets));
 
-        $choices = [];
+        $result = [];
         foreach ($dataSets as $dataSet) {
             $label = \sprintf('%s (%s)', $dataSet->title, $dataSet->id);
             $count = $counts[$dataSet->id] ?? null;
             if (null !== $count) {
                 $label .= ' – '.$this->translator->trans('builder.form.data_set_count', ['%count%' => $count]);
             }
-            $choices[$label] = $dataSet->id;
+            $result[$dataSet->id] = ['title' => $dataSet->title, 'label' => $label];
         }
         // Sorted as in the language of the page, for example Æ, Ø and Å last in Danish.
         $collator = new \Collator($this->translator->getLocale());
-        uksort($choices, static fn (string $a, string $b): int => (int) $collator->compare($a, $b));
+        uasort($result, static fn (array $a, array $b): int => (int) $collator->compare($a['label'], $b['label']));
 
-        return $choices;
+        return $result;
     }
 
     /**

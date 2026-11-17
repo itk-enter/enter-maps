@@ -32,7 +32,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
  */
 final readonly class MapFormMapper
 {
-    private const array MAP_KEYS = ['version', 'title', 'description', 'locale', 'view', 'zoomGate', 'sidebar', 'layers'];
+    private const array MAP_KEYS = ['version', 'title', 'description', 'locale', 'view', 'zoomGate', 'loadingSpinner', 'sidebar', 'layers'];
 
     private const array LAYER_KEYS = ['id', 'dataSet', 'label', 'colour', 'icon', 'filter', 'row', 'detail'];
 
@@ -55,11 +55,13 @@ final readonly class MapFormMapper
         $data->title = $this->string($config->title ?? null);
         $data->description = $this->string($config->description ?? null);
         $data->locale = $this->string($config->locale ?? null) ?? $data->locale;
+        $data->loadingSpinner = true === ($config->loadingSpinner ?? false);
 
         $sidebar = $this->object($config->sidebar ?? null);
         $data->sidebarPosition = $this->string($sidebar->position ?? null) ?? $data->sidebarPosition;
         $data->showList = (bool) ($sidebar->list ?? true);
         $data->categories = (bool) ($sidebar->categories ?? false);
+        $data->routeLink = (bool) ($sidebar->routeLink ?? true);
         $search = $this->object($sidebar->search ?? null);
         $data->search = match ([(bool) ($search->local ?? false), (bool) ($search->address ?? false)]) {
             [true, true] => MapData::SEARCH_BOTH,
@@ -99,11 +101,16 @@ final readonly class MapFormMapper
         if (null !== $data->zoomGate) {
             $config['zoomGate'] = ['minZoom' => $data->zoomGate];
         }
+        // The default is false, so the config has the key only if it is true.
+        if ($data->loadingSpinner) {
+            $config['loadingSpinner'] = true;
+        }
 
         $config['sidebar'] = [
             'position' => $data->sidebarPosition,
             'list' => $data->showList,
             'categories' => $data->categories,
+            'routeLink' => $data->routeLink,
             'search' => [
                 'local' => \in_array($data->search, [MapData::SEARCH_LOCAL, MapData::SEARCH_BOTH], true),
                 'address' => \in_array($data->search, [MapData::SEARCH_ADDRESS, MapData::SEARCH_BOTH], true),

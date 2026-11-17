@@ -24,7 +24,7 @@ final class ConditionType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('path', TextType::class, ['label' => 'builder.form.path', 'help' => 'builder.form.path_help'])
+            ->add('path', PathType::class, ['label' => 'builder.form.path', 'help' => 'builder.form.path_help'])
             ->add('operator', ChoiceType::class, [
                 'label' => 'builder.form.operator',
                 'empty_data' => '=',

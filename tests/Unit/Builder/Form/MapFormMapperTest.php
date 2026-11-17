@@ -78,10 +78,10 @@ final class MapFormMapperTest extends TestCase
      */
     public static function fixtures(): iterable
     {
-        yield 'toilets' => ['toilets', []];
+        yield 'toilets' => ['toilets', ['sidebar' => ['routeLink' => true]]];
         yield 'toilets and parking' => ['toilets-and-parking', [
             'locale' => 'da-DK',
-            'sidebar' => ['position' => 'left', 'search' => ['local' => false, 'address' => false]],
+            'sidebar' => ['position' => 'left', 'routeLink' => true, 'search' => ['local' => false, 'address' => false]],
         ]];
     }
 
@@ -223,6 +223,7 @@ final class MapFormMapperTest extends TestCase
         $data->sidebarPosition = 'right';
         $data->showList = false;
         $data->categories = true;
+        $data->routeLink = false;
         $data->search = MapData::SEARCH_ADDRESS;
         $data->viewLongitude = 10.2;
         $data->viewLatitude = 56.1;
@@ -248,7 +249,9 @@ final class MapFormMapperTest extends TestCase
         // A view needs all three fields.
         $this->assertArrayNotHasKey('view', $config);
         $this->assertArrayNotHasKey('zoomGate', $config);
-        $this->assertSame(['position' => 'right', 'list' => false, 'categories' => true, 'search' => ['local' => false, 'address' => true]], $config['sidebar']);
+        // The spinner is off by default, so the config has no key for it.
+        $this->assertArrayNotHasKey('loadingSpinner', $config);
+        $this->assertSame(['position' => 'right', 'list' => false, 'categories' => true, 'routeLink' => false, 'search' => ['local' => false, 'address' => true]], $config['sidebar']);
         $this->assertSame([
             'id' => 'baenke',
             'dataSet' => 'benches',

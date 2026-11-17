@@ -26,7 +26,7 @@ final class MapFieldType extends AbstractType
         if (!$options['short']) {
             $builder->add('label', TextType::class, ['label' => 'builder.form.field_label', 'required' => false]);
         }
-        $builder->add('path', TextType::class, [
+        $builder->add('path', PathType::class, [
             'label' => 'builder.form.path',
             'help' => 'builder.form.path_help',
             'required' => $options['required'],
@@ -34,12 +34,13 @@ final class MapFieldType extends AbstractType
         if (!$options['short']) {
             $builder->add('format', ChoiceType::class, [
                 'label' => 'builder.form.format',
+                'help' => 'builder.form.format_help',
                 'empty_data' => 'text',
                 'choices' => array_combine(array_map(static fn (string $format): string => 'builder.form.format_'.$format, self::FORMATS), self::FORMATS),
             ]);
         }
         $builder
-            ->add('fallback', TextType::class, ['label' => 'builder.form.fallback', 'required' => false])
+            ->add('fallback', TextType::class, ['label' => 'builder.form.fallback', 'help' => 'builder.form.fallback_help', 'required' => false])
             ->add('extra', HiddenType::class, ['empty_data' => '{}']);
     }
 

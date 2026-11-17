@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Twig\Components;
 
+use App\Builder\DataSetChoices;
 use App\Builder\DataSetFields;
 use App\Builder\Form\ConditionData;
 use App\Builder\Form\LayerData;
@@ -34,7 +35,12 @@ use Symfony\UX\LiveComponent\LiveCollectionTrait;
  *
  * The server renders the form again after each change, so the form can add a
  * layer or a condition, and show the field that an operator needs, without
- * JavaScript of its own. save() validates the form, makes the config with
+ * JavaScript of its own.
+ *
+ * The form has four steps on one page: the settings, the data sets, the
+ * layers and the view. The page shows one step and hides the others, but
+ * keeps their fields, so that the form has all the values. A tick on a data
+ * set adds a layer with the data set. save() validates the form, makes the config with
  * MapFormMapper, and validates it again against the schema. Then it stores
  * the map and shows the map or the embed code.
  */
@@ -45,6 +51,21 @@ final class MapEditor extends AbstractController
     use LiveCollectionTrait {
         addCollectionItem as private addEmptyCollectionItem;
     }
+
+    public const string STEP_SETTINGS = 'settings';
+    public const string STEP_DATA_SETS = 'datasets';
+    public const string STEP_LAYERS = 'layers';
+    public const string STEP_VIEW = 'view';
+
+    public const array STEPS = [self::STEP_SETTINGS, self::STEP_DATA_SETS, self::STEP_LAYERS, self::STEP_VIEW];
+
+    /**
+     * The fields of the map form on each step. The layers are on their own step.
+     */
+    private const array STEP_FIELDS = [
+        self::STEP_SETTINGS => ['title', 'description', 'locale', 'sidebarPosition', 'search', 'showList', 'categories', 'routeLink', 'loadingSpinner'],
+        self::STEP_VIEW => ['viewLongitude', 'viewLatitude', 'viewZoom', 'zoomGate'],
+    ];
 
     public const string THEN_PREVIEW = 'preview';
     public const string THEN_EMBED = 'embed';
@@ -75,8 +96,15 @@ final class MapEditor extends AbstractController
     public array $openLayers = [];
 
     /**
-     * The token of the last preview, or null if the form shows no preview.
-     * Each preview has a new token, so the frame loads the new map.
+     * The step that the form shows. See STEPS.
+     */
+    #[LiveProp]
+    public string $step = self::STEP_SETTINGS;
+
+    /**
+     * The token of the last preview, or null before the first preview. Without
+     * a token, the frame shows the stored map. Each preview has a new token,
+     * so the frame loads the new map.
      */
     #[LiveProp]
     public ?string $previewToken = null;
@@ -97,7 +125,109 @@ final class MapEditor extends AbstractController
         private readonly TranslatorInterface $translator,
         private readonly DataSetFields $dataSetFields,
         private readonly PreviewStore $previews,
+        private readonly DataSetChoices $dataSetChoices,
     ) {
+    }
+
+    /**
+     * The data sets of Enter, for the check boxes of the data set step.
+     *
+     * @return array<string, array{title: string, label: string}>|null the title and the label of each data set, with
+     *                                                                 the ID as key. Null if Enter does not answer.
+     */
+    public function dataSets(): ?array
+    {
+        return $this->dataSetChoices->dataSets();
+    }
+
+    /**
+     * @return list<string> the IDs of the data sets that the layers use
+     */
+    public function selectedDataSets(): array
+    {
+        $ids = [];
+        foreach ($this->layerValues() as $layer) {
+            if (\is_string($layer['dataSet'] ?? null) && '' !== $layer['dataSet']) {
+                $ids[] = $layer['dataSet'];
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    /**
+     * The steps that have an error, for the marks in the menu of the steps.
+     *
+     * @return list<string>
+     */
+    public function stepsWithErrors(): array
+    {
+        $steps = [];
+        $form = $this->getForm();
+        foreach (self::STEP_FIELDS as $step => $fields) {
+            foreach ($fields as $field) {
+                if ($form->has($field) && \count($form->get($field)->getErrors(true)) > 0) {
+                    $steps[$step] = true;
+                }
+            }
+        }
+        // An error of the map, for example "no layer", is above all the steps.
+        foreach ($form->get('layers') as $layer) {
+            if (\count($layer->getErrors(true)) > 0) {
+                $steps[self::STEP_LAYERS] = true;
+            }
+        }
+        foreach ($this->saveErrors as $error) {
+            $steps[$this->stepOfSchemaError($error)] = true;
+        }
+
+        return array_values(array_filter(self::STEPS, static fn (string $step): bool => isset($steps[$step])));
+    }
+
+    /**
+     * Shows a step of the form.
+     *
+     * @param string $step one of STEPS
+     */
+    #[LiveAction]
+    public function showStep(#[LiveArg] string $step): void
+    {
+        if (\in_array($step, self::STEPS, true)) {
+            $this->step = $step;
+        }
+    }
+
+    /**
+     * Adds a layer with a data set, or removes the layers with the data set.
+     * A new map has a layer without a data set, so the first data set goes
+     * into that layer. A new layer gets the title of the data set as label.
+     *
+     * @param string $id the ID of the data set
+     */
+    #[LiveAction]
+    public function toggleDataSet(PropertyAccessorInterface $propertyAccessor, #[LiveArg] string $id): void
+    {
+        $collection = $this->formName.'[layers]';
+        $using = array_keys(array_filter($this->layerValues(), static fn (array $layer): bool => ($layer['dataSet'] ?? null) === $id));
+        if ([] !== $using) {
+            foreach ($using as $key) {
+                $this->removeCollectionItem($propertyAccessor, $collection, (int) $key);
+                $this->openLayers = array_values(array_diff($this->openLayers, [(string) $key]));
+            }
+
+            return;
+        }
+
+        $empty = array_key_first(array_filter($this->layerValues(), static fn (array $layer): bool => '' === (string) ($layer['dataSet'] ?? '')));
+        if (null === $empty) {
+            $this->addCollectionItem($propertyAccessor, $collection);
+            $empty = array_key_last($this->layerValues());
+        }
+
+        $this->formValues['layers'][$empty]['dataSet'] = $id;
+        if ('' === (string) ($this->formValues['layers'][$empty]['label'] ?? '')) {
+            $this->formValues['layers'][$empty]['label'] = $this->dataSets()[$id]['title'] ?? $id;
+        }
     }
 
     /**
@@ -168,6 +298,7 @@ final class MapEditor extends AbstractController
         } catch (InvalidMapConfigException $exception) {
             $this->saveErrors = $exception->errors;
             $this->openLayersOfSchemaErrors($exception->errors);
+            $this->showStepWithError();
 
             return null;
         }
@@ -179,8 +310,8 @@ final class MapEditor extends AbstractController
     }
 
     /**
-     * Shows the map from the form in a frame, without a save. The map that
-     * other sites show does not change.
+     * Shows the map from the form in the frame of the view step, without a
+     * save. The map that other sites show does not change.
      */
     #[LiveAction]
     public function preview(): void
@@ -192,6 +323,7 @@ final class MapEditor extends AbstractController
         } catch (InvalidMapConfigException $exception) {
             $this->saveErrors = $exception->errors;
             $this->openLayersOfSchemaErrors($exception->errors);
+            $this->showStepWithError();
 
             return;
         }
@@ -199,12 +331,7 @@ final class MapEditor extends AbstractController
         /** @var \stdClass $settings the converter of the renderer ran, so the settings are there */
         $settings = $draft->getMapJson(Renderer::Leaflet);
         $this->previewToken = $this->previews->add($settings);
-    }
-
-    #[LiveAction]
-    public function closePreview(): void
-    {
-        $this->previewToken = null;
+        $this->step = self::STEP_VIEW;
     }
 
     /**
@@ -223,6 +350,7 @@ final class MapEditor extends AbstractController
                     $this->openLayer($key);
                 }
             }
+            $this->showStepWithError();
 
             throw $exception;
         }
@@ -247,6 +375,41 @@ final class MapEditor extends AbstractController
                 $this->openLayer((string) $keys[(int) $matches[1]]);
             }
         }
+    }
+
+    /**
+     * Shows the first step with an error, if the step that the form shows has none.
+     */
+    private function showStepWithError(): void
+    {
+        $steps = $this->stepsWithErrors();
+        if ([] !== $steps && !\in_array($this->step, $steps, true)) {
+            $this->step = $steps[0];
+        }
+    }
+
+    /**
+     * Gives the step of an error of the schema, for example "/layers/1/row/title/path: …".
+     */
+    private function stepOfSchemaError(string $error): string
+    {
+        return match (true) {
+            1 === preg_match('#^/layers\b#', $error) => self::STEP_LAYERS,
+            1 === preg_match('#^/(view|zoomGate)\b#', $error) => self::STEP_VIEW,
+            default => self::STEP_SETTINGS,
+        };
+    }
+
+    /**
+     * The values of the layers in the form, with the key of each layer.
+     *
+     * @return array<int|string, array<string, mixed>>
+     */
+    private function layerValues(): array
+    {
+        $layers = $this->formValues['layers'] ?? [];
+
+        return \is_array($layers) ? array_filter($layers, \is_array(...)) : [];
     }
 
     private function openLayer(string $key): void

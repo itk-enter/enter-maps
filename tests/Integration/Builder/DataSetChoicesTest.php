@@ -43,6 +43,16 @@ final class DataSetChoicesTest extends KernelTestCase
         ], $this->choices->choices());
     }
 
+    public function testGivesTheTitleAndTheLabelOfEachDataSet(): void
+    {
+        $this->assertSame([
+            'benches' => ['title' => 'Bænke', 'label' => 'Bænke (benches) – ingen steder'],
+            'one' => ['title' => 'Én', 'label' => 'Én (one) – 1 sted'],
+            'broken' => ['title' => 'Fejl', 'label' => 'Fejl (broken)'],
+            'toilets' => ['title' => 'Toiletter', 'label' => 'Toiletter (toilets) – 2 steder'],
+        ], $this->choices->dataSets());
+    }
+
     public function testCountsOnceForTheCache(): void
     {
         $this->choices->choices();

@@ -37,8 +37,10 @@ final class MapType extends AbstractType
                 'expanded' => true,
                 'choices' => ['builder.form.position_left' => 'left', 'builder.form.position_right' => 'right'],
             ])
+            ->add('loadingSpinner', CheckboxType::class, ['label' => 'builder.form.loading_spinner', 'required' => false])
             ->add('showList', CheckboxType::class, ['label' => 'builder.form.list', 'required' => false])
             ->add('categories', CheckboxType::class, ['label' => 'builder.form.categories', 'required' => false])
+            ->add('routeLink', CheckboxType::class, ['label' => 'builder.form.route_link', 'required' => false])
             ->add('search', ChoiceType::class, [
                 'label' => 'builder.form.search',
                 'empty_data' => MapData::SEARCH_NONE,
