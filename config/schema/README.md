@@ -22,6 +22,7 @@ Your editor shows it if you connect the schema to a JSON file.
 ```text
 version, title, description, locale   The map
 view, zoomGate                         The start view and the minimum zoom level
+loadingSpinner                         A spinner over the map until the data is loaded
 sidebar                                The list, the categories and the search
 layers[]                               The data sets, each with its own fields
 filters[]                              The open filters that the user can change

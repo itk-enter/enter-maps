@@ -94,7 +94,7 @@ const SELECTED_MARKER_SIZE = 38;
 export default class extends Controller {
   static values = { settings: Object, options: Object, messages: Object };
 
-  static targets = ["map", "status", "marker", "gate", "gateBar"];
+  static targets = ["map", "status", "marker", "gate", "gateBar", "spinner"];
 
   static outlets = ["map-list", "map-detail"];
 
@@ -141,10 +141,33 @@ export default class extends Controller {
     this.map.on("moveend", () => {
       this.updateGate();
       this.render();
+      this.postView();
     });
 
     this.updateGate();
+    this.postView();
     this.load();
+  }
+
+  /**
+   * Tells the page around the frame the view of the map. The builder uses it
+   * to fill in the view fields. The message goes only to a page on the same
+   * origin, so other sites that show the map do not get it.
+   */
+  postView() {
+    if (window.parent === window) {
+      return;
+    }
+    const center = this.map.getCenter();
+    window.parent.postMessage(
+      {
+        type: "enter-maps:view",
+        longitude: center.lng,
+        latitude: center.lat,
+        zoom: this.map.getZoom(),
+      },
+      window.location.origin,
+    );
   }
 
   /** Removes the Leaflet map. */
@@ -155,7 +178,8 @@ export default class extends Controller {
   /**
    * Loads the data of each layer from the data proxy. Then shows the places
    * and selects the place in the "select" option. If a layer fails, the
-   * list shows an error.
+   * list shows an error. At the end, the spinner goes away, if the map has
+   * one.
    *
    * @returns {Promise<void>}
    */
@@ -191,6 +215,10 @@ export default class extends Controller {
       }
 
       return;
+    } finally {
+      if (this.hasSpinnerTarget) {
+        this.spinnerTarget.remove();
+      }
     }
 
     this.render();

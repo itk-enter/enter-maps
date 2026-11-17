@@ -2,6 +2,7 @@
   "version": 1,
   "title": "Tilgængelighed i midtbyen",
   "description": "Offentlige toiletter og handicapparkering i Aarhus midtby.",
+  "loadingSpinner": true,
   "sidebar": { "list": true, "categories": true },
   "layers": [
     {

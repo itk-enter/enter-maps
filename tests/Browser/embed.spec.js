@@ -2,7 +2,8 @@
  * @file Browser tests of /embed/leaflet/{id}, with the fixture maps:
  * - "toilets": one layer, a zoom gate at zoom 15, a select filter, search
  *   and a report link.
- * - "toilets-and-parking": two layers, a toggle filter and no zoom gate.
+ * - "toilets-and-parking": two layers, a toggle filter, no zoom gate and a
+ *   spinner while the data loads.
  *
  * Each test that changes the state of the page also runs axe-core.
  */
@@ -171,6 +172,29 @@ test.describe("the toilets map", () => {
 });
 
 test.describe("the toilets and parking map", () => {
+  test("shows a spinner until the data is loaded", async ({ page }) => {
+    // Holds the data back until the test has seen the spinner.
+    let release;
+    const held = new Promise((resolve) => {
+      release = resolve;
+    });
+    await page.route("**/data/*.geojson*", async (route) => {
+      await held;
+      await route.fallback();
+    });
+    await page.goto(toiletsAndParking);
+
+    const spinner = page.getByRole("status").filter({
+      hasText: "Henter stederne",
+    });
+    await expect(spinner).toBeVisible();
+    await expectNoAxeViolations(page);
+
+    release();
+    await expect(spinner).toHaveCount(0);
+    await expect(rows(page)).toHaveCount(5);
+  });
+
   test("lists both layers, also a polygon", async ({ page }) => {
     await page.goto(toiletsAndParking);
 

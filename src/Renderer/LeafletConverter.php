@@ -55,6 +55,7 @@ final readonly class LeafletConverter
                 'zoom' => $config->view->zoom,
             ] : null,
             'minZoom' => $config->minZoom,
+            'loadingSpinner' => $config->loadingSpinner,
             'baseMap' => [
                 'url' => $baseMap->url,
                 'attribution' => $baseMap->attribution,
@@ -66,6 +67,7 @@ final readonly class LeafletConverter
                 'categories' => $config->sidebar->categories,
                 'localSearch' => $config->sidebar->localSearch,
                 'addressSearch' => $config->sidebar->addressSearch,
+                'routeLink' => $config->sidebar->routeLink,
             ],
             'layers' => array_map($this->layer(...), $config->layers),
             'filters' => array_map($this->filter(...), $config->filters),

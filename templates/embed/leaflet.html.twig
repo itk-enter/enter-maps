@@ -43,7 +43,7 @@
             {% if hasSidebar and options.list %}
                 <twig:Map:List id="map-list" />
             {% endif %}
-            <twig:Map:Detail id="map-detail" :report="report" />
+            <twig:Map:Detail id="map-detail" :report="report" :routeLink="sidebar.routeLink ?? true" />
         </twig:Map:Sidebar>
 
         <div data-map-target="map" role="region" aria-label="{{ 'embed.map_label'|trans }}"
@@ -52,5 +52,10 @@
         {% for layer in map.layers %}
             <twig:Map:Marker :layer="layer" />
         {% endfor %}
+
+        {# A map that was saved before the setting existed has no loadingSpinner. #}
+        {% if map.loadingSpinner ?? false %}
+            <twig:Map:Spinner />
+        {% endif %}
     </main>
 {% endblock %}

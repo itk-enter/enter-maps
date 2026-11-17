@@ -89,6 +89,45 @@ final class EmbedControllerTest extends WebTestCase
         $this->assertStringNotContainsString('Ret eller tilføj oplysninger', $crawler->filter('#map-detail template')->html());
     }
 
+    public function testShowsTheRouteLinkOnlyIfTheConfigurationHasIt(): void
+    {
+        $shown = $this->browser->request('GET', '/embed/leaflet/'.$this->store('toilets'));
+        $this->assertCount(1, $shown->filter('#map-detail template')->filter('[data-field="route"]'));
+
+        $config = json_decode((string) file_get_contents(\dirname(__DIR__, 2).'/Fixtures/map-config/toilets.json'), true, 512, \JSON_THROW_ON_ERROR);
+        $config['sidebar']['routeLink'] = false;
+        $mapConfiguration = self::getContainer()->get(MapConfigurationFactory::class)->create(json_encode($config, \JSON_THROW_ON_ERROR), [Renderer::Leaflet]);
+        $this->entityManager->persist($mapConfiguration);
+        $this->entityManager->flush();
+
+        $hidden = $this->browser->request('GET', '/embed/leaflet/'.$mapConfiguration->getId());
+        $this->assertCount(0, $hidden->filter('#map-detail template')->filter('[data-field="route"]'));
+    }
+
+    public function testShowsTheRouteLinkOfAMapThatWasSavedWithoutTheSetting(): void
+    {
+        $id = $this->store('toilets');
+        $mapConfiguration = $this->entityManager->find(MapConfiguration::class, $id);
+        $this->assertInstanceOf(MapConfiguration::class, $mapConfiguration);
+        $settings = json_decode((string) json_encode($mapConfiguration->getMapJson(Renderer::Leaflet)), true, 512, \JSON_THROW_ON_ERROR);
+        unset($settings['sidebar']['routeLink']);
+        $mapConfiguration->change($mapConfiguration->getConfig(), [Renderer::Leaflet], [Renderer::Leaflet->value => $settings]);
+        $this->entityManager->flush();
+
+        $crawler = $this->browser->request('GET', '/embed/leaflet/'.$id);
+
+        $this->assertCount(1, $crawler->filter('#map-detail template')->filter('[data-field="route"]'));
+    }
+
+    public function testShowsTheSpinnerOnlyIfTheConfigurationHasIt(): void
+    {
+        $withSpinner = $this->browser->request('GET', '/embed/leaflet/'.$this->store('toilets-and-parking'));
+        $this->assertCount(1, $withSpinner->filter('[data-map-target="spinner"]'));
+
+        $withoutSpinner = $this->browser->request('GET', '/embed/leaflet/'.$this->store('toilets'));
+        $this->assertCount(0, $withoutSpinner->filter('[data-map-target="spinner"]'));
+    }
+
     public function testSaysThatAMapThatDoesNotExistIsNotAvailable(): void
     {
         $crawler = $this->browser->request('GET', '/embed/leaflet/01M7A9NR64B762Z5NDXFSSAM1Z?lang=en');

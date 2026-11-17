@@ -18,6 +18,7 @@ embed:
     legend: Vis på kortet
   filters:
     all: Alle
+  loading: Henter stederne …
   zoom_gate:
     title: Se steder på kortet
     text: Skriv en adresse for at søge på et sted, eller zoom ind for at se stederne på kortet.

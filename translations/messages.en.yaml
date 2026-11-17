@@ -18,6 +18,7 @@ embed:
     legend: Show on the map
   filters:
     all: All
+  loading: Loading the places …
   zoom_gate:
     title: See places on the map
     text: Type an address to search for a place, or zoom in to see the places on the map.

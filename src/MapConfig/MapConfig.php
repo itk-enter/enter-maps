@@ -16,9 +16,10 @@ final readonly class MapConfig
 {
     /**
      * @param 'da-DK'|'en-GB' $locale
-     * @param float|null      $minZoom below this zoom, the map does not show the features
+     * @param float|null      $minZoom        below this zoom, the map does not show the features
      * @param list<Layer>     $layers
-     * @param list<Filter>    $filters the open filters, which the user can change
+     * @param list<Filter>    $filters        the open filters, which the user can change
+     * @param bool            $loadingSpinner show a spinner over the map until the data is loaded
      */
     public function __construct(
         public int $version,
@@ -33,6 +34,7 @@ final readonly class MapConfig
         public ?Report $report,
         public LeafletSettings $leaflet,
         public SeptimaSettings $septima,
+        public bool $loadingSpinner = false,
     ) {
     }
 
@@ -54,6 +56,7 @@ final readonly class MapConfig
             report: isset($data['report']) ? Report::fromArray($data['report']) : null,
             leaflet: LeafletSettings::fromArray($data['leaflet'] ?? []),
             septima: SeptimaSettings::fromArray($data['septima'] ?? []),
+            loadingSpinner: $data['loadingSpinner'] ?? false,
         );
     }
 }
