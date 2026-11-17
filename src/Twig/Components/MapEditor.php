@@ -67,9 +67,6 @@ final class MapEditor extends AbstractController
         self::STEP_VIEW => ['viewLongitude', 'viewLatitude', 'viewZoom', 'zoomGate'],
     ];
 
-    public const string THEN_PREVIEW = 'preview';
-    public const string THEN_EMBED = 'embed';
-
     /**
      * The values of a new item, for each collection. Without them, a new
      * layer is black, and a new condition has no operator.
@@ -88,7 +85,7 @@ final class MapEditor extends AbstractController
 
     /**
      * The keys of the layers that are open. On page load, the layers of a
-     * stored map are closed, and the one layer of a new map is open.
+     * stored map are closed. A new layer is open.
      *
      * @var list<string>
      */
@@ -118,6 +115,13 @@ final class MapEditor extends AbstractController
 
     private ?MapConfiguration $map = null;
 
+    /**
+     * @var array<string, array{title: string, label: string}>|null
+     */
+    private ?array $dataSets = null;
+
+    private bool $dataSetsLoaded = false;
+
     public function __construct(
         private readonly MapFormMapper $mapper,
         private readonly MapConfigurationFactory $factory,
@@ -137,7 +141,29 @@ final class MapEditor extends AbstractController
      */
     public function dataSets(): ?array
     {
-        return $this->dataSetChoices->dataSets();
+        if (!$this->dataSetsLoaded) {
+            $this->dataSetsLoaded = true;
+            $this->dataSets = $this->dataSetChoices->dataSets();
+        }
+
+        return $this->dataSets;
+    }
+
+    /**
+     * The steps that the editor can open. The layers and the view need a
+     * title and a data set first. A stored map has them, so all its steps are
+     * open. If Enter does not answer, the form has no list of data sets, so
+     * the title is sufficient.
+     *
+     * @return list<string>
+     */
+    public function availableSteps(): array
+    {
+        $title = trim((string) ($this->formValues['title'] ?? ''));
+        $ready = null !== $this->mapId
+            || ('' !== $title && ([] !== $this->selectedDataSets() || null === $this->dataSets()));
+
+        return $ready ? self::STEPS : [self::STEP_SETTINGS, self::STEP_DATA_SETS];
     }
 
     /**
@@ -185,15 +211,23 @@ final class MapEditor extends AbstractController
     }
 
     /**
-     * Shows a step of the form.
+     * Shows a step of the form, if the step is available. See availableSteps().
+     * The view step also updates the map from the form, so that the map shows
+     * the changes on the other steps. If the form has an error, the view step
+     * stays, and the menu marks the steps with an error.
      *
      * @param string $step one of STEPS
      */
     #[LiveAction]
     public function showStep(#[LiveArg] string $step): void
     {
-        if (\in_array($step, self::STEPS, true)) {
-            $this->step = $step;
+        if (!\in_array($step, $this->availableSteps(), true)) {
+            return;
+        }
+
+        $this->step = $step;
+        if (self::STEP_VIEW === $step) {
+            $this->updatePreview(false);
         }
     }
 
@@ -213,6 +247,10 @@ final class MapEditor extends AbstractController
             foreach ($using as $key) {
                 $this->removeCollectionItem($propertyAccessor, $collection, (int) $key);
                 $this->openLayers = array_values(array_diff($this->openLayers, [(string) $key]));
+            }
+            // Without data sets, a new map closes the layers and the view again.
+            if (!\in_array($this->step, $this->availableSteps(), true)) {
+                $this->step = self::STEP_DATA_SETS;
             }
 
             return;
@@ -244,9 +282,6 @@ final class MapEditor extends AbstractController
     public function mount(?string $mapId = null): void
     {
         $this->mapId = '' === $mapId ? null : $mapId;
-        if (null === $this->mapId) {
-            $this->openLayers = ['0'];
-        }
     }
 
     /**
@@ -283,8 +318,11 @@ final class MapEditor extends AbstractController
             : [...$this->openLayers, $key];
     }
 
+    /**
+     * Stores the map, and shows it. The embed code is a link in the menu of the steps.
+     */
     #[LiveAction]
-    public function save(#[LiveArg] string $then = self::THEN_PREVIEW): ?Response
+    public function save(): ?Response
     {
         $json = $this->submittedConfig();
         $map = $this->map();
@@ -306,7 +344,7 @@ final class MapEditor extends AbstractController
         $this->repository->save($map);
         $this->addFlash('success', $this->translator->trans('builder.form.saved', ['%title%' => $map->getConfig()->title ?? '']));
 
-        return $this->redirectToRoute(self::THEN_EMBED === $then ? 'app_builder_embed' : 'app_builder_preview', ['id' => $map->getId()]);
+        return $this->redirectToRoute('app_builder_preview', ['id' => $map->getId()]);
     }
 
     /**
@@ -316,14 +354,24 @@ final class MapEditor extends AbstractController
     #[LiveAction]
     public function preview(): void
     {
-        $json = $this->submittedConfig();
+        $this->updatePreview(true);
+    }
+
+    /**
+     * @param bool $showErrorStep if true, the form shows the first step with an error
+     */
+    private function updatePreview(bool $showErrorStep): void
+    {
+        $json = $this->submittedConfig($showErrorStep);
 
         try {
             $draft = $this->factory->create($json, [Renderer::Leaflet]);
         } catch (InvalidMapConfigException $exception) {
             $this->saveErrors = $exception->errors;
             $this->openLayersOfSchemaErrors($exception->errors);
-            $this->showStepWithError();
+            if ($showErrorStep) {
+                $this->showStepWithError();
+            }
 
             return;
         }
@@ -337,9 +385,11 @@ final class MapEditor extends AbstractController
     /**
      * Validates the form and gives the config as JSON.
      *
+     * @param bool $showErrorStep if true and the form is not valid, the form shows the first step with an error
+     *
      * @throws UnprocessableEntityHttpException if the form is not valid
      */
-    private function submittedConfig(): string
+    private function submittedConfig(bool $showErrorStep = true): string
     {
         try {
             $this->submitForm();
@@ -350,7 +400,9 @@ final class MapEditor extends AbstractController
                     $this->openLayer($key);
                 }
             }
-            $this->showStepWithError();
+            if ($showErrorStep) {
+                $this->showStepWithError();
+            }
 
             throw $exception;
         }

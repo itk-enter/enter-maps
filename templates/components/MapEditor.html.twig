@@ -9,26 +9,37 @@
 {% set legend = 'mb-2 p-0 font-semibold' %}
 {% set card = 'm-0 flex flex-col gap-3 rounded border border-line bg-surface-2 p-3' %}
 <div {{ attributes }}>
-    {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col gap-6', 'data-action': 'live#action:prevent', 'data-live-action-param': 'save', 'data-live-then-param': 'preview'}}) }}
+    {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col gap-6', 'data-action': 'live#action:prevent', 'data-live-action-param': 'save'}}) }}
         {% if saveErrors is not empty %}
             <twig:Layout:ErrorList title="{{ 'builder.form.not_saved'|trans }}" :errors="saveErrors" />
         {% endif %}
         {{ form_errors(form) }}
 
-        <div class="grid grid-cols-1 items-start gap-6 wide:grid-cols-[12rem_minmax(0,1fr)]">
+        <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-[14rem_minmax(0,1fr)]">
             {# The steps of the form, on one page. The menu shows one step, and the #}
             {# other steps stay in the page, so that the form keeps their values. #}
-            {% set errorSteps = this.stepsWithErrors %}
-            <nav aria-label="{{ 'builder.form.steps'|trans }}" class="wide:sticky wide:top-4">
-                <ul class="m-0 flex list-none flex-wrap gap-1 p-0 wide:flex-col">
+            {# A step that is not available is disabled. The embed code is a link to #}
+        {# its own page, and it needs a stored map. #}
+        {% set errorSteps = this.stepsWithErrors %}
+        {% set availableSteps = this.availableSteps %}
+            <nav aria-label="{{ 'builder.form.steps'|trans }}" class="flex flex-col gap-3 lg:sticky lg:top-4">
+                <ul class="m-0 flex list-none flex-wrap gap-1 p-0 lg:flex-col">
                     {% for name in constant('App\\Twig\\Components\\MapEditor::STEPS') %}
                         <li>
-                            <twig:Form:StepButton :current="step == name" :invalid="name in errorSteps" controls="step-{{ name }}" data-action="live#action" data-live-action-param="showStep" data-live-step-param="{{ name }}">
+                            <twig:Form:StepButton :current="step == name" :invalid="name in errorSteps" :disabled="name not in availableSteps" controls="step-{{ name }}" data-action="live#action" data-live-action-param="showStep" data-live-step-param="{{ name }}">
                                 {{- ('builder.form.step_' ~ name)|trans -}}
                             </twig:Form:StepButton>
                         </li>
                     {% endfor %}
+                    <li>
+                        <twig:Form:StepButton :href="mapId ? path('app_builder_embed', {id: mapId}) : null" :disabled="mapId is null">
+                            {{- 'builder.form.step_embed'|trans -}}
+                        </twig:Form:StepButton>
+                    </li>
                 </ul>
+                {% if availableSteps|length < 4 or mapId is null %}
+                    <p class="m-0 text-sm text-text-muted">{{ (availableSteps|length < 4 ? 'builder.form.steps_locked' : 'builder.form.steps_embed_locked')|trans }}</p>
+                {% endif %}
             </nav>
 
             <div class="flex min-w-0 flex-col gap-8">
@@ -254,8 +265,7 @@
                 </section>
 
                 <div class="flex flex-wrap gap-3 border-t border-line pt-6">
-                    <twig:Form:Button type="button" data-action="live#action" data-live-action-param="save" data-live-then-param="preview">{{ 'builder.form.save_preview'|trans }}</twig:Form:Button>
-                    <twig:Form:Button type="button" data-action="live#action" data-live-action-param="save" data-live-then-param="embed">{{ 'builder.form.save_embed'|trans }}</twig:Form:Button>
+                    <twig:Form:Button type="button" data-action="live#action" data-live-action-param="save">{{ 'builder.form.save_preview'|trans }}</twig:Form:Button>
                     <twig:Form:Button variant="secondary" href="{{ path('app_builder') }}">{{ 'builder.form.cancel'|trans }}</twig:Form:Button>
                 </div>
             </div>

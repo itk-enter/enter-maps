@@ -82,7 +82,10 @@ builder:
     step_settings: Indstillinger
     step_datasets: Datasæt
     step_layers: Lag
-    step_view: Visning
+    step_view: Forhåndsvisning
+    step_embed: Embedkode
+    steps_locked: Skriv en titel, og vælg mindst ét datasæt for at åbne Lag og Forhåndsvisning. Embedkoden kommer, når kortet er gemt.
+    steps_embed_locked: Embedkoden kommer, når kortet er gemt.
     step_error: (har fejl)
     data_sets: Datasæt
     data_sets_help: Vælg datasættene til kortet. Hvert datasæt bliver et lag. Fjerner du fluebenet, fjernes lagene med datasættet.
@@ -107,8 +110,8 @@ builder:
     search_local: Søg i stederne
     search_address: Søg efter adresse
     search_both: Søg i stederne og efter adresse
-    view: Visning
-    view_help: Flyt og zoom kortet, og klik på Brug kortets visning. Du kan også udfylde felterne selv. Er de tomme, viser kortet alle stederne.
+    view: Forhåndsvisning
+    view_help: Kortet viser formularen, når du åbner Forhåndsvisning, og felterne får kortets visning. Flyt og zoom kortet, og klik på Brug kortets visning for at bruge den nye visning. Visningen er kortets start, når det vises på andre sider. Du kan også udfylde felterne selv.
     view_use: Brug kortets visning
     longitude: Længdegrad
     latitude: Breddegrad
@@ -198,7 +201,6 @@ builder:
     preview_empty: Vælg et datasæt til laget, og klik på Opdater kortet for at se kortet.
     preview_frame: Forhåndsvisning af "%title%"
     save_preview: Gem og vis kortet
-    save_embed: Gem og vis embedkode
     cancel: Annullér
     saved: Kortet "%title%" er gemt.
     not_saved: Kortet blev ikke gemt. Ret disse fejl.

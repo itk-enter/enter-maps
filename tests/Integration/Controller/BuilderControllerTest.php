@@ -63,7 +63,8 @@ final class BuilderControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextSame('h1', 'Nyt kort');
         $this->assertSelectorExists('form [name="map[title]"]');
-        $this->assertSelectorTextSame('h3', 'Lag 1: Nyt lag');
+        // A new map has no layers. The data set step adds them.
+        $this->assertSelectorNotExists('h3');
     }
 
     public function testShowsTheFormOfAStoredMap(): void

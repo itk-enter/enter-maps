@@ -6,8 +6,9 @@ const DECIMALS = 5;
 /**
  * In the builder: copies the view of the map in the frame into the view
  * fields of the form. The map controller in the frame sends the view in a
- * message after each move. The controller keeps the last view, and the "use"
- * action writes it into the fields.
+ * message at the start and after each move. The first view of each new map
+ * goes into the fields at once, so that the fields show what the map shows.
+ * After that, the "use" action writes the last view into the fields.
  *
  * The controller accepts only messages from its own frame, on the same
  * origin. It sends "input" and "change" events on the fields, so that the
@@ -21,6 +22,8 @@ export default class extends Controller {
   /** Starts to receive the messages of the frame. */
   connect() {
     this.view = null;
+    // The address of the last map that filled in the fields.
+    this.filledSource = null;
     this.receive = this.receive.bind(this);
     window.addEventListener("message", this.receive);
   }
@@ -45,6 +48,12 @@ export default class extends Controller {
       return;
     }
     this.view = event.data;
+
+    const source = this.frameTarget.getAttribute("src");
+    if (source !== this.filledSource) {
+      this.filledSource = source;
+      this.use();
+    }
   }
 
   /** Writes the last view of the map into the view fields. */

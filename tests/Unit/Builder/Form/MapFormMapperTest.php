@@ -22,14 +22,14 @@ final class MapFormMapperTest extends TestCase
         $this->mapper = new MapFormMapper(new AsciiSlugger());
     }
 
-    public function testGivesOneEmptyLayerForANewMap(): void
+    public function testGivesNoLayersForANewMap(): void
     {
         $data = $this->mapper->toData(null);
 
         $this->assertNull($data->title);
         $this->assertSame('da-DK', $data->locale);
         $this->assertSame(MapData::SEARCH_NONE, $data->search);
-        $this->assertCount(1, $data->layers);
+        $this->assertSame([], $data->layers);
     }
 
     public function testReadsTheFieldsOfTheForm(): void
@@ -192,6 +192,7 @@ final class MapFormMapperTest extends TestCase
     public function testWritesTheConditionsOfTheForm(): void
     {
         $data = $this->mapper->toData(null);
+        $data->layers = [new LayerData()];
         $layer = $data->layers[0];
         $layer->combine = LayerData::COMBINE_OR;
         $layer->conditions = [
@@ -228,6 +229,7 @@ final class MapFormMapperTest extends TestCase
         $data->viewLongitude = 10.2;
         $data->viewLatitude = 56.1;
         $data->viewZoom = null;
+        $data->layers = [new LayerData()];
         $layer = $data->layers[0];
         $layer->dataSet = 'benches';
         $layer->label = 'Bænke';

@@ -82,7 +82,10 @@ builder:
     step_settings: Settings
     step_datasets: Data sets
     step_layers: Layers
-    step_view: View
+    step_view: Preview
+    step_embed: Embed code
+    steps_locked: Type a title, and select one or more data sets to open Layers and Preview. The embed code comes when you save the map.
+    steps_embed_locked: The embed code comes when you save the map.
     step_error: (has errors)
     data_sets: Data sets
     data_sets_help: Select the data sets of the map. Each data set becomes a layer. If you remove the tick, the form removes the layers with the data set.
@@ -107,8 +110,8 @@ builder:
     search_local: Search the places
     search_address: Search for an address
     search_both: Search the places and for an address
-    view: View
-    view_help: Move and zoom the map, and click Use the view of the map. You can also fill in the fields. If they are empty, the map shows all the places.
+    view: Preview
+    view_help: The map shows the form when you open Preview, and the fields get the view of the map. Move and zoom the map, and click Use the view of the map to use the new view. The view is the start of the map on other sites. You can also fill in the fields.
     view_use: Use the view of the map
     longitude: Longitude
     latitude: Latitude
@@ -198,7 +201,6 @@ builder:
     preview_empty: Select a data set for the layer, and click Update the map to see the map.
     preview_frame: Preview of "%title%"
     save_preview: Save and show the map
-    save_embed: Save and show the embed code
     cancel: Cancel
     saved: The map "%title%" is saved.
     not_saved: The map is not saved. Correct these errors.

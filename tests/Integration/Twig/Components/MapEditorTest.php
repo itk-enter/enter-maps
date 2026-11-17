@@ -45,9 +45,13 @@ final class MapEditorTest extends WebTestCase
         self::getContainer()->get(RequestStack::class)->push($request);
     }
 
-    public function testStartsANewMapWithOneLayer(): void
+    public function testStartsANewMapWithoutLayers(): void
     {
-        $crawler = $this->createLiveComponent(MapEditor::class)->render()->crawler();
+        $component = $this->componentWithFakeEnter();
+
+        $this->assertCount(0, $component->render()->crawler()->filter('h3'));
+
+        $crawler = $component->call('addCollectionItem', ['name' => 'map[layers]'])->render()->crawler();
 
         $this->assertSame('Lag 1: Nyt lag', $crawler->filter('h3')->text());
         // The path fields have no choices before the layer has a data set.
@@ -84,14 +88,16 @@ final class MapEditorTest extends WebTestCase
         $this->assertNotNull($maps[0]->getMapJson(Renderer::Leaflet));
     }
 
-    public function testShowsTheEmbedCodeAfterASave(): void
+    public function testLinksToTheEmbedCodeOfAStoredMap(): void
     {
         $map = $this->import('toilets');
-        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
 
-        $component->call('save', ['then' => MapEditor::THEN_EMBED]);
+        $crawler = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()])->render()->crawler();
 
-        $this->assertSame('/builder/'.$map->getId().'/embed', $this->redirect($component));
+        $this->assertSame('/builder/'.$map->getId().'/embed', $crawler->filter('nav a')->attr('href'));
+        $this->assertSame('Embedkode', $crawler->filter('nav a')->text());
+        $this->assertCount(0, $crawler->filter('nav button[disabled]'));
+        $this->assertCount(0, $crawler->filter('nav p'));
     }
 
     public function testShowsTheErrorsOfTheForm(): void
@@ -161,7 +167,7 @@ final class MapEditorTest extends WebTestCase
         $this->assertSame('Toiletter i Aarhus', self::getContainer()->get(MapConfigurationRepository::class)->find((string) $map->getId())?->getConfig()->title);
     }
 
-    public function testShowsTheStoredMapBeforeAPreview(): void
+    public function testUpdatesTheMapWhenTheViewStepOpens(): void
     {
         $map = $this->import('toilets');
         $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
@@ -173,8 +179,29 @@ final class MapEditorTest extends WebTestCase
 
         $crawler = $component->call('showStep', ['step' => MapEditor::STEP_VIEW])->render()->crawler();
 
-        $this->assertSame('/embed/leaflet/'.$map->getId(), $crawler->filter('iframe')->attr('src'));
+        /** @var MapEditor $editor */
+        $editor = $component->component();
+        $this->assertNotNull($editor->previewToken);
+        $this->assertSame('/builder/preview/'.$editor->previewToken, $crawler->filter('iframe')->attr('src'));
         $this->assertCount(1, $crawler->filter('button[data-action="map-view#use"]'));
+    }
+
+    public function testStaysOnTheViewStepIfTheMapHasAnError(): void
+    {
+        // A config that the form cannot correct: the URL of the report link must use https.
+        $config = json_decode((string) file_get_contents($this->fixture('toilets')), false);
+        $config->report->url = 'http://example.dk/form';
+        $map = new MapConfiguration($config, [Renderer::Leaflet], []);
+        self::getContainer()->get(MapConfigurationRepository::class)->save($map);
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+
+        $crawler = $component->call('showStep', ['step' => MapEditor::STEP_VIEW])->render()->crawler();
+
+        $this->assertSame(MapEditor::STEP_VIEW, $component->component()->step);
+        $this->assertStringContainsString('/report/url', $crawler->filter('[role="alert"] li')->text());
+        $this->assertStringContainsString('(har fejl)', $crawler->filter('nav button')->first()->text());
+        // The frame shows the stored map.
+        $this->assertSame('/embed/leaflet/'.$map->getId(), $crawler->filter('iframe')->attr('src'));
     }
 
     public function testShowsNoMapForANewMapBeforeAPreview(): void
@@ -293,11 +320,12 @@ final class MapEditorTest extends WebTestCase
 
     public function testShowsOneStepAtATime(): void
     {
-        $component = $this->createLiveComponent(MapEditor::class);
+        $map = $this->import('toilets');
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
 
         $crawler = $component->render()->crawler();
 
-        $this->assertSame(['Indstillinger', 'Datasæt', 'Lag', 'Visning'], $crawler->filter('nav button')->each(static fn (Crawler $button): string => $button->text()));
+        $this->assertSame(['Indstillinger', 'Datasæt', 'Lag', 'Forhåndsvisning', 'Embedkode'], $crawler->filter('nav li')->each(static fn (Crawler $item): string => $item->text()));
         $this->assertSame('Indstillinger', $crawler->filter('nav [aria-current="step"]')->text());
         $this->assertNull($crawler->filter('#step-settings')->attr('hidden'));
         $this->assertNotNull($crawler->filter('#step-layers')->attr('hidden'));
@@ -317,23 +345,28 @@ final class MapEditorTest extends WebTestCase
 
     public function testAddsAndRemovesALayerWithEachDataSet(): void
     {
-        // The client of the test, without a reboot, so that the actions also use the fake Enter.
-        $client = self::getClient();
-        $this->assertInstanceOf(KernelBrowser::class, $client);
-        $client->disableReboot();
-        $component = $this->createLiveComponent(MapEditor::class, [], $client);
+        $component = $this->componentWithFakeEnter();
 
         $crawler = $component->render()->crawler();
 
         $this->assertSame(['Bænke (benches) – ingen steder', 'Toiletter (merged-public-toilets) – ingen steder'], $crawler->filter('#step-datasets label')->each(static fn (Crawler $label): string => $label->text()));
         $this->assertCount(0, $crawler->filter('#step-datasets input:checked'));
 
-        // The first data set goes into the empty layer of the new map.
+        // Before a title and a data set, the layers, the view and the embed code are disabled.
+        $this->assertSame(['Lag', 'Forhåndsvisning', 'Embedkode'], $crawler->filter('nav button[disabled]')->each(static fn (Crawler $button): string => $button->text()));
+        $this->assertStringContainsString('Skriv en titel', $crawler->filter('nav p')->text());
+        $component->call('showStep', ['step' => MapEditor::STEP_LAYERS]);
+        $this->assertSame(MapEditor::STEP_SETTINGS, $component->component()->step);
+
+        // A data set goes into a layer without a data set.
+        $component->set('map.title', 'Bænke')->call('addCollectionItem', ['name' => 'map[layers]']);
         $crawler = $component->call('toggleDataSet', ['id' => 'benches'])->render()->crawler();
 
         $this->assertSame(['Lag 1: Bænke'], $crawler->filter('h3')->each(static fn (Crawler $heading): string => $heading->text()));
         $this->assertSame('benches', $crawler->filter('#map_layers_0_dataSet option[selected]')->attr('value'));
         $this->assertSame(['benches'], $crawler->filter('#step-datasets input:checked')->each(static fn (Crawler $input): ?string => $input->attr('value')));
+        $this->assertSame(['Embedkode'], $crawler->filter('nav button[disabled]')->each(static fn (Crawler $button): string => $button->text()));
+        $this->assertSame('Embedkoden kommer, når kortet er gemt.', $crawler->filter('nav p')->text());
 
         $crawler = $component->call('toggleDataSet', ['id' => 'merged-public-toilets'])->render()->crawler();
 
@@ -344,6 +377,11 @@ final class MapEditorTest extends WebTestCase
 
         $this->assertSame(['Lag 1: Toiletter'], $crawler->filter('h3')->each(static fn (Crawler $heading): string => $heading->text()));
         $this->assertSame(['merged-public-toilets'], $crawler->filter('#step-datasets input:checked')->each(static fn (Crawler $input): ?string => $input->attr('value')));
+
+        // Without data sets, the layer step closes, and the form shows the data set step.
+        $component->call('showStep', ['step' => MapEditor::STEP_LAYERS]);
+        $component->call('toggleDataSet', ['id' => 'merged-public-toilets']);
+        $this->assertSame(MapEditor::STEP_DATA_SETS, $component->component()->step);
     }
 
     public function testTellsThatTheListOfDataSetsIsNotAvailable(): void
@@ -365,14 +403,6 @@ final class MapEditorTest extends WebTestCase
         $this->assertNotNull($crawler->filter('#layer-0')->attr('hidden'));
         $this->assertSame('layer-0', $crawler->filter('h3 button')->first()->attr('aria-controls'));
         $this->assertStringContainsString('Datasæt: merged-public-toilets', $crawler->filter('#layer-0')->ancestors()->first()->text());
-    }
-
-    public function testOpensTheLayerOfANewMap(): void
-    {
-        $crawler = $this->createLiveComponent(MapEditor::class)->render()->crawler();
-
-        $this->assertSame('true', $crawler->filter('h3 button')->attr('aria-expanded'));
-        $this->assertNull($crawler->filter('#layer-0')->attr('hidden'));
     }
 
     public function testOpensAndClosesALayer(): void
@@ -427,7 +457,7 @@ final class MapEditorTest extends WebTestCase
     {
         $this->enter->down = true;
 
-        $crawler = $this->createLiveComponent(MapEditor::class)->render()->crawler();
+        $crawler = $this->createLiveComponent(MapEditor::class)->call('addCollectionItem', ['name' => 'map[layers]'])->render()->crawler();
 
         $this->assertSame('text', $crawler->filter('#map_layers_0_dataSet')->attr('type'));
         $this->assertStringContainsString('Enter svarer ikke', $crawler->filter('#map_layers_0_dataSet_help')->text());
@@ -436,9 +466,24 @@ final class MapEditorTest extends WebTestCase
     /**
      * A new map with one condition, as after a click on "Tilføj betingelse".
      */
+    /**
+     * A new map, with the client of the test without a reboot, so that the
+     * actions also use the fake Enter.
+     */
+    private function componentWithFakeEnter(): \Symfony\UX\LiveComponent\Test\TestLiveComponent
+    {
+        $client = self::getClient();
+        $this->assertInstanceOf(KernelBrowser::class, $client);
+        $client->disableReboot();
+
+        return $this->createLiveComponent(MapEditor::class, [], $client);
+    }
+
     private function newMapComponent(): \Symfony\UX\LiveComponent\Test\TestLiveComponent
     {
-        return $this->createLiveComponent(MapEditor::class)->call('addCollectionItem', ['name' => 'map[layers][0][conditions]']);
+        return $this->createLiveComponent(MapEditor::class)
+            ->call('addCollectionItem', ['name' => 'map[layers]'])
+            ->call('addCollectionItem', ['name' => 'map[layers][0][conditions]']);
     }
 
     /**

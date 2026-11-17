@@ -45,10 +45,9 @@ final readonly class MapFormMapper
 
     public function toData(?\stdClass $config): MapData
     {
+        // A new map has no layers. The data set step of the form adds them.
         $data = new MapData();
         if (!$config instanceof \stdClass) {
-            $data->layers = [new LayerData()];
-
             return $data;
         }
 
