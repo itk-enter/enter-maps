@@ -206,7 +206,7 @@ final class EnterClientTest extends TestCase
 
         $this->assertSame(['toilets' => 2, 'benches' => 0, 'broken' => null], $counts);
         $this->assertStringContainsString('count=true', $enter->requests[0]);
-        $this->assertStringContainsString('limit=0', $enter->requests[0]);
+        $this->assertStringContainsString('limit=1', $enter->requests[0]);
         // The count uses the context of the data set, as the other requests do.
         $this->assertStringContainsString('context.jsonld', implode("\n", $enter->options[0]['headers'] ?? []));
     }
@@ -214,6 +214,14 @@ final class EnterClientTest extends TestCase
     public function testCountEntitiesGivesNullWithoutTheHeader(): void
     {
         $client = new MockHttpClient(new MockResponse('', ['http_code' => 200]), 'http://enter.example');
+
+        $this->assertSame(['toilets' => null], new EnterClient($client)->countEntities([new DataSet('toilets', 'Toilets', null, null)]));
+    }
+
+    public function testCountEntitiesGivesNullIfTheCountIsZeroButTheResponseHasAnEntity(): void
+    {
+        $body = json_encode(['type' => 'FeatureCollection', 'features' => [FakeEnter::feature('urn:1')]], \JSON_THROW_ON_ERROR);
+        $client = new MockHttpClient(new MockResponse($body, ['response_headers' => ['NGSILD-Results-Count' => '0']]), 'http://enter.example');
 
         $this->assertSame(['toilets' => null], new EnterClient($client)->countEntities([new DataSet('toilets', 'Toilets', null, null)]));
     }

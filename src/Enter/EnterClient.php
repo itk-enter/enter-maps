@@ -115,19 +115,23 @@ final readonly class EnterClient
     }
 
     /**
-     * Counts the entities of each data set, without the entities. The broker
-     * gives the number in the NGSILD-Results-Count header. The requests run
-     * at the same time.
+     * Counts the entities of each data set. The broker gives the number in the
+     * NGSILD-Results-Count header. The requests run at the same time.
+     *
+     * Each request gets one entity, not zero. Scorpio can give a count of 0
+     * for a request with limit=0, also if the data set has entities. If the
+     * count is 0 but the response has an entity, the count is not correct,
+     * and the method gives null.
      *
      * @param list<DataSet> $dataSets
      *
-     * @return array<string, int|null> the number for each data set ID, or null if Enter did not give it
+     * @return array<string, int|null> the number for each data set ID, or null if Enter did not give a correct number
      */
     public function countEntities(array $dataSets): array
     {
         $responses = [];
         foreach ($dataSets as $dataSet) {
-            [$query, $headers] = $this->entitiesRequest($dataSet, null, 0);
+            [$query, $headers] = $this->entitiesRequest($dataSet, null, 1);
             $responses[$dataSet->id] = $this->client->request('GET', self::ENTITIES_PATH, [
                 'query' => [...$query, 'count' => 'true'],
                 'headers' => $headers,
@@ -137,8 +141,12 @@ final readonly class EnterClient
         $counts = [];
         foreach ($responses as $id => $response) {
             try {
-                $count = $response->getHeaders()['ngsild-results-count'][0] ?? null;
-                $counts[$id] = null !== $count && ctype_digit($count) ? (int) $count : null;
+                $header = $response->getHeaders()['ngsild-results-count'][0] ?? null;
+                $count = null !== $header && ctype_digit($header) ? (int) $header : null;
+                if (0 === $count && [] !== ($response->toArray()['features'] ?? [])) {
+                    $count = null;
+                }
+                $counts[$id] = $count;
             } catch (ExceptionInterface) {
                 $counts[$id] = null;
             }
