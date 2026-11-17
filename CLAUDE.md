@@ -61,13 +61,13 @@ assets/styles/                     app.css, the design tokens, the base styles a
 config/packages/enter.yaml         The HTTP client for Enter
 config/schema/map-config.v1.json   JSON Schema for config, version 1
 migrations/                        Doctrine migrations for MariaDB
-src/Builder/                       The import of a map configuration, the embed code, and the paths of a data set
+src/Builder/                       Import, embed code, the paths and counts of a data set, and the preview store
 src/Builder/Form/                  The data of the map form, and MapFormMapper between the form and config
 src/Command/                       Console commands, for example app:map-config:import
 src/Controller/BuilderController.php /builder: the list of the maps, the embed code, delete and restore
 src/Controller/DataController.php  GET /data/{dataSet}.geojson
 src/Controller/EmbedController.php GET /embed/leaflet/{id}
-src/Embed/                         EmbedOptionsParser reads the embed options from the query string
+src/Embed/                         The embed options from the query string, and LeafletPage renders the page
 src/Enter/                         EnterClient reads from Enter. DataProxy validates the request.
 src/Entity/MapConfiguration.php    The stored configuration, on itk-dev/entity-bundle
 src/Form/                          The Symfony form types of the map form

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Builder\EmbedCode;
+use App\Builder\PreviewStore;
+use App\Embed\LeafletPage;
 use App\Entity\MapConfiguration;
 use App\Repository\MapConfigurationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,6 +28,8 @@ final class BuilderController extends AbstractController
         private readonly MapConfigurationRepository $repository,
         private readonly EmbedCode $embedCode,
         private readonly TranslatorInterface $translator,
+        private readonly PreviewStore $previews,
+        private readonly LeafletPage $leafletPage,
     ) {
     }
 
@@ -54,6 +58,17 @@ final class BuilderController extends AbstractController
     public function preview(MapConfiguration $map): Response
     {
         return $this->render('builder/preview.html.twig', ['map' => $map, 'code' => $this->embedCode->html($map)]);
+    }
+
+    /**
+     * The map from the form, without a save. See MapEditor::preview().
+     */
+    #[Route('/preview/{token}', name: 'app_builder_draft', requirements: ['token' => '[0-9a-f]{32}'], methods: [Request::METHOD_GET])]
+    public function draft(Request $request, string $token): Response
+    {
+        $settings = $this->previews->get($token) ?? throw $this->createNotFoundException();
+
+        return $this->leafletPage->render($settings, $request->query->all());
     }
 
     #[Route('/{id}/embed', name: 'app_builder_embed', methods: [Request::METHOD_GET])]

@@ -211,9 +211,23 @@
         </section>
 
         <div class="flex flex-wrap gap-3 border-t border-line pt-6">
+            <twig:Form:Button type="button" variant="secondary" data-action="live#action" data-live-action-param="preview">{{ 'builder.form.preview'|trans }}</twig:Form:Button>
             <twig:Form:Button type="button" data-action="live#action" data-live-action-param="save" data-live-then-param="preview">{{ 'builder.form.save_preview'|trans }}</twig:Form:Button>
             <twig:Form:Button type="button" data-action="live#action" data-live-action-param="save" data-live-then-param="embed">{{ 'builder.form.save_embed'|trans }}</twig:Form:Button>
             <twig:Form:Button variant="secondary" href="{{ path('app_builder') }}">{{ 'builder.form.cancel'|trans }}</twig:Form:Button>
         </div>
+
+        {# The map from the form, without a save. A new preview has a new token, #}
+        {# so the frame loads the new map. #}
+        {% if previewToken %}
+            <section aria-labelledby="preview-heading" class="flex flex-col gap-3">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <twig:Heading level="2" id="preview-heading">{{ 'builder.form.preview_title'|trans }}</twig:Heading>
+                    <twig:Form:Button type="button" variant="secondary" data-action="live#action" data-live-action-param="closePreview">{{ 'builder.form.preview_close'|trans }}</twig:Form:Button>
+                </div>
+                <p class="m-0 text-sm text-text-muted">{{ 'builder.form.preview_help'|trans }}</p>
+                <iframe src="{{ path('app_builder_draft', {token: previewToken}) }}" title="{{ 'builder.form.preview_frame'|trans({'%title%': form.title.vars.value}) }}" class="h-[700px] w-full rounded border border-line"></iframe>
+            </section>
+        {% endif %}
     {{ form_end(form) }}
 </div>

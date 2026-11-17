@@ -12,6 +12,7 @@ use App\Tests\Support\Database;
 use App\Tests\Support\FakeEnter;
 use App\Twig\Components\MapEditor;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Request;
@@ -134,6 +135,55 @@ final class MapEditorTest extends WebTestCase
         $this->assertCount(2, $config['filters']);
         $this->assertSame(['no' => 'Gratis', 'yes' => 'Betaling'], $config['layers'][1]['detail'][2]['values']);
         $this->assertSame('Ny titel', $stored->getMapJson(Renderer::Leaflet)?->title);
+    }
+
+    public function testPreviewsTheMapWithoutASave(): void
+    {
+        $map = $this->import('toilets');
+        // The same client as the request for the frame, so that they share the session.
+        $client = self::getClient();
+        $this->assertInstanceOf(KernelBrowser::class, $client);
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()], $client);
+
+        $crawler = $component->submitForm(['map' => ['title' => 'Udkast']], 'preview')->render()->crawler();
+
+        /** @var MapEditor $editor */
+        $editor = $component->component();
+        $this->assertNotNull($editor->previewToken);
+        $this->assertSame('/builder/preview/'.$editor->previewToken, $crawler->filter('section iframe')->attr('src'));
+        $this->assertSame('Forhåndsvisning af "Udkast"', $crawler->filter('section iframe')->attr('title'));
+
+        // The frame shows the map from the form, and the stored map does not change.
+        $client->request('GET', '/builder/preview/'.$editor->previewToken);
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorTextSame('h1', 'Udkast');
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $this->assertSame('Toiletter i Aarhus', self::getContainer()->get(MapConfigurationRepository::class)->find((string) $map->getId())?->getConfig()->title);
+    }
+
+    public function testClosesThePreview(): void
+    {
+        $map = $this->import('toilets');
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+        $component->call('preview');
+
+        $crawler = $component->call('closePreview')->render()->crawler();
+
+        $this->assertCount(0, $crawler->filter('iframe'));
+    }
+
+    public function testShowsTheErrorsOfTheSchemaInThePreview(): void
+    {
+        $config = json_decode((string) file_get_contents($this->fixture('toilets')), false);
+        $config->report->url = 'http://example.dk/form';
+        $map = new MapConfiguration($config, [Renderer::Leaflet], []);
+        self::getContainer()->get(MapConfigurationRepository::class)->save($map);
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+
+        $crawler = $component->call('preview')->render()->crawler();
+
+        $this->assertStringContainsString('/report/url', $crawler->filter('[role="alert"] li')->text());
+        $this->assertCount(0, $crawler->filter('iframe'));
     }
 
     public function testShowsTheErrorsOfTheSchema(): void

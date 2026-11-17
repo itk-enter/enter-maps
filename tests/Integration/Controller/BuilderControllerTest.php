@@ -113,6 +113,10 @@ final class BuilderControllerTest extends WebTestCase
             $this->assertResponseStatusCodeSame(404, $page);
         }
 
+        // A preview that the session does not have.
+        $this->browser->request('GET', '/builder/preview/'.str_repeat('0', 32));
+        $this->assertResponseStatusCodeSame(404);
+
         $this->browser->request('GET', '/builder/'.self::UNKNOWN_ID.'/delete');
         $this->assertResponseStatusCodeSame(404);
     }

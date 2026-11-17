@@ -9,6 +9,7 @@ use App\Builder\Form\ConditionData;
 use App\Builder\Form\LayerData;
 use App\Builder\Form\MapData;
 use App\Builder\Form\MapFormMapper;
+use App\Builder\PreviewStore;
 use App\Entity\MapConfiguration;
 use App\Form\MapType;
 use App\MapConfig\InvalidMapConfigException;
@@ -64,6 +65,13 @@ final class MapEditor extends AbstractController
     public ?string $mapId = null;
 
     /**
+     * The token of the last preview, or null if the form shows no preview.
+     * Each preview has a new token, so the frame loads the new map.
+     */
+    #[LiveProp]
+    public ?string $previewToken = null;
+
+    /**
      * The errors of the schema validation, if the form is valid but the config is not.
      *
      * @var list<string>
@@ -78,6 +86,7 @@ final class MapEditor extends AbstractController
         private readonly MapConfigurationRepository $repository,
         private readonly TranslatorInterface $translator,
         private readonly DataSetFields $dataSetFields,
+        private readonly PreviewStore $previews,
     ) {
     }
 
@@ -111,12 +120,8 @@ final class MapEditor extends AbstractController
     #[LiveAction]
     public function save(#[LiveArg] string $then = self::THEN_PREVIEW): ?Response
     {
-        $this->submitForm();
-
-        /** @var MapData $data */
-        $data = $this->getForm()->getData();
+        $json = $this->submittedConfig();
         $map = $this->map();
-        $json = json_encode($this->mapper->toConfig($data, $map?->getConfig()), \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
 
         try {
             if (!$map instanceof MapConfiguration) {
@@ -131,9 +136,52 @@ final class MapEditor extends AbstractController
         }
 
         $this->repository->save($map);
-        $this->addFlash('success', $this->translator->trans('builder.form.saved', ['%title%' => $data->title]));
+        $this->addFlash('success', $this->translator->trans('builder.form.saved', ['%title%' => $map->getConfig()->title ?? '']));
 
         return $this->redirectToRoute(self::THEN_EMBED === $then ? 'app_builder_embed' : 'app_builder_preview', ['id' => $map->getId()]);
+    }
+
+    /**
+     * Shows the map from the form in a frame, without a save. The map that
+     * other sites show does not change.
+     */
+    #[LiveAction]
+    public function preview(): void
+    {
+        $json = $this->submittedConfig();
+
+        try {
+            $draft = $this->factory->create($json, [Renderer::Leaflet]);
+        } catch (InvalidMapConfigException $exception) {
+            $this->saveErrors = $exception->errors;
+
+            return;
+        }
+
+        /** @var \stdClass $settings the converter of the renderer ran, so the settings are there */
+        $settings = $draft->getMapJson(Renderer::Leaflet);
+        $this->previewToken = $this->previews->add($settings);
+    }
+
+    #[LiveAction]
+    public function closePreview(): void
+    {
+        $this->previewToken = null;
+    }
+
+    /**
+     * Validates the form and gives the config as JSON.
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException if the form is not valid
+     */
+    private function submittedConfig(): string
+    {
+        $this->submitForm();
+
+        /** @var MapData $data */
+        $data = $this->getForm()->getData();
+
+        return json_encode($this->mapper->toConfig($data, $this->map()?->getConfig()), \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
     }
 
     protected function instantiateForm(): FormInterface

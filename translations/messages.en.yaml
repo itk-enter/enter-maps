@@ -182,6 +182,11 @@ builder:
     values_help: One value on each line.
     "yes": "Yes"
     "no": "No"
+    preview: Preview
+    preview_title: Preview
+    preview_help: The map is not saved. The sites that show the map do not see the changes until you save. Click Preview again after a change.
+    preview_close: Close the preview
+    preview_frame: Preview of "%title%"
     save_preview: Save and show the map
     save_embed: Save and show the embed code
     cancel: Cancel

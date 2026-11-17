@@ -90,3 +90,26 @@ test("edits a map and shows the embed code", async ({ page }) => {
     `/embed/leaflet/${maps.toilets}"`,
   );
 });
+
+test("previews a change without a save", async ({ page }) => {
+  await page.goto(`/builder/${maps.toilets}/edit`);
+  await page.getByLabel("Titel", { exact: true }).fill("Udkast til toiletter");
+
+  await page.getByRole("button", { name: "Forhåndsvis", exact: true }).click();
+
+  const frame = page.frameLocator(
+    'iframe[title="Forhåndsvisning af \\"Udkast til toiletter\\""]',
+  );
+  await expect(frame.locator("h1")).toHaveText("Udkast til toiletter");
+  await expect(page).toHaveURL(`/builder/${maps.toilets}/edit`);
+  await expectNoAxeViolations(page);
+
+  await page.getByRole("button", { name: "Luk forhåndsvisningen" }).click();
+  await expect(page.locator("iframe")).toHaveCount(0);
+
+  // The stored map did not change.
+  await page.goto("/builder");
+  await expect(page.getByRole("region", { name: "Alle kort" })).toContainText(
+    "Toiletter i Aarhus",
+  );
+});

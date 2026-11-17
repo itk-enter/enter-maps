@@ -182,6 +182,11 @@ builder:
     values_help: Én værdi på hver linje.
     "yes": Ja
     "no": Nej
+    preview: Forhåndsvis
+    preview_title: Forhåndsvisning
+    preview_help: Kortet er ikke gemt. Siderne, som viser kortet, ser ikke ændringerne, før du gemmer. Klik på Forhåndsvis igen efter en ændring.
+    preview_close: Luk forhåndsvisningen
+    preview_frame: Forhåndsvisning af "%title%"
     save_preview: Gem og vis kortet
     save_embed: Gem og vis embedkode
     cancel: Annullér
