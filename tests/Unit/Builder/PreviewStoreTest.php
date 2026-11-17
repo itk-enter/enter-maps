@@ -19,8 +19,7 @@ final class PreviewStoreTest extends TestCase
     {
         $request = new Request();
         $request->setSession(new Session(new MockArraySessionStorage()));
-        $requestStack = new RequestStack();
-        $requestStack->push($request);
+        $requestStack = new RequestStack([$request]);
         $this->store = new PreviewStore($requestStack);
     }
 
