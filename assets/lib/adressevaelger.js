@@ -4,6 +4,8 @@
  * There are two calls: a search that gives labels and ids, then a lookup of
  * the access point of the chosen id. Each call sends a token. The token
  * comes from ADRESSEVAELGER_TOKEN in .env, through the search controller.
+ * The search gives only addresses in one municipality. Its code comes from
+ * ADRESSEVAELGER_MUNICIPALITY_CODE in .env, also through the controller.
  */
 
 import proj4 from "proj4";
@@ -21,8 +23,6 @@ import proj4 from "proj4";
 
 // The address of the API of Adressevælger.
 const BASE = "https://adressevaelger.dk";
-// The search gives only addresses in this municipality. 0751 is Aarhus.
-const MUNICIPALITY_CODE = "0751";
 // The maximum number of suggestions under the search field.
 const SUGGESTION_COUNT = 5;
 // Adressevælger gives positions in ETRS89 / UTM zone 32N (EPSG:25832), and
@@ -42,16 +42,18 @@ export function isAddress(hit) {
 }
 
 /**
- * Finds addresses and streets in the municipality.
+ * Finds addresses and streets in a municipality.
  *
  * @param {string} text The text that the user typed.
  * @param {string} token The token of Adressevælger.
+ * @param {string} municipality The code of the municipality, for example
+ *   "0751" for Aarhus.
  * @returns {Promise<Hit[]>} The first suggestions.
  * @throws {Error} If Adressevælger gives an error.
  */
-export async function search(text, token) {
+export async function search(text, token, municipality) {
   const response = await fetch(
-    `${BASE}/husnumre/soeg?kommunekode=${MUNICIPALITY_CODE}&token=${encodeURIComponent(token)}&tekst=${encodeURIComponent(text)}`,
+    `${BASE}/husnumre/soeg?kommunekode=${encodeURIComponent(municipality)}&token=${encodeURIComponent(token)}&tekst=${encodeURIComponent(text)}`,
   );
 
   if (!response.ok) {

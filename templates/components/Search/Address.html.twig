@@ -2,7 +2,7 @@
 {# The search field. With `local`, it filters the list. With `address`, it #}
 {# is a combobox with suggestions from Adressevælger. #}
 {% set mode = local and address ? '' : (local ? '_local' : '_address') %}
-<div {{ stimulus_controller('address-search', {local: local, address: address, token: adressevaelger_token}) }} class="relative px-5 pt-5">
+<div {{ stimulus_controller('address-search', {local: local, address: address, token: adressevaelger_token, municipality: adressevaelger_municipality_code}) }} class="relative px-5 pt-5">
     <label for="search" class="sr-only">{{ ('embed.search.label' ~ mode)|trans }}</label>
     <div class="relative">
         <twig:Icon:Search class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-text-muted" />

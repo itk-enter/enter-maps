@@ -12,16 +12,21 @@
  */
 
 import { readFileSync } from "node:fs";
+import { basename } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { test as base, expect } from "@playwright/test";
 
 /**
- * The id of each map, from tests/Fixtures/map-config. setup.sh writes them.
+ * The id of each map, from tests/Fixtures/map-config, with the name of the
+ * file as key. setup.sh writes the imported maps to var/browser/maps.json,
+ * with "app:map-config:import --format=json".
  *
  * @type {{toilets: string, "toilets-and-parking": string}}
  */
-export const maps = JSON.parse(
-  readFileSync(new URL("../../var/browser/maps.json", import.meta.url)),
+export const maps = Object.fromEntries(
+  JSON.parse(
+    readFileSync(new URL("../../var/browser/maps.json", import.meta.url)),
+  ).map(({ file, id }) => [basename(file, ".json"), id]),
 );
 
 /**

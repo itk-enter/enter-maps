@@ -56,6 +56,38 @@ final class ImportMapConfigCommandTest extends KernelTestCase
         $this->assertCount(1, self::getContainer()->get(MapConfigurationRepository::class)->findAll());
     }
 
+    public function testGivesTheImportedMapsAsJson(): void
+    {
+        $this->tester->execute(['files' => [$this->fixture('toilets')], '--format' => 'json']);
+
+        $this->assertSame(Command::SUCCESS, $this->tester->getStatusCode());
+        $stored = self::getContainer()->get(MapConfigurationRepository::class)->findAll();
+        /** @var list<array{file: string, id: string, url: string, fixture: bool}> $maps */
+        $maps = json_decode($this->tester->getDisplay(), true, 512, \JSON_THROW_ON_ERROR);
+        $this->assertCount(1, $maps);
+        $this->assertSame([$this->fixture('toilets'), (string) $stored[0]->getId(), true], [$maps[0]['file'], $maps[0]['id'], $maps[0]['fixture']]);
+        $this->assertStringEndsWith('/embed/leaflet/'.$stored[0]->getId(), $maps[0]['url']);
+    }
+
+    public function testWritesTheErrorsToStderrWithJson(): void
+    {
+        $this->tester->execute(['files' => ['/does/not/exist.json', $this->fixture('toilets')], '--format' => 'json'], ['capture_stderr_separately' => true]);
+
+        $this->assertSame(Command::FAILURE, $this->tester->getStatusCode());
+        // Stdout has only the JSON, with the one map that the command imported.
+        $this->assertCount(1, json_decode($this->tester->getDisplay(), true, 512, \JSON_THROW_ON_ERROR));
+        $this->assertStringContainsString('Failed to read file', $this->tester->getErrorOutput());
+    }
+
+    public function testRejectsAnUnknownFormat(): void
+    {
+        $this->tester->execute(['files' => [$this->fixture('toilets')], '--format' => 'xml']);
+
+        $this->assertSame(Command::INVALID, $this->tester->getStatusCode());
+        $this->assertStringContainsString('The format "xml" is not known.', $this->tester->getDisplay(true));
+        $this->assertSame([], self::getContainer()->get(MapConfigurationRepository::class)->findAll());
+    }
+
     private function fixture(string $name): string
     {
         return \dirname(__DIR__, 2).'/Fixtures/map-config/'.$name.'.json';
