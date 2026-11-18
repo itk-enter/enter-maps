@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-16](https://github.com/itk-enter/enter-maps/pull/16)
+  Added the `MapConfiguration` entity and the `app:map-config:import` command
 * [PR-13](https://github.com/itk-enter/enter-maps/pull/13)
   Added icons for the layers of a map: a list of icons, an SVG from the editor and a default pin
 * [PR-12](https://github.com/itk-enter/enter-maps/pull/12)
