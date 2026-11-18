@@ -1,5 +1,8 @@
 twig:
     file_name_pattern: '*.twig'
+    # The app stores dates in UTC (see Kernel). The pages show them in the local time of the editors.
+    date:
+        timezone: Europe/Copenhagen
 
 when@test:
     twig:
