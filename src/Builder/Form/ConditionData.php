@@ -14,6 +14,10 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  * true and "true" are different, and so are 5 and "5". The form shows the
  * field for the operator and the type: $value for one value, $flag for a
  * yes-no value and $values for "in", with one value on each line.
+ *
+ * If $open is true, the user can turn the condition on and off in the
+ * sidebar of the map. Then the condition is an open filter of the layer,
+ * with $label as the text of its checkbox, and not part of the fixed filter.
  */
 final class ConditionData
 {
@@ -36,6 +40,24 @@ final class ConditionData
     public bool $flag = true;
 
     public ?string $values = null;
+
+    public bool $open = false;
+
+    #[Assert\Length(max: 200)]
+    public ?string $label = null;
+
+    public bool $checked = false;
+
+    /**
+     * A condition that the user can turn on and off needs a text for its checkbox.
+     */
+    #[Assert\Callback]
+    public function validateLabel(ExecutionContextInterface $context): void
+    {
+        if ($this->open && '' === trim((string) $this->label)) {
+            $context->buildViolation('builder.form.error.required')->atPath('label')->addViolation();
+        }
+    }
 
     /**
      * The field for the operator and the type needs a value. A number must

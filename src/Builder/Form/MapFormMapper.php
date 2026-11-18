@@ -34,7 +34,7 @@ final readonly class MapFormMapper
 {
     private const array MAP_KEYS = ['version', 'title', 'description', 'locale', 'view', 'zoomGate', 'loadingSpinner', 'sidebar', 'layers'];
 
-    private const array LAYER_KEYS = ['id', 'dataSet', 'label', 'colour', 'icon', 'filter', 'row', 'detail'];
+    private const array LAYER_KEYS = ['id', 'dataSet', 'label', 'colour', 'icon', 'filter', 'openFilters', 'row', 'detail'];
 
     private const array FIELD_KEYS = ['path', 'label', 'format', 'fallback'];
 
@@ -156,6 +156,16 @@ final readonly class MapFormMapper
 
         // An SVG icon stays in $extra. The form shows the list of icons only.
         $extra = $this->extra($layer, self::LAYER_KEYS);
+
+        // The open filters are conditions with $open. If the form cannot show
+        // one of them, all of them stay in $extra, as they are.
+        $openFilters = $this->list($layer->openFilters ?? null);
+        $openConditions = array_map($this->openFilterToData(...), $openFilters);
+        if (\in_array(null, $openConditions, true)) {
+            $extra['openFilters'] = $openFilters;
+        } else {
+            $data->conditions = [...$data->conditions, ...$openConditions];
+        }
         if (isset($icon->svg)) {
             $extra['icon'] = (object) ['svg' => $icon->svg];
         }
@@ -188,6 +198,15 @@ final readonly class MapFormMapper
         $filter = $this->filterToConfig($data);
         if (null !== $filter) {
             $layer['filter'] = $filter;
+        }
+
+        $openFilters = [...array_map(
+            $this->openFilterToConfig(...),
+            array_values(array_filter($data->conditions, static fn (ConditionData $condition): bool => $condition->open)),
+        ), ...$this->list($extra['openFilters'] ?? null)];
+        unset($extra['openFilters']);
+        if ([] !== $openFilters) {
+            $layer['openFilters'] = $openFilters;
         }
 
         $layer['row'] = ['title' => $this->fieldToConfig($data->title)];
@@ -252,6 +271,36 @@ final readonly class MapFormMapper
     }
 
     /**
+     * @return ConditionData|null null if the form cannot show the condition of the open filter
+     */
+    private function openFilterToData(mixed $openFilter): ?ConditionData
+    {
+        $openFilter = $this->object($openFilter);
+        $condition = $this->conditionToData($this->object($openFilter->condition ?? null));
+        if ($condition instanceof ConditionData) {
+            $condition->open = true;
+            $condition->label = $this->string($openFilter->label ?? null);
+            $condition->checked = true === ($openFilter->checked ?? false);
+        }
+
+        return $condition;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function openFilterToConfig(ConditionData $condition): array
+    {
+        $openFilter = ['label' => trim((string) $condition->label), 'condition' => $this->conditionToConfig($condition)];
+        // The default is false, so the config has the key only if it is true.
+        if ($condition->checked) {
+            $openFilter['checked'] = true;
+        }
+
+        return $openFilter;
+    }
+
+    /**
      * @return ConditionData|null null if the comparison is a group, or if the form cannot show it
      */
     private function conditionToData(\stdClass $comparison): ?ConditionData
@@ -294,7 +343,9 @@ final readonly class MapFormMapper
             return $this->decode($data->rawFilter);
         }
 
-        $comparisons = array_map($this->conditionToConfig(...), $data->conditions);
+        // A condition that the user can turn on and off is an open filter, not part of the fixed filter.
+        $closed = array_filter($data->conditions, static fn (ConditionData $condition): bool => !$condition->open);
+        $comparisons = array_values(array_map($this->conditionToConfig(...), $closed));
 
         return match (\count($comparisons)) {
             0 => null,

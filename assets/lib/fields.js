@@ -195,3 +195,67 @@ export function matchesFilters(place, filters) {
     return codes.some((code) => values.includes(target.dataValues[code]));
   });
 }
+
+/**
+ * A condition of an open filter of a layer, from map_json.leaflet.
+ *
+ * @typedef {object} Condition
+ * @property {string} op The operator: "=", "<>", "<", "<=", ">", ">=", "in"
+ *   or "isNull".
+ * @property {string[]} path The keys to the value in the properties.
+ * @property {*[]} values The values: a list for "in", none for "isNull" and
+ *   one for the other operators.
+ */
+
+/**
+ * A condition of a layer that the user can turn on and off.
+ *
+ * @typedef {object} OpenFilter
+ * @property {string} label The text of the checkbox.
+ * @property {boolean} checked True if the condition is on at the start.
+ * @property {Condition} condition The condition.
+ */
+
+/**
+ * Tells if the properties of a feature match a condition, as the broker
+ * compares them. A missing value matches only "isNull". A list matches if
+ * one of its items matches.
+ *
+ * @param {object} properties The properties of a feature.
+ * @param {Condition} condition The condition.
+ * @returns {boolean} True if the properties match.
+ */
+export function matchesCondition(properties, condition) {
+  const value = readPath(properties, condition.path);
+
+  if (condition.op === "isNull") {
+    return isEmpty(value);
+  }
+  if (isEmpty(value)) {
+    return false;
+  }
+
+  const [expected] = condition.values;
+  const items = Array.isArray(value) ? value : [value];
+
+  return items.some((item) => {
+    switch (condition.op) {
+      case "=":
+        return item === expected;
+      case "<>":
+        return item !== expected;
+      case "<":
+        return item < expected;
+      case "<=":
+        return item <= expected;
+      case ">":
+        return item > expected;
+      case ">=":
+        return item >= expected;
+      case "in":
+        return condition.values.includes(item);
+      default:
+        return true;
+    }
+  });
+}

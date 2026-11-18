@@ -63,6 +63,16 @@ final class LeafletConverterTest extends TestCase
         $this->assertJsonStringEqualsJsonFile($snapshot, $json);
     }
 
+    public function testGivesNoValuesForAnOpenFilterWithIsNull(): void
+    {
+        $config = $this->parser->parse('{"version": 1, "title": "Bænke", "layers": [{"id": "benches", "dataSet": "osm-bench", "label": "Bænke", "colour": "#8a5a00", "row": {"title": {"path": "name"}}, "openFilters": [{"label": "Uden adresse", "condition": {"op": "isNull", "args": [{"property": "address.streetAddress"}]}}]}]}');
+
+        $this->assertSame(
+            [['label' => 'Uden adresse', 'checked' => false, 'condition' => ['op' => 'isNull', 'path' => ['address', 'streetAddress'], 'values' => []]]],
+            $this->converter->convert($config)['layers'][0]['openFilters'],
+        );
+    }
+
     public function testUsesTheDefaultsForAMinimalConfiguration(): void
     {
         $config = $this->parser->parse('{"version": 1, "title": "Bænke", "layers": [{"id": "benches", "dataSet": "osm-bench", "label": "Bænke", "colour": "#8a5a00", "row": {"title": {"path": "name"}}}]}');

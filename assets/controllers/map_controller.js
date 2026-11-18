@@ -1,6 +1,10 @@
 import { Controller } from "@hotwired/stimulus";
 import * as L from "leaflet";
-import { formatField, matchesFilters } from "../lib/fields.js";
+import {
+  formatField,
+  matchesCondition,
+  matchesFilters,
+} from "../lib/fields.js";
 
 /**
  * A layer from map_json.leaflet.
@@ -16,6 +20,9 @@ import { formatField, matchesFilters } from "../lib/fields.js";
  *   row in the list.
  * @property {import("../lib/fields.js").Field[]} detail The fields of the
  *   detail view.
+ * @property {import("../lib/fields.js").OpenFilter[]} [openFilters] The
+ *   conditions that the user can turn on and off. A map_json from before
+ *   the open filters has none.
  */
 
 /**
@@ -113,6 +120,16 @@ export default class extends Controller {
         options.layers ?? settings.layers.map((layer) => layer.id),
       ),
       filters: [],
+      // The open filters of the layers that are on, as "<layer>:<index>".
+      openFilters: new Set(
+        settings.layers.flatMap((layer) =>
+          (layer.openFilters ?? [])
+            .map((filter, index) =>
+              filter.checked ? `${layer.id}:${index}` : null,
+            )
+            .filter((key) => key !== null),
+        ),
+      ),
       origin: null,
       selected: null,
       gated: false,
@@ -333,6 +350,9 @@ export default class extends Controller {
     if (!matchesFilters(place, this.state.filters)) {
       return false;
     }
+    if (!this.matchesOpenFilters(place)) {
+      return false;
+    }
     if (!this.state.query) {
       return true;
     }
@@ -341,6 +361,19 @@ export default class extends Controller {
       `${place.title} ${place.subtitle} ${place.layer.label}`.toLowerCase();
 
     return text.includes(this.state.query.toLowerCase());
+  }
+  /**
+   * Tells if a place matches each open filter of its layer that is on.
+   *
+   * @param {Place} place The place.
+   * @returns {boolean} True if the place matches.
+   */
+  matchesOpenFilters(place) {
+    return (place.layer.openFilters ?? []).every(
+      (filter, index) =>
+        !this.state.openFilters.has(`${place.layer.id}:${index}`) ||
+        matchesCondition(place.properties, filter.condition),
+    );
   }
 
   /**
@@ -510,10 +543,12 @@ export default class extends Controller {
    * Action for map-filters:change.
    *
    * @param {CustomEvent<{layers: string[],
-   *   filters: {index: number, codes: string[]}[]}>} event
+   *   filters: {index: number, codes: string[]}[],
+   *   openFilters: string[]}>} event
    */
   filter({ detail }) {
     this.state.layers = new Set(detail.layers);
+    this.state.openFilters = new Set(detail.openFilters);
     this.state.filters = detail.filters.map(({ index, codes }) => ({
       filter: this.settingsValue.filters[index],
       codes,

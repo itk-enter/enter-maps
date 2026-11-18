@@ -81,6 +81,9 @@ test("makes a new map with a fixed filter", async ({ page }) => {
   await expect(condition.getByLabel("Værdier")).toBeVisible();
   await expect(condition.getByLabel("Værdi", { exact: true })).toHaveCount(0);
   await condition.getByLabel("Værdier").fill("træ\nmetal");
+  // The user of the map can turn the condition on and off.
+  await condition.getByLabel("Brugeren kan slå betingelsen til og fra").check();
+  await condition.getByLabel("Tekst i sidepanelet").fill("Træ eller metal");
   await rendered(page);
   await expectNoAxeViolations(page);
 
@@ -90,6 +93,11 @@ test("makes a new map with a fixed filter", async ({ page }) => {
   await expect(page.getByRole("status")).toHaveText(
     'Kortet "Bænke i byen" er gemt.',
   );
+  await expect(
+    page
+      .frameLocator('main iframe[title="Bænke i byen"]')
+      .getByRole("checkbox", { name: "Træ eller metal" }),
+  ).not.toBeChecked();
   await expect(page.locator('main iframe[title="Bænke i byen"]')).toBeVisible();
   await expectNoAxeViolations(page);
 });

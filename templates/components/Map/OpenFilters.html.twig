@@ -1,0 +1,12 @@
+{% props layer, indent = true %}
+{# The conditions of a layer that the user can turn on and off, below the #}
+{# layer. The value of a checkbox is "<layer>:<index>", and the map-filters #}
+{# controller sends the values of the checkboxes with a tick. Without #}
+{# `indent`, the checkboxes are not indented, for example below a legend. #}
+<div role="group" aria-label="{{ 'embed.categories.open_filters'|trans({'%layer%': layer.label}) }}" {{ attributes.defaults({class: indent ? 'ml-7 flex flex-col' : 'flex flex-col'}) }}>
+    {% for filter in layer.openFilters %}
+        <twig:Form:Checkbox value="{{ layer.id }}:{{ loop.index0 }}" :checked="filter.checked" data-map-filters-target="openFilter" data-action="map-filters#change">
+            {{- filter.label -}}
+        </twig:Form:Checkbox>
+    {% endfor %}
+</div>

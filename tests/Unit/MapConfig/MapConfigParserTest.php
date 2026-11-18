@@ -15,6 +15,7 @@ use App\MapConfig\Layer;
 use App\MapConfig\LeafletSettings;
 use App\MapConfig\MapConfig;
 use App\MapConfig\MapConfigParser;
+use App\MapConfig\OpenFilter;
 use App\MapConfig\Report;
 use App\MapConfig\SeptimaSettings;
 use App\MapConfig\Sidebar;
@@ -84,8 +85,23 @@ final class MapConfigParserTest extends TestCase
         $this->assertSame([], $config->filters);
         $this->assertNull($config->report);
         $this->assertNull($config->layers[0]->subtitle);
+        $this->assertSame([], $config->layers[0]->openFilters);
         $this->assertSame([], $config->layers[0]->detail);
         $this->assertEquals(new Field('name', null, null, 'text', []), $config->layers[0]->title);
+    }
+
+    public function testReadsTheOpenFiltersOfALayer(): void
+    {
+        $condition = ['op' => '>=', 'args' => [['property' => 'seats'], 2]];
+        $config = $this->parser->parse($this->withChange(['layers' => [[...self::layer('benches'), 'openFilters' => [
+            ['label' => 'Mindst 2 pladser', 'condition' => $condition, 'checked' => true],
+            ['label' => 'Uden ryglæn', 'condition' => ['op' => '=', 'args' => [['property' => 'backrest'], false]]],
+        ]]]]));
+
+        $this->assertEquals([
+            new OpenFilter('Mindst 2 pladser', $condition, true),
+            new OpenFilter('Uden ryglæn', ['op' => '=', 'args' => [['property' => 'backrest'], false]], false),
+        ], $config->layers[0]->openFilters);
     }
 
     public function testUsesBlankAsTheDefaultTargetOfTheReport(): void
@@ -135,6 +151,8 @@ final class MapConfigParserTest extends TestCase
         yield 'layer without colour' => [['layers' => [['id' => 'benches', 'dataSet' => 'osm-bench', 'label' => 'Bænke', 'row' => ['title' => ['path' => 'name']]]]], '/layers/0'];
         yield 'two layers with the same id' => [['layers' => [self::layer('benches'), self::layer('benches')]], '/layers/1/id'];
         yield 'filter for a layer that does not exist' => [['filters' => [self::filter(['appliesTo' => [['layer' => 'toilets', 'path' => 'a']]])]], '/filters/0/appliesTo/0/layer'];
+        yield 'open filter without label' => [['layers' => [[...self::layer('benches'), 'openFilters' => [['condition' => ['op' => 'isNull', 'args' => [['property' => 'a']]]]]]]], '/layers/0/openFilters/0'];
+        yield 'open filter with a group' => [['layers' => [[...self::layer('benches'), 'openFilters' => [['label' => 'A', 'condition' => ['op' => 'and', 'args' => [['op' => 'isNull', 'args' => [['property' => 'a']]]]]]]]]], '/layers/0/openFilters/0/condition'];
         yield 'code that the filter does not have' => [['filters' => [self::filter(['appliesTo' => [['layer' => 'benches', 'path' => 'a', 'codes' => ['y' => true]]]])]], '/filters/0/appliesTo/0/codes/y'];
     }
 

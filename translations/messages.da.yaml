@@ -16,6 +16,7 @@ embed:
     error: Adressesøgningen svarer ikke lige nu. Du kan stadig søge i listen.
   categories:
     legend: Vis på kortet
+    open_filters: "Filtre for %layer%"
   filters:
     all: Alle
   loading: Henter stederne …
@@ -179,6 +180,11 @@ builder:
     condition_add: Tilføj betingelse til filteret
     condition_delete: Fjern betingelsen
     condition_delete_label: Fjern betingelsen (betingelse %number%)
+    condition_open: Brugeren kan slå betingelsen til og fra
+    condition_open_help: Betingelsen bliver et filter under laget i sidepanelet. Den indgår ikke i det faste filter. Er den slået til, viser kortet kun de steder, som passer.
+    condition_label: Tekst i sidepanelet
+    condition_label_help: Fx Kun gratis eller Mindst 2 pladser.
+    condition_checked: Slået til fra start
     operator: Betingelse
     operator_eq: er lig med
     operator_ne: er ikke

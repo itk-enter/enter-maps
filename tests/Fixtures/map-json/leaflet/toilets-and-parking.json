@@ -80,6 +80,22 @@
                     "format": "boolean",
                     "values": {}
                 }
+            ],
+            "openFilters": [
+                {
+                    "label": "Kørestolsvenligt",
+                    "checked": true,
+                    "condition": {
+                        "op": "in",
+                        "path": [
+                            "wheelchairAccessible"
+                        ],
+                        "values": [
+                            "yes",
+                            "limited"
+                        ]
+                    }
+                }
             ]
         },
         {
@@ -140,6 +156,21 @@
                     "values": {
                         "no": "Gratis",
                         "yes": "Betaling"
+                    }
+                }
+            ],
+            "openFilters": [
+                {
+                    "label": "Mindst 2 pladser",
+                    "checked": false,
+                    "condition": {
+                        "op": ">=",
+                        "path": [
+                            "totalSpotNumber"
+                        ],
+                        "values": [
+                            2
+                        ]
                     }
                 }
             ]

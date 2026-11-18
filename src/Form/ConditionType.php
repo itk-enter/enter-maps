@@ -6,6 +6,7 @@ namespace App\Form;
 
 use App\Builder\Form\ConditionData;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -48,7 +49,10 @@ final class ConditionType extends AbstractType
                 'choices' => ['builder.form.yes' => true, 'builder.form.no' => false],
                 'empty_data' => '0',
             ])
-            ->add('values', TextareaType::class, ['label' => 'builder.form.values', 'help' => 'builder.form.values_help', 'required' => false]);
+            ->add('values', TextareaType::class, ['label' => 'builder.form.values', 'help' => 'builder.form.values_help', 'required' => false])
+            ->add('open', CheckboxType::class, ['label' => 'builder.form.condition_open', 'help' => 'builder.form.condition_open_help', 'required' => false])
+            ->add('label', TextType::class, ['label' => 'builder.form.condition_label', 'help' => 'builder.form.condition_label_help', 'required' => false])
+            ->add('checked', CheckboxType::class, ['label' => 'builder.form.condition_checked', 'required' => false]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

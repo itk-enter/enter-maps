@@ -215,6 +215,48 @@ final class MapFormMapperTest extends TestCase
         ]], $filter);
     }
 
+    public function testWritesTheOpenConditionsAsOpenFilters(): void
+    {
+        $data = $this->mapper->toData(null);
+        $data->layers = [new LayerData()];
+        $layer = $data->layers[0];
+        $open = $this->condition('seats', '>=', ConditionData::TYPE_NUMBER, value: '2');
+        $open->open = true;
+        $open->label = ' Mindst 2 pladser ';
+        $open->checked = true;
+        $off = $this->condition('backrest', '=', ConditionData::TYPE_BOOLEAN, flag: false);
+        $off->open = true;
+        $off->label = 'Uden ryglæn';
+        $layer->conditions = [$this->condition('material', '=', ConditionData::TYPE_TEXT, value: 'wood'), $open, $off];
+
+        $config = $this->decode($this->mapper->toConfig($data))['layers'][0];
+
+        // The fixed filter has only the condition that the user cannot change.
+        $this->assertSame(['op' => '=', 'args' => [['property' => 'material'], 'wood']], $config['filter']);
+        $this->assertSame([
+            ['label' => 'Mindst 2 pladser', 'condition' => ['op' => '>=', 'args' => [['property' => 'seats'], 2]], 'checked' => true],
+            ['label' => 'Uden ryglæn', 'condition' => ['op' => '=', 'args' => [['property' => 'backrest'], false]]],
+        ], $config['openFilters']);
+
+        // The open filters come back as conditions with "open".
+        $read = $this->mapper->toData($this->mapper->toConfig($data))->layers[0]->conditions;
+        $this->assertSame([false, true, true], array_map(static fn (ConditionData $condition): bool => $condition->open, $read));
+        $this->assertSame(['Mindst 2 pladser', true], [$read[1]->label, $read[1]->checked]);
+        $this->assertFalse($read[2]->checked);
+    }
+
+    public function testKeepsOpenFiltersThatTheFormCannotShow(): void
+    {
+        // A list of values with two types.
+        $openFilters = [['label' => 'Blandet', 'condition' => ['op' => 'in', 'args' => [['property' => 'a'], ['x', 1]]]]];
+        $config = $this->config(['openFilters' => $openFilters]);
+
+        $data = $this->mapper->toData($config);
+
+        $this->assertSame([], $data->layers[0]->conditions);
+        $this->assertSame($openFilters, $this->decode($this->mapper->toConfig($data, $config))['layers'][0]['openFilters']);
+    }
+
     public function testWritesTheMapFromTheForm(): void
     {
         $data = $this->mapper->toData(null);

@@ -107,6 +107,7 @@ final class MapEditorTest extends WebTestCase
         $values['title'] = '';
         $values['viewZoom'] = '12';
         $values['layers'][0]['conditions'][0]['value'] = 'many';
+        $values['layers'][0]['conditions'][0]['open'] = '1';
 
         // The test client throws the exception of an invalid form. In the
         // browser, the response is 422 with the errors next to the fields.
@@ -117,6 +118,8 @@ final class MapEditorTest extends WebTestCase
             $this->assertStringContainsString('map.title: Udfyld feltet.', $exception->getMessage());
             $this->assertStringContainsString('map.viewZoom: Udfyld længdegrad, breddegrad og zoom, eller lad alle tre være tomme.', $exception->getMessage());
             $this->assertStringContainsString('map.layers.0.conditions.0.value: Skriv et tal, fx 2 eller 2.5.', $exception->getMessage());
+            // A condition that the user can turn on and off needs a text.
+            $this->assertStringContainsString('map.layers.0.conditions.0.label: Udfyld feltet.', $exception->getMessage());
         }
         $this->assertSame([], self::getContainer()->get(MapConfigurationRepository::class)->findAll());
     }
@@ -274,6 +277,21 @@ final class MapEditorTest extends WebTestCase
 
         $crawler = $component->submitForm(['map' => ['layers' => [['conditions' => [['operator' => 'isNull']]]]]])->render()->crawler();
         $this->assertCount(0, $crawler->filter('#map_layers_0_conditions_0_type, #map_layers_0_conditions_0_value, #map_layers_0_conditions_0_flag'));
+    }
+
+    public function testShowsTheFieldsOfAConditionThatTheUserCanTurnOnAndOff(): void
+    {
+        $component = $this->newMapComponent();
+
+        $crawler = $component->render()->crawler();
+
+        $this->assertCount(1, $crawler->filter('#map_layers_0_conditions_0_open'));
+        $this->assertCount(0, $crawler->filter('#map_layers_0_conditions_0_label'));
+
+        $crawler = $component->set('map.layers.0.conditions.0.open', true)->render()->crawler();
+
+        $this->assertCount(1, $crawler->filter('#map_layers_0_conditions_0_label'));
+        $this->assertCount(1, $crawler->filter('#map_layers_0_conditions_0_checked'));
     }
 
     public function testShowsAFilterThatTheFormCannotEdit(): void

@@ -2,8 +2,10 @@
  * @file Browser tests of /embed/leaflet/{id}, with the fixture maps:
  * - "toilets": one layer, a zoom gate at zoom 15, a select filter, search
  *   and a report link.
- * - "toilets-and-parking": two layers, a toggle filter, no zoom gate and a
- *   spinner while the data loads.
+ * - "toilets-and-parking": two layers, a toggle filter, no zoom gate, a
+ *   spinner while the data loads, and a condition below each layer. The
+ *   condition of the toilets is on at the start, so "Toilet ved Åen" is not
+ *   on the map at first.
  *
  * Each test that changes the state of the page also runs axe-core.
  */
@@ -192,13 +194,13 @@ test.describe("the toilets and parking map", () => {
 
     release();
     await expect(spinner).toHaveCount(0);
-    await expect(rows(page)).toHaveCount(5);
+    await expect(rows(page)).toHaveCount(4);
   });
 
   test("lists both layers, also a polygon", async ({ page }) => {
     await page.goto(toiletsAndParking);
 
-    await expect(rows(page)).toHaveCount(5);
+    await expect(rows(page)).toHaveCount(4);
     await expect(rows(page).filter({ hasText: "Nørre Allé 1" })).toContainText(
       "Pladser: 2",
     );
@@ -214,6 +216,34 @@ test.describe("the toilets and parking map", () => {
 
     await expect(rows(page)).toHaveCount(2);
     await expect(rows(page).filter({ hasText: "Dokk1" })).toHaveCount(0);
+  });
+
+  test("turns the conditions below each layer on and off", async ({ page }) => {
+    await page.goto(toiletsAndParking);
+
+    const toilets = page.getByRole("group", {
+      name: "Filtre for Offentlige toiletter",
+    });
+    const wheelchair = toilets.getByRole("checkbox", {
+      name: "Kørestolsvenligt",
+    });
+    const spaces = page
+      .getByRole("group", { name: "Filtre for Handicapparkering" })
+      .getByRole("checkbox", { name: "Mindst 2 pladser" });
+    await expect(wheelchair).toBeChecked();
+    await expect(spaces).not.toBeChecked();
+    await expect(rows(page).filter({ hasText: "Toilet ved Åen" })).toHaveCount(
+      0,
+    );
+    await expectNoAxeViolations(page);
+
+    await wheelchair.uncheck();
+    await expect(rows(page)).toHaveCount(5);
+
+    // Skolegade 5 has 1 space.
+    await spaces.check();
+    await expect(rows(page)).toHaveCount(4);
+    await expect(rows(page).filter({ hasText: "Skolegade 5" })).toHaveCount(0);
   });
 
   test("keeps only the free places with the toggle filter", async ({

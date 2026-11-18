@@ -10,6 +10,7 @@ use App\MapConfig\FilterTarget;
 use App\MapConfig\Icon;
 use App\MapConfig\Layer;
 use App\MapConfig\MapConfig;
+use App\MapConfig\OpenFilter;
 use App\MapConfig\Report;
 use App\MapConfig\View;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -100,6 +101,35 @@ final readonly class LeafletConverter
                 'subtitle' => $layer->subtitle instanceof Field ? $this->field($layer->subtitle) : null,
             ],
             'detail' => array_map($this->field(...), $layer->detail),
+            'openFilters' => array_map($this->openFilter(...), $layer->openFilters),
+        ];
+    }
+
+    /**
+     * Gives the condition in the form that the app compares: the operator,
+     * the keys of the path, and the values. "in" has a list of values,
+     * "isNull" has none, and the other operators have one.
+     *
+     * @return array{label: string, checked: bool, condition: array{op: string, path: list<string>, values: list<mixed>}}
+     */
+    private function openFilter(OpenFilter $filter): array
+    {
+        /** @var array{op: string, args: array{0: array{property: string}, 1?: mixed}} $condition */
+        $condition = $filter->condition;
+        $value = $condition['args'][1] ?? null;
+
+        return [
+            'label' => $filter->label,
+            'checked' => $filter->checked,
+            'condition' => [
+                'op' => $condition['op'],
+                'path' => explode('.', $condition['args'][0]['property']),
+                'values' => match ($condition['op']) {
+                    'in' => array_values((array) $value),
+                    'isNull' => [],
+                    default => [$value],
+                },
+            ],
         ];
     }
 

@@ -24,6 +24,13 @@
           "fallback": "Ikke registreret"
         },
         { "path": "isAccessibleForFree", "label": "Gratis", "format": "boolean" }
+      ],
+      "openFilters": [
+        {
+          "label": "Kørestolsvenligt",
+          "condition": { "op": "in", "args": [{ "property": "wheelchairAccessible" }, ["yes", "limited"]] },
+          "checked": true
+        }
       ]
     },
     {
@@ -40,6 +47,12 @@
         { "path": "totalSpotNumber", "label": "Antal pladser", "format": "number" },
         { "path": "maximumParkingDuration", "label": "Maks. parkeringstid", "fallback": "Ingen grænse" },
         { "path": "fee", "label": "Betaling", "values": { "no": "Gratis", "yes": "Betaling" } }
+      ],
+      "openFilters": [
+        {
+          "label": "Mindst 2 pladser",
+          "condition": { "op": ">=", "args": [{ "property": "totalSpotNumber" }, 2] }
+        }
       ]
     }
   ],

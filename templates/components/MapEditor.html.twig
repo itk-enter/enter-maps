@@ -163,7 +163,8 @@
                                     {% do layer.combine.setRendered %}
                                     {% do layer.conditions.setRendered %}
                                 {% else %}
-                                    {% if layer.conditions|length > 1 %}
+                                    {# The choice of "and" or "or" applies to the conditions that the user cannot turn on and off. #}
+                            {% if layer.conditions|filter(condition => not condition.open.vars.checked)|length > 1 %}
                                         {{ form_row(layer.combine) }}
                                     {% else %}
                                         {% do layer.combine.setRendered %}
@@ -196,6 +197,14 @@
                                                 {% do condition.flag.setRendered %}
                                                 {% do condition.values.setRendered %}
                                             </div>
+                                            {{ form_row(condition.open) }}
+                                            {% if condition.open.vars.checked %}
+                                                {{ form_row(condition.label) }}
+                                                {{ form_row(condition.checked) }}
+                                            {% else %}
+                                                {% do condition.label.setRendered %}
+                                                {% do condition.checked.setRendered %}
+                                            {% endif %}
                                         </fieldset>
                                     {% endfor %}
                                     <div>{{ form_widget(layer.conditions.vars.button_add) }}</div>

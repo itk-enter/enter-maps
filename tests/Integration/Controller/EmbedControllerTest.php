@@ -132,6 +132,34 @@ final class EmbedControllerTest extends WebTestCase
         $this->assertCount(0, $withoutSpinner->filter('[data-map-target="spinner"]'));
     }
 
+    public function testShowsTheConditionsOfALayerBelowTheLayer(): void
+    {
+        $crawler = $this->browser->request('GET', '/embed/leaflet/'.$this->store('toilets-and-parking'));
+
+        $group = $crawler->filter('[role="group"][aria-label="Filtre for Offentlige toiletter"]');
+        $this->assertSame('toilets:0', $group->filter('input')->attr('value'));
+        $this->assertNotNull($group->filter('input')->attr('checked'));
+        $this->assertSame('Kørestolsvenligt', trim($group->filter('label')->text()));
+        $this->assertNull($crawler->filter('[value="parking:0"]')->attr('checked'));
+    }
+
+    public function testShowsTheNameOfTheLayerAboveItsConditionsWithoutTheLayerCheckboxes(): void
+    {
+        $config = json_decode((string) file_get_contents(\dirname(__DIR__, 2).'/Fixtures/map-config/toilets-and-parking.json'), true, 512, \JSON_THROW_ON_ERROR);
+        $config['sidebar']['categories'] = false;
+        $mapConfiguration = self::getContainer()->get(MapConfigurationFactory::class)->create(json_encode($config, \JSON_THROW_ON_ERROR), [Renderer::Leaflet]);
+        $this->entityManager->persist($mapConfiguration);
+        $this->entityManager->flush();
+
+        $crawler = $this->browser->request('GET', '/embed/leaflet/'.$mapConfiguration->getId());
+
+        $this->assertCount(0, $crawler->filter('[data-map-filters-target="layer"]'));
+        $this->assertSame(['Offentlige toiletter', 'Handicapparkering'], $crawler->filter('[data-controller="map-filters"] > fieldset > legend')->each(
+            static fn (Crawler $legend): string => $legend->text(),
+        ));
+        $this->assertCount(2, $crawler->filter('[data-map-filters-target="openFilter"]'));
+    }
+
     public function testSaysThatAMapThatDoesNotExistIsNotAvailable(): void
     {
         $crawler = $this->browser->request('GET', '/embed/leaflet/01M7A9NR64B762Z5NDXFSSAM1Z?lang=en');

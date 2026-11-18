@@ -81,8 +81,11 @@ A tick on a data set adds a layer with the defaults of the NGSI-LD type of the d
 in the map configuration. To add the defaults of a type, add an entry to the file, and run `task test`. A test
 validates each entry against the JSON Schema.
 
-The form does not edit all of a map configuration yet, for example the open filters and the report link. A save
-keeps these parts as they are.
+A condition of the fixed filter can be a condition that the user turns on and off. Then the sidebar of the map shows
+a checkbox for it, below the layer.
+
+The form does not edit all of a map configuration yet, for example the open filters in `filters` and the report
+link. A save keeps these parts as they are.
 
 The command `app:map-config:import` imports map configurations from JSON files, for example the fixtures. It gives
 the embed URL of each map. The files in `tests/Fixtures/map-config/` are test data, not real maps.

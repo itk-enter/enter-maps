@@ -4,7 +4,8 @@
 {% set sidebar = map.sidebar %}
 {% set hasSidebar = options.sidebar != 'off' %}
 {% set hasSearch = hasSidebar and (sidebar.localSearch or sidebar.addressSearch) %}
-{% set hasFilters = hasSidebar and (sidebar.categories or map.filters is not empty) %}
+{% set hasOpenFilters = map.layers|filter(layer => layer.openFilters|default([]) is not empty) is not empty %}
+{% set hasFilters = hasSidebar and (sidebar.categories or map.filters is not empty or hasOpenFilters) %}
 {% set report = options.report ? map.report : null %}
 
 {% block title %}{{ map.title }}{% endblock %}

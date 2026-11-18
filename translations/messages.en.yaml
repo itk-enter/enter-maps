@@ -16,6 +16,7 @@ embed:
     error: The address search does not answer now. You can still search the list.
   categories:
     legend: Show on the map
+    open_filters: "Filters for %layer%"
   filters:
     all: All
   loading: Loading the places …
@@ -179,6 +180,11 @@ builder:
     condition_add: Add a condition to the filter
     condition_delete: Remove the condition
     condition_delete_label: Remove the condition (condition %number%)
+    condition_open: The user can turn the condition on and off
+    condition_open_help: The condition becomes a filter below the layer in the sidebar. It is not part of the fixed filter. If it is on, the map shows only the places that match.
+    condition_label: Text in the sidebar
+    condition_label_help: For example Only free or 2 or more spaces.
+    condition_checked: On at the start
     operator: Condition
     operator_eq: is equal to
     operator_ne: is not
