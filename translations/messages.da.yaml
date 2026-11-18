@@ -34,3 +34,40 @@ embed:
   boolean:
     "yes": Ja
     "no": Nej
+builder:
+  name: Kortbygger
+  skip_link: Spring til indholdet
+  expired: Siden var udløbet, så handlingen blev ikke udført. Prøv igen.
+  index:
+    title: Kort
+    maps: Alle kort
+    empty: Der er ingen kort endnu. Indtil formularen er klar, importerer kommandoen app:map-config:import et kort fra en JSON-fil.
+    map: Kort
+    updated: Ændret
+    actions: Handlinger
+    open: Vis kort
+    open_label: Vis kort "%title%" (åbner i et nyt vindue)
+    embed: Embedkode
+    embed_label: Embedkode til kortet "%title%"
+    delete: Slet
+    delete_label: Slet kortet "%title%"
+    deleted: Slettede kort
+    deleted_at: Slettet %date%
+  embed:
+    title: Embedkode til "%title%"
+    text: Kopiér koden, og indsæt den i HTML'en på den side, som skal vise kortet.
+    copy: Kopiér koden
+    copied: Koden er kopieret.
+    failed: Koden kunne ikke kopieres. Markér koden, og kopiér den selv.
+    back: Tilbage til alle kort
+  delete:
+    title: Slet kortet "%title%"?
+    text: Kortet forsvinder fra alle sider, som viser det. Siderne viser i stedet "Kortet er ikke tilgængeligt".
+    restore: Du kan gendanne kortet under "Slettede kort". Så kommer det tilbage på siderne med samme adresse.
+    submit: Slet kortet
+    cancel: Annullér
+    done: Kortet "%title%" er slettet.
+  restore:
+    submit: Gendan
+    label: Gendan kortet "%title%"
+    done: Kortet "%title%" er gendannet.

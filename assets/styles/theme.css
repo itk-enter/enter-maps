@@ -13,6 +13,9 @@
   --color-link: #0648ff; /* links, 6.4:1 on surface */
   --color-focus: #3661d8;
   --color-marker-selected: #12285e;
+  --color-on-primary: #ffffff; /* text on primary and danger */
+  --color-danger: #b3261e; /* delete buttons and errors, 6.5:1 on surface */
+  --color-success: #1e7a3c; /* the border of a success message */
 
   --font-sans:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",

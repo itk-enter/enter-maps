@@ -34,3 +34,40 @@ embed:
   boolean:
     "yes": "Yes"
     "no": "No"
+builder:
+  name: Map builder
+  skip_link: Skip to the content
+  expired: The page expired, so the action did not run. Try again.
+  index:
+    title: Maps
+    maps: All maps
+    empty: There are no maps yet. Until the form is ready, the command app:map-config:import imports a map from a JSON file.
+    map: Map
+    updated: Changed
+    actions: Actions
+    open: Show the map
+    open_label: Show the map "%title%" (opens in a new window)
+    embed: Embed code
+    embed_label: Embed code of the map "%title%"
+    delete: Delete
+    delete_label: Delete the map "%title%"
+    deleted: Deleted maps
+    deleted_at: Deleted %date%
+  embed:
+    title: Embed code of "%title%"
+    text: Copy the code, and put it into the HTML of the page that must show the map.
+    copy: Copy the code
+    copied: The code is copied.
+    failed: The code could not be copied. Select the code, and copy it yourself.
+    back: Back to all maps
+  delete:
+    title: Delete the map "%title%"?
+    text: The map disappears from all sites that show it. The sites show "The map is not available" instead.
+    restore: You can restore the map under "Deleted maps". Then it comes back on the sites, with the same address.
+    submit: Delete the map
+    cancel: Cancel
+    done: The map "%title%" is deleted.
+  restore:
+    submit: Restore
+    label: Restore the map "%title%"
+    done: The map "%title%" is restored.

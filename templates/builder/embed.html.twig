@@ -1,0 +1,19 @@
+{% extends 'builder/layout.html.twig' %}
+
+{% block heading %}{{ 'builder.embed.title'|trans({'%title%': map.config.title}) }}{% endblock %}
+
+{% block content %}
+    <div {{ stimulus_controller('clipboard', {
+        copied: 'builder.embed.copied'|trans,
+        failed: 'builder.embed.failed'|trans,
+    }) }} class="flex flex-col gap-4">
+        <p class="m-0 max-w-2xl">{{ 'builder.embed.text'|trans }}</p>
+        <pre class="m-0 overflow-x-auto rounded border border-line bg-surface-2 p-4 text-sm"><code data-clipboard-target="source">{{ code }}</code></pre>
+        <div class="flex flex-wrap items-center gap-4">
+            <twig:Form:Button type="button" hidden data-clipboard-target="button" data-action="clipboard#copy">{{ 'builder.embed.copy'|trans }}</twig:Form:Button>
+            <twig:Form:Button variant="secondary" href="{{ path('app_embed_leaflet', {id: map.id}) }}" target="_blank" rel="noopener" aria-label="{{ 'builder.index.open_label'|trans({'%title%': map.config.title}) }}">{{ 'builder.index.open'|trans }}</twig:Form:Button>
+            <p data-clipboard-target="status" role="status" class="m-0"></p>
+        </div>
+        <p class="m-0"><a href="{{ path('app_builder') }}" class="text-link underline">{{ 'builder.embed.back'|trans }}</a></p>
+    </div>
+{% endblock %}

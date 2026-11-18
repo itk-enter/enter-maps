@@ -53,13 +53,15 @@ Rules that apply to all parts:
 The structure now:
 
 ```text
-assets/controllers/                Stimulus controllers for the map, list, detail, filters and search. See its README.
+assets/controllers/                Stimulus controllers for the map and the builder. See its README.
 assets/lib/                        JavaScript modules without Stimulus: fields and Adressevælger
 assets/styles/                     app.css, the design tokens, the base styles and changes to Leaflet
 config/packages/enter.yaml         The HTTP client for Enter
 config/schema/map-config.v1.json   JSON Schema for config, version 1
 migrations/                        Doctrine migrations for MariaDB
+src/Builder/                       The import of a map configuration, and the embed code of a map
 src/Command/                       Console commands, for example app:map-config:import
+src/Controller/BuilderController.php /builder: the list of the maps, the embed code, delete and restore
 src/Controller/DataController.php  GET /data/{dataSet}.geojson
 src/Controller/EmbedController.php GET /embed/leaflet/{id}
 src/Embed/                         EmbedOptionsParser reads the embed options from the query string
@@ -71,8 +73,9 @@ tests/Unit/                        Unit tests
 tests/Integration/                 Tests that boot the kernel or send requests
 tests/Support/FakeEnter.php        A fake Enter for tests, on MockHttpClient
 tests/Support/Database.php         Makes an empty SQLite database for a test
-tests/Browser/                     Playwright and axe-core tests of the embed pages, with stubs for services
-templates/components/              Twig components: Layout, Map, Search, Form, Icon and Heading
+tests/Browser/                     Playwright and axe-core tests of the pages, with stubs for services
+templates/builder/                 The pages of the builder
+templates/components/              Twig components: Layout, Map, Search, Form, Icon, Heading and Table
 templates/embed/                   The embed page and the page for a map that is not available
 translations/                      The texts of the pages, in Danish and English
 ```
@@ -80,7 +83,7 @@ translations/                      The texts of the pages, in Danish and English
 The structure that the plan adds later:
 
 ```text
-src/Controller/                    BuilderController, and /embed/septima
+src/Controller/                    The form and the preview of the builder, and /embed/septima
 ```
 
 Update this section when the structure changes.

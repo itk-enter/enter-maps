@@ -1,0 +1,17 @@
+{# The messages after an action. A success is a status, and an error is an #}
+{# alert, so that a screen reader reads it at once. Without messages, the #}
+{# component renders nothing. #}
+{% set variants = {
+    success: {role: 'status', class: 'border-success'},
+    error: {role: 'alert', class: 'border-danger'},
+} %}
+{% set flashes = app.flashes(['success', 'error'])|filter(messages => messages is not empty) %}
+{% if flashes is not empty %}
+    <div {{ attributes.defaults({class: 'flex flex-col gap-2'}) }}>
+        {% for type, messages in flashes %}
+            {% for message in messages %}
+                <p role="{{ variants[type].role }}" class="m-0 rounded border-l-4 bg-surface-2 px-4 py-3 {{ variants[type].class }}">{{ message }}</p>
+            {% endfor %}
+        {% endfor %}
+    </div>
+{% endif %}

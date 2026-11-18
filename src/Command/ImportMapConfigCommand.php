@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Builder\MapConfigurationImporter;
 use App\MapConfig\InvalidMapConfigException;
-use App\MapConfig\MapConfigurationFactory;
-use App\Renderer\Renderer;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
@@ -55,8 +53,7 @@ final readonly class ImportMapConfigCommand
     public const string FORMAT_JSON = 'json';
 
     public function __construct(
-        private MapConfigurationFactory $factory,
-        private EntityManagerInterface $entityManager,
+        private MapConfigurationImporter $importer,
         private UrlGeneratorInterface $urlGenerator,
         #[Autowire('%kernel.project_dir%/tests/Fixtures')]
         private string $fixtureDirectory,
@@ -84,7 +81,7 @@ final readonly class ImportMapConfigCommand
 
         foreach ($files as $file) {
             try {
-                $mapConfiguration = $this->factory->create(new Filesystem()->readFile($file), [Renderer::Leaflet]);
+                $mapConfiguration = $this->importer->import(new Filesystem()->readFile($file));
             } catch (IOException $exception) {
                 $errors->error($exception->getMessage());
                 $result = Command::FAILURE;
@@ -96,9 +93,6 @@ final readonly class ImportMapConfigCommand
 
                 continue;
             }
-
-            $this->entityManager->persist($mapConfiguration);
-            $this->entityManager->flush();
 
             $id = $mapConfiguration->getId();
             $url = $this->urlGenerator->generate('app_embed_leaflet', ['id' => $id], UrlGeneratorInterface::ABSOLUTE_URL);

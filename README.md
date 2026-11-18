@@ -68,8 +68,14 @@ If you change `docker-compose.override.yml` while the containers run, run `docke
 
 ### Map configurations
 
-Until the builder exists, import map configurations from JSON files. The command gives the embed URL of each map.
-The files in `tests/Fixtures/map-config/` are test data, not real maps.
+The builder at <http://enter-maps.local.itkdev.dk/builder> lists the maps. On the list, you can:
+
+- Show a map.
+- Get the embed code of a map: the `<iframe>` tag for the page that shows the map.
+- Delete a map, and restore a deleted map.
+
+The form that makes a new map comes later. Until then, import map configurations from JSON files with a command. The
+command gives the embed URL of each map. The files in `tests/Fixtures/map-config/` are test data, not real maps.
 
 ```shell
 task console -- app:map-config:import tests/Fixtures/map-config/*.json
@@ -244,6 +250,9 @@ become a problem, add a cache to the proxy.
 
 On the server, set `ENTER_BASE_URI` in `.env.local` to the address of Enter. On staging, also set
 `ENTER_BASIC_AUTH` to `user:password`, because the staging site of Enter is behind basic auth.
+
+The builder at `/builder` can change and delete the maps on all sites. The project has no login yet, so protect
+`/builder` with basic auth on the server.
 
 The address search sends `ADRESSEVAELGER_TOKEN` from `.env` to Adressevælger. If Klimadatastyrelsen gives the project
 its own token, set it in `.env.local`.
