@@ -1,7 +1,7 @@
 {
     "name": "itk-enter/enter-maps",
     "description": "Embeddable maps that show data from Enter",
-    "license": "proprietary",
+    "license": "MIT",
     "type": "project",
     "require": {
         "php": ">=8.4",
