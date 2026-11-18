@@ -236,8 +236,23 @@
           "pattern": "^#[0-9a-fA-F]{6}$"
         },
         "icon": {
-          "description": "The name of the icon in the markers.",
-          "$ref": "#/$defs/name"
+          "description": "The icon of the markers: a name from the list of icons, or an SVG. Without it, the map shows the default pin.",
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "maxProperties": 1,
+          "properties": {
+            "name": {
+              "description": "The name of an icon from the list of icons on the server.",
+              "enum": ["toilet", "parking", "handicap-parking", "bench", "pin"]
+            },
+            "svg": {
+              "description": "An SVG from the editor, 10 KB or less, with a viewBox. It cannot hold scripts or refer to other files: see README.md in this directory. The map shows it as an image.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10240
+            }
+          }
         },
         "filter": {
           "description": "The closed filter, in CQL2-JSON: the entities must also match it. The user cannot change it. cql2-filter.json defines the supported part.",

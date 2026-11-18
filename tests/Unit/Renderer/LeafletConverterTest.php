@@ -7,7 +7,9 @@ namespace App\Tests\Unit\Renderer;
 use App\Enter\Cql2FilterParser;
 use App\JsonSchema\JsonSchemaValidator;
 use App\MapConfig\MapConfigParser;
+use App\MapConfig\SvgIconValidator;
 use App\Renderer\BaseMaps;
+use App\Renderer\Icons;
 use App\Renderer\LeafletConverter;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -25,12 +27,12 @@ final class LeafletConverterTest extends TestCase
     protected function setUp(): void
     {
         $validator = new JsonSchemaValidator(\dirname(__DIR__, 3).'/config/schema');
-        $this->parser = new MapConfigParser($validator, new Cql2FilterParser($validator));
+        $this->parser = new MapConfigParser($validator, new Cql2FilterParser($validator), new SvgIconValidator());
 
         // The same path as the route of the data proxy.
         $routes = new RouteCollection();
         $routes->add('app_data', new Route('/data/{dataSet}.geojson'));
-        $this->converter = new LeafletConverter(new UrlGenerator($routes, new RequestContext()), new BaseMaps());
+        $this->converter = new LeafletConverter(new UrlGenerator($routes, new RequestContext()), new BaseMaps(), new Icons());
     }
 
     /**
@@ -72,6 +74,7 @@ final class LeafletConverterTest extends TestCase
         $this->assertSame('/data/osm-bench.geojson', $mapJson['layers'][0]['url']);
         $this->assertSame('#8a5a00', $mapJson['layers'][0]['colour']);
         $this->assertNull($mapJson['report']);
+        $this->assertSame(['glyph' => new Icons()->all()[Icons::DEFAULT]], $mapJson['layers'][0]['icon']);
     }
 
     public function testGivesTheDataValueOfANumericCode(): void
@@ -91,6 +94,27 @@ final class LeafletConverterTest extends TestCase
         $filter = $this->converter->convert($config)['filters'][0];
 
         $this->assertSame([1 => 0, 2 => '2'], $filter['layers'][0]['dataValues']);
+    }
+
+    public function testGivesAnSvgIconAsAnImage(): void
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h1v1z"/></svg>';
+        $config = $this->parser->parse(json_encode([
+            'version' => 1,
+            'title' => 'Bænke',
+            'layers' => [['id' => 'benches', 'dataSet' => 'osm-bench', 'label' => 'Bænke', 'colour' => '#8a5a00', 'icon' => ['svg' => $svg], 'row' => ['title' => ['path' => 'name']]]],
+        ], \JSON_THROW_ON_ERROR));
+
+        $icon = $this->converter->convert($config)['layers'][0]['icon'];
+
+        $this->assertSame(['image' => 'data:image/svg+xml;base64,'.base64_encode($svg)], $icon);
+    }
+
+    public function testTheSchemaHasTheNamesOfTheIcons(): void
+    {
+        $schema = json_decode((string) file_get_contents(\dirname(__DIR__, 3).'/config/schema/map-config.v1.json'), true, 512, \JSON_THROW_ON_ERROR);
+
+        $this->assertSame(array_keys(new Icons()->all()), $schema['$defs']['layer']['properties']['icon']['properties']['name']['enum']);
     }
 
     public function testTheSchemaHasTheNamesOfTheLeafletBaseMaps(): void
