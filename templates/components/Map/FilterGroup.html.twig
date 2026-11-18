@@ -1,0 +1,24 @@
+{% props filter, index %}
+{# One open filter. "toggle" is one checkbox for the first code, "select" #}
+{# is a select with an option for all, and "multiselect" is a checkbox for #}
+{# each code. #}
+<div data-map-filters-target="filter" data-index="{{ index }}">
+    {% if filter.type == 'toggle' %}
+        {% for code, text in filter.values|slice(0, 1, true) %}
+            <twig:Form:Checkbox value="{{ code }}" data-action="map-filters#change">{{ text }}</twig:Form:Checkbox>
+        {% endfor %}
+    {% elseif filter.type == 'select' %}
+        <twig:Form:Select id="filter-{{ index }}" label="{{ filter.label }}" data-action="map-filters#change">
+            <option value="">{{ 'embed.filters.all'|trans }}</option>
+            {% for code, text in filter.values %}
+                <option value="{{ code }}">{{ text }}</option>
+            {% endfor %}
+        </twig:Form:Select>
+    {% else %}
+        <twig:Form:Fieldset legend="{{ filter.label }}">
+            {% for code, text in filter.values %}
+                <twig:Form:Checkbox value="{{ code }}" data-action="map-filters#change">{{ text }}</twig:Form:Checkbox>
+            {% endfor %}
+        </twig:Form:Fieldset>
+    {% endif %}
+</div>

@@ -1,0 +1,73 @@
+embed:
+  skip_link: Spring til liste og kort
+  map_label: Kort
+  not_available:
+    title: Kortet er ikke tilgængeligt
+    text: Kortet findes ikke, eller det er fjernet.
+  search:
+    label: Søg efter sted eller adresse
+    label_local: Søg efter sted
+    label_address: Søg efter adresse
+    help: Skriv for at søge i listen. Vælg en adresse for at se de nærmeste steder.
+    help_local: Skriv for at søge i listen.
+    help_address: Vælg en adresse for at se de nærmeste steder.
+    suggestions: Forslag
+    narrow: Vælg for at søge videre på denne vej
+    error: Adressesøgningen svarer ikke lige nu. Du kan stadig søge i listen.
+  categories:
+    legend: Vis på kortet
+  filters:
+    all: Alle
+  zoom_gate:
+    title: Se steder på kortet
+    text: Skriv en adresse for at søge på et sted, eller zoom ind for at se stederne på kortet.
+    label: Zoom ind for at se steder
+  list:
+    results: Resultater
+    nearest: Nærmeste steder fra %label%
+    in_view: i kortudsnittet
+    empty: Ingen steder i dette kortudsnit. Flyt kortet, zoom ud eller søg bredere.
+    load_error: Kunne ikke hente data
+  detail:
+    close: Luk
+    route: Vis rute
+  boolean:
+    "yes": Ja
+    "no": Nej
+builder:
+  name: Kortbygger
+  skip_link: Spring til indholdet
+  expired: Siden var udløbet, så handlingen blev ikke udført. Prøv igen.
+  index:
+    title: Kort
+    maps: Alle kort
+    empty: Der er ingen kort endnu. Indtil formularen er klar, importerer kommandoen app:map-config:import et kort fra en JSON-fil.
+    map: Kort
+    updated: Ændret
+    actions: Handlinger
+    open: Vis kort
+    open_label: Vis kort "%title%" (åbner i et nyt vindue)
+    embed: Embedkode
+    embed_label: Embedkode til kortet "%title%"
+    delete: Slet
+    delete_label: Slet kortet "%title%"
+    deleted: Slettede kort
+    deleted_at: Slettet %date%
+  embed:
+    title: Embedkode til "%title%"
+    text: Kopiér koden, og indsæt den i HTML'en på den side, som skal vise kortet.
+    copy: Kopiér koden
+    copied: Koden er kopieret.
+    failed: Koden kunne ikke kopieres. Markér koden, og kopiér den selv.
+    back: Tilbage til alle kort
+  delete:
+    title: Slet kortet "%title%"?
+    text: Kortet forsvinder fra alle sider, som viser det. Siderne viser i stedet "Kortet er ikke tilgængeligt".
+    restore: Du kan gendanne kortet under "Slettede kort". Så kommer det tilbage på siderne med samme adresse.
+    submit: Slet kortet
+    cancel: Annullér
+    done: Kortet "%title%" er slettet.
+  restore:
+    submit: Gendan
+    label: Gendan kortet "%title%"
+    done: Kortet "%title%" er gendannet.

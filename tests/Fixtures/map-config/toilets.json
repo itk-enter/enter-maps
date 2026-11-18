@@ -12,7 +12,7 @@
       "dataSet": "merged-public-toilets",
       "label": "Offentlige toiletter",
       "colour": "#6b3fa0",
-      "icon": "toilet",
+      "icon": { "name": "toilet" },
       "filter": { "op": "=", "args": [{ "property": "isAccessibleForFree" }, true] },
       "row": {
         "title": { "path": "name", "fallback": "Toilet" },

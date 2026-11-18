@@ -1,0 +1,18 @@
+{% props layer %}
+{# The marker of a layer, as a template. The map controller clones it for #}
+{# each place, and sets data-selected on the selected place. The glyph #}
+{# comes from the list of icons on the server, so it is safe markup. An SVG #}
+{# from an editor is an image, so that a script in it cannot run. #}
+<template data-map-target="marker" data-layer-id="{{ layer.id }}">
+    <div class="group relative size-full" style="--layer-colour: {{ layer.colour }}">
+        <svg viewBox="0 0 30 30" class="block size-full" aria-hidden="true">
+            <rect x="1" y="1" width="28" height="28" rx="5" class="fill-(--layer-colour) stroke-white stroke-2 group-data-selected:fill-marker-selected"/>
+            {% if layer.icon.glyph is defined %}
+                <g transform="translate(3 3)" class="fill-white">{{ layer.icon.glyph|raw }}</g>
+            {% endif %}
+        </svg>
+        {% if layer.icon.image is defined %}
+            <img src="{{ layer.icon.image }}" alt="" class="absolute inset-[15%] size-[70%]">
+        {% endif %}
+    </div>
+</template>

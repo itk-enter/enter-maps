@@ -4,6 +4,8 @@
 # https://github.com/igorshubovych/markdownlint-cli?tab=readme-ov-file#ignoring-files
 vendor/
 node_modules/
+# Symfony, and the reports of the browser tests
+var/
 LICENSE.md
 # Python
 .venv/

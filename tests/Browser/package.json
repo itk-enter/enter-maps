@@ -1,0 +1,11 @@
+{
+  "name": "enter-maps-browser-tests",
+  "private": true,
+  "description": "Browser tests for the embed pages, with Playwright and axe-core. Run them with \"task test:browser\".",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.64.1"
+  }
+}

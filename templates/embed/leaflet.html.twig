@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% set locale = options.locale %}
+{% set sidebar = map.sidebar %}
+{% set hasSidebar = options.sidebar != 'off' %}
+{% set hasSearch = hasSidebar and (sidebar.localSearch or sidebar.addressSearch) %}
+{% set hasFilters = hasSidebar and (sidebar.categories or map.filters is not empty) %}
+{% set report = options.report ? map.report : null %}
+
+{% block title %}{{ map.title }}{% endblock %}
+
+{% block body %}
+    <twig:Layout:SkipLink href="#places">{{ 'embed.skip_link'|trans }}</twig:Layout:SkipLink>
+
+    <main id="places"
+          {{ stimulus_controller('map', {
+              settings: settings,
+              options: options.forScript,
+              messages: {
+                  zoomGate: 'embed.zoom_gate.label'|trans,
+                  yes: 'embed.boolean.yes'|trans,
+                  no: 'embed.boolean.no'|trans,
+              },
+          }, {}, {
+              'map-list': '#map-list',
+              'map-detail': '#map-detail',
+          }) }}
+          data-action="map-list:select->map#select map-detail:close->map#deselect map-filters:change->map#filter address-search:query->map#query address-search:choose->map#origin"
+          class="{{ hasSidebar ? 'flex flex-col wide:h-dvh wide:flex-row' : 'relative h-dvh' }}">
+        <twig:Heading level="1" class="sr-only">{{ map.title }}</twig:Heading>
+        <p data-map-target="status" role="status" class="sr-only"></p>
+
+        <twig:Map:Sidebar position="{{ options.sidebar }}">
+            {% if hasSearch %}
+                <twig:Search:Address :local="sidebar.localSearch" :address="sidebar.addressSearch" />
+            {% endif %}
+            {% if hasFilters %}
+                <twig:Map:Filters :layers="map.layers" :filters="map.filters" :showLayers="sidebar.categories" :activeLayers="options.layers" />
+            {% endif %}
+            {% if hasSidebar %}
+                <twig:Map:ZoomGate />
+            {% endif %}
+            {% if hasSidebar and options.list %}
+                <twig:Map:List id="map-list" />
+            {% endif %}
+            <twig:Map:Detail id="map-detail" :report="report" />
+        </twig:Map:Sidebar>
+
+        <div data-map-target="map" role="region" aria-label="{{ 'embed.map_label'|trans }}"
+             class="{{ hasSidebar ? 'order-first h-[50vh] min-w-0 wide:order-none wide:h-auto wide:flex-1' : 'h-full w-full' }}"></div>
+
+        {% for layer in map.layers %}
+            <twig:Map:Marker :layer="layer" />
+        {% endfor %}
+    </main>
+{% endblock %}

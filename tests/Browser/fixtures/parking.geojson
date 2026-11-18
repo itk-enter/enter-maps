@@ -1,0 +1,37 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "urn:parking:norre-alle",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.212, 56.154],
+            [10.2126, 56.154],
+            [10.2126, 56.1543],
+            [10.212, 56.1543],
+            [10.212, 56.154]
+          ]
+        ]
+      },
+      "properties": {
+        "address": { "streetAddress": "Nørre Allé 1" },
+        "totalSpotNumber": 2,
+        "fee": "no"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "urn:parking:skolegade",
+      "geometry": { "type": "Point", "coordinates": [10.216, 56.155] },
+      "properties": {
+        "address": { "streetAddress": "Skolegade 5" },
+        "totalSpotNumber": 1,
+        "fee": "yes",
+        "maximumParkingDuration": "2 timer"
+      }
+    }
+  ]
+}

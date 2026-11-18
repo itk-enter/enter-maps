@@ -1,0 +1,6 @@
+{% props colour = null, size = 'md' %}
+{# A square in the colour of a layer. The colour is a CSS variable, because #}
+{# it comes from the configuration. Without `colour`, the caller sets #}
+{# --layer-colour, for example from the script. #}
+{% set sizes = {md: 'size-[18px]', sm: 'size-3'} %}
+<span aria-hidden="true" {{ attributes.defaults({class: 'flex-none rounded-[3px] bg-(--layer-colour) ' ~ sizes[size]}) }}{% if colour %} style="--layer-colour: {{ colour }}"{% endif %}></span>

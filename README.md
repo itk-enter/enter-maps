@@ -66,6 +66,48 @@ docker compose exec phpfpm curl --silent 'http://enter-nginx-1:8080/ngsi-ld/v1/t
 If you change `docker-compose.override.yml` while the containers run, run `docker compose up --detach`. Then run
 `docker compose restart nginx`, because nginx keeps the old address of `phpfpm`.
 
+### Map configurations
+
+The builder at <http://enter-maps.local.itkdev.dk/builder> lists the maps. On the list, you can:
+
+- Show a map.
+- Get the embed code of a map: the `<iframe>` tag for the page that shows the map.
+- Delete a map, and restore a deleted map.
+
+The form that makes a new map comes later. Until then, import map configurations from JSON files with a command. The
+command gives the embed URL of each map. The files in `tests/Fixtures/map-config/` are test data, not real maps.
+
+```shell
+task console -- app:map-config:import tests/Fixtures/map-config/*.json
+```
+
+To see the stored maps and their embed URLs:
+
+```shell
+task console -- app:map-config:list
+```
+
+The URLs start with `DEFAULT_URI` from `.env`. The page takes the embed options in the query string, for example
+`?lang=en&sidebar=right`.
+
+### Frontend
+
+The frontend uses AssetMapper, Stimulus, Twig components and Tailwind CSS. There is no Node build step. Tailwind
+runs as a standalone binary through `symfonycasts/tailwind-bundle`.
+
+To build the CSS, and to build it again on each change:
+
+```shell
+task assets:build
+task assets:build -- --watch
+```
+
+To add a JavaScript or CSS package from npm, give a version:
+
+```shell
+task console -- importmap:require leaflet@1.9.4
+```
+
 `Taskfile.yml` holds shortcuts for [Task](https://taskfile.dev/). Run `task` to see the list.
 
 To run a Symfony console command:
@@ -118,6 +160,46 @@ task test:coverage
 The task fails if the coverage of `src/` is lower than `COVERAGE_THRESHOLD` in `task/test.yml`. The `Tests`
 workflow runs the same task. Put unit tests in `tests/Unit` and integration tests in `tests/Integration`.
 
+The tests use SQLite, not MariaDB, because the `Tests` workflow runs without MariaDB. The schema comes from the
+entities, so a test does not run the migrations.
+
+### Browser tests
+
+The browser tests open the embed pages in Chromium with [Playwright](https://playwright.dev/), and check them with
+[axe-core](https://github.com/dequelabs/axe-core). To run them:
+
+```shell
+task test:browser
+```
+
+You need only Docker. The task does these steps:
+
+1. It asks you to continue, because the next step deletes all data in the dev database.
+2. It deletes the data, runs the migrations and imports the fixtures in `tests/Fixtures/map-config`.
+3. It runs the tests in the `playwright` container against the dev site.
+
+After the tests, the dev database holds only the fixtures. To run the task without the question, give `--yes` to
+Task: `task --yes test:browser`.
+
+The tests do not call Enter, Adressevælger or the tiles. `tests/Browser/support.js` gives fixed answers.
+
+To run some of the tests, give Playwright options after `--`:
+
+```shell
+task test:browser -- --grep detail
+```
+
+If a test fails, look at the report. It has a screenshot and a trace of each failed test. To see it, run this
+command and open <http://localhost:9323>:
+
+```shell
+task test:browser:report
+```
+
+The site does not serve `var/`, so the report is not on the address of the site.
+
+The `Browser tests` workflow runs the same tests, and uploads the report if a test fails.
+
 The GitHub Actions workflows in `.github/workflows/` run the same checks.
 
 ## The data proxy
@@ -168,6 +250,15 @@ become a problem, add a cache to the proxy.
 
 On the server, set `ENTER_BASE_URI` in `.env.local` to the address of Enter. On staging, also set
 `ENTER_BASIC_AUTH` to `user:password`, because the staging site of Enter is behind basic auth.
+
+The builder at `/builder` can change and delete the maps on all sites. The project has no login yet, so protect
+`/builder` with basic auth on the server.
+
+The address search sends `ADRESSEVAELGER_TOKEN` from `.env` to Adressevælger. If Klimadatastyrelsen gives the project
+its own token, set it in `.env.local`.
+
+The address search gives only addresses in the municipality in `ADRESSEVAELGER_MUNICIPALITY_CODE`. The default is
+`0751`, Aarhus. For another municipality, set its code in `.env.local`.
 
 ## Related projects
 
