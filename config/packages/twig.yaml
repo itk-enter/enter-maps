@@ -1,5 +1,6 @@
 twig:
     file_name_pattern: '*.twig'
+    form_themes: ['form/theme.html.twig']
     # The app stores dates in UTC (see Kernel). The pages show them in the local time of the editors.
     date:
         timezone: Europe/Copenhagen

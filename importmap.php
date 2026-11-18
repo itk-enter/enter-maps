@@ -31,4 +31,5 @@ return [
     'proj4' => ['version' => '2.22.0'],
     'wkt-parser' => ['version' => '1.5.6'],
     'mgrs' => ['version' => '1.0.0'],
+    '@symfony/ux-live-component' => ['path' => './vendor/symfony/ux-live-component/assets/dist/live_controller.js'],
 ];

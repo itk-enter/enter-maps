@@ -12,9 +12,10 @@ namespace App\MapConfig;
 final readonly class Layer
 {
     /**
-     * @param string                    $id     a short name, unique in the map; filters refer to it
-     * @param array<string, mixed>|null $filter the closed filter, in CQL2-JSON; the data proxy makes the query for the broker from it
-     * @param list<Field>               $detail the fields of the detail view
+     * @param string                    $id          a short name, unique in the map; filters refer to it
+     * @param array<string, mixed>|null $filter      the closed filter, in CQL2-JSON; the data proxy makes the query for the broker from it
+     * @param list<Field>               $detail      the fields of the detail view
+     * @param list<OpenFilter>          $openFilters the conditions that the user can turn on and off
      */
     public function __construct(
         public string $id,
@@ -26,6 +27,7 @@ final readonly class Layer
         public Field $title,
         public ?Field $subtitle,
         public array $detail,
+        public array $openFilters = [],
     ) {
     }
 
@@ -44,6 +46,7 @@ final readonly class Layer
             title: Field::fromArray($data['row']['title']),
             subtitle: isset($data['row']['subtitle']) ? Field::fromArray($data['row']['subtitle']) : null,
             detail: array_map(Field::fromArray(...), $data['detail'] ?? []),
+            openFilters: array_map(OpenFilter::fromArray(...), $data['openFilters'] ?? []),
         );
     }
 }

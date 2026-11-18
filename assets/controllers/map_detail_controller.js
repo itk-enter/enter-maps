@@ -51,8 +51,11 @@ export default class extends Controller {
     field("title").textContent = place.title;
     field("subtitle").textContent = place.subtitle;
     field("subtitle").hidden = !place.subtitle;
-    field("route").href =
-      `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lon}`;
+    // The template has no route link if the map does not show it.
+    const route = field("route");
+    if (route) {
+      route.href = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lon}`;
+    }
     this.renderDetails(field("details"), field("detail-template"), place);
     this.renderReport(field("report-link"), field("report-button"), place);
 

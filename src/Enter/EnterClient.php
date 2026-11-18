@@ -83,10 +83,87 @@ final readonly class EnterClient
      */
     public function getFeatures(DataSet $dataSet, ?Cql2Filter $filter): array
     {
+        [$query, $headers] = $this->entitiesRequest($dataSet, $filter, self::PAGE_SIZE);
+
+        $features = [];
+        for ($page = 0; $page < self::MAX_PAGES; ++$page) {
+            [$pageFeatures, $responseHeaders] = $this->getPage($dataSet, $query, $headers);
+            array_push($features, ...$pageFeatures);
+
+            $query = $this->nextPage($responseHeaders['link'] ?? []);
+            if (null === $query) {
+                return $features;
+            }
+        }
+
+        throw new EnterUnavailableException(\sprintf('Enter returned more than %d pages of entities of "%s".', self::MAX_PAGES, $dataSet->id));
+    }
+
+    /**
+     * Gets the first entities of a data set, in one request. The builder uses
+     * them to suggest the paths of the properties.
+     *
+     * @return list<array<mixed>> GeoJSON features, $limit or fewer
+     *
+     * @throws EnterUnavailableException
+     */
+    public function getSample(DataSet $dataSet, int $limit): array
+    {
+        [$query, $headers] = $this->entitiesRequest($dataSet, null, $limit);
+
+        return $this->getPage($dataSet, $query, $headers)[0];
+    }
+
+    /**
+     * Counts the entities of each data set. The broker gives the number in the
+     * NGSILD-Results-Count header. The requests run at the same time.
+     *
+     * Each request gets one entity, not zero. Scorpio can give a count of 0
+     * for a request with limit=0, also if the data set has entities. If the
+     * count is 0 but the response has an entity, the count is not correct,
+     * and the method gives null.
+     *
+     * @param list<DataSet> $dataSets
+     *
+     * @return array<string, int|null> the number for each data set ID, or null if Enter did not give a correct number
+     */
+    public function countEntities(array $dataSets): array
+    {
+        $responses = [];
+        foreach ($dataSets as $dataSet) {
+            [$query, $headers] = $this->entitiesRequest($dataSet, null, 1);
+            $responses[$dataSet->id] = $this->client->request('GET', self::ENTITIES_PATH, [
+                'query' => [...$query, 'count' => 'true'],
+                'headers' => $headers,
+            ]);
+        }
+
+        $counts = [];
+        foreach ($responses as $id => $response) {
+            try {
+                $header = $response->getHeaders()['ngsild-results-count'][0] ?? null;
+                $count = null !== $header && ctype_digit($header) ? (int) $header : null;
+                if (0 === $count && [] !== ($response->toArray()['features'] ?? [])) {
+                    $count = null;
+                }
+                $counts[$id] = $count;
+            } catch (ExceptionInterface) {
+                $counts[$id] = null;
+            }
+        }
+
+        return $counts;
+    }
+
+    /**
+     * @return array{array<string, mixed>, array<string, string>} the query and the headers of the first request
+     */
+    private function entitiesRequest(DataSet $dataSet, ?Cql2Filter $filter, int $limit): array
+    {
         $query = [
             'q' => \sprintf('sourceId=="%s"', $dataSet->id).($filter instanceof Cql2Filter ? ';'.$filter->query : ''),
             'format' => 'simplified',
-            'limit' => self::PAGE_SIZE,
+            'limit' => $limit,
         ];
         if (null !== $dataSet->model) {
             $query['type'] = $dataSet->model;
@@ -97,28 +174,34 @@ final readonly class EnterClient
             $headers['Link'] = \sprintf('<%s>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"', $dataSet->contextUrl);
         }
 
+        return [$query, $headers];
+    }
+
+    /**
+     * @param array<string, mixed>  $query
+     * @param array<string, string> $headers
+     *
+     * @return array{list<array<mixed>>, array<string, list<string>>} the features of the page and the response headers
+     *
+     * @throws EnterUnavailableException
+     */
+    private function getPage(DataSet $dataSet, array $query, array $headers): array
+    {
+        [$collection, $responseHeaders] = $this->get(self::ENTITIES_PATH, ['query' => $query, 'headers' => $headers]);
+
+        $pageFeatures = $collection['features'] ?? null;
+        if (!\is_array($pageFeatures) || !array_is_list($pageFeatures)) {
+            throw new EnterUnavailableException(\sprintf('Enter returned entities of "%s" that are not a GeoJSON feature collection.', $dataSet->id));
+        }
+
         $features = [];
-        for ($page = 0; $page < self::MAX_PAGES; ++$page) {
-            [$collection, $responseHeaders] = $this->get(self::ENTITIES_PATH, ['query' => $query, 'headers' => $headers]);
-
-            $pageFeatures = $collection['features'] ?? null;
-            if (!\is_array($pageFeatures) || !array_is_list($pageFeatures)) {
-                throw new EnterUnavailableException(\sprintf('Enter returned entities of "%s" that are not a GeoJSON feature collection.', $dataSet->id));
-            }
-
-            foreach ($pageFeatures as $feature) {
-                if (\is_array($feature)) {
-                    $features[] = $this->removeProperties($feature);
-                }
-            }
-
-            $query = $this->nextPage($responseHeaders['link'] ?? []);
-            if (null === $query) {
-                return $features;
+        foreach ($pageFeatures as $feature) {
+            if (\is_array($feature)) {
+                $features[] = $this->removeProperties($feature);
             }
         }
 
-        throw new EnterUnavailableException(\sprintf('Enter returned more than %d pages of entities of "%s".', self::MAX_PAGES, $dataSet->id));
+        return [$features, $responseHeaders];
     }
 
     /**

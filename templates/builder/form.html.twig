@@ -1,0 +1,17 @@
+{% extends 'builder/layout.html.twig' %}
+
+{# The menu of the steps is a column next to the form, so the page is wider #}
+{# than the other pages of the builder. #}
+{% block main_width %}max-w-[80rem]{% endblock %}
+
+{% block heading %}
+    {%- if map -%}
+        {{ 'builder.form.edit_title'|trans({'%title%': map.config.title}) }}
+    {%- else -%}
+        {{ 'builder.form.new_title'|trans }}
+    {%- endif -%}
+{% endblock %}
+
+{% block content %}
+    <twig:MapEditor :mapId="map ? (map.id ~ '') : null" />
+{% endblock %}

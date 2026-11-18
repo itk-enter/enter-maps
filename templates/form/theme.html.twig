@@ -1,0 +1,132 @@
+{# The form theme of the builder. It adds the classes of the design #}
+{# tokens. The form_row block of Symfony connects the help and the errors #}
+{# to the field with aria-describedby, so the theme keeps it. #}
+{% use 'form_div_layout.html.twig' %}
+
+{%- block form_row_render -%}
+    {%- set row_attr = row_attr|merge({class: (row_attr.class|default('') ~ ' flex min-w-0 flex-col gap-1')|trim}) -%}
+    <div{% with {attr: row_attr} %}{{ block('attributes') }}{% endwith %}>
+        {{- form_label(form) -}}
+        {{- form_widget(form, widget_attr) -}}
+        {{- form_help(form) -}}
+        {{- form_errors(form) -}}
+    </div>
+{%- endblock form_row_render -%}
+
+{# A checkbox has the box first and the label after it. #}
+{%- block checkbox_row -%}
+    {%- set widget_attr = {attr: {'aria-describedby': help ? id ~ '_help' : null}|filter(value => value is not null)} -%}
+    <div class="flex flex-col gap-1">
+        <div class="flex items-center gap-2.5">
+            {{- form_widget(form, widget_attr) -}}
+            {{- form_label(form, null, {label_attr: {class: 'font-normal'}}) -}}
+        </div>
+        {{- form_help(form) -}}
+        {{- form_errors(form) -}}
+    </div>
+{%- endblock checkbox_row -%}
+
+{%- block checkbox_widget -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' size-[17px] accent-primary')|trim}) -%}
+    {{- parent() -}}
+{%- endblock checkbox_widget -%}
+
+{%- block radio_widget -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' size-[17px] accent-primary')|trim}) -%}
+    {{- parent() -}}
+{%- endblock radio_widget -%}
+
+{# A group of radio buttons is a fieldset, and its label is the legend. #}
+{%- block choice_row -%}
+    {%- if expanded -%}
+        <fieldset class="m-0 flex flex-col gap-1 border-0 p-0"{% if help %} aria-describedby="{{ id }}_help"{% endif %}>
+            <legend class="mb-1 p-0 font-semibold">{{ label|trans(label_translation_parameters, translation_domain) }}</legend>
+            {%- for child in form -%}
+                <div class="flex items-center gap-2.5">
+                    {{- form_widget(child) -}}
+                    {{- form_label(child, null, {label_attr: {class: 'font-normal'}}) -}}
+                </div>
+            {%- endfor -%}
+            {{- form_help(form) -}}
+            {{- form_errors(form) -}}
+        </fieldset>
+    {%- else -%}
+        {{- block('form_row') -}}
+    {%- endif -%}
+{%- endblock choice_row -%}
+
+{%- block form_label -%}
+    {%- set label_attr = label_attr|merge({class: (label_attr.class|default('font-semibold'))|trim}) -%}
+    {{- parent() -}}
+{%- endblock form_label -%}
+
+{%- block form_help -%}
+    {%- set help_attr = help_attr|merge({class: (help_attr.class|default('') ~ ' m-0 text-sm text-text-muted')|trim}) -%}
+    {{- parent() -}}
+{%- endblock form_help -%}
+
+{%- block form_widget_simple -%}
+    {%- if type|default('text') != 'hidden' -%}
+        {%- set classes = type|default('text') == 'color' ? 'h-10 w-16 rounded border border-line bg-surface p-1' : 'min-h-10 rounded border border-line bg-surface px-2 py-1.5 text-ink aria-invalid:border-danger' -%}
+        {%- set attr = attr|merge({class: (attr.class|default('') ~ ' ' ~ classes)|trim}) -%}
+    {%- endif -%}
+    {{- parent() -}}
+{%- endblock form_widget_simple -%}
+
+{# A select with the paths of the data set, and an example of each. A path #}
+{# that is not in the data set stays as the first choice, so that a save #}
+{# keeps it. Without paths, the field is a text field. #}
+{%- block path_widget -%}
+    {%- if paths|default([]) is empty -%}
+        {{- block('form_widget_simple') -}}
+    {%- else -%}
+        {%- set attr = attr|merge({class: (attr.class|default('') ~ ' min-h-10 w-full min-w-0 rounded border border-line bg-surface px-2 text-ink aria-invalid:border-danger')|trim}) -%}
+        <select {{ block('widget_attributes') }}>
+            <option value="">{{ 'builder.form.path_select'|trans }}</option>
+            {%- if value is not same as('') and value is not null and value not in paths|keys -%}
+                <option value="{{ value }}" selected>{{ value }}</option>
+            {%- endif -%}
+            {%- for path, example in paths -%}
+                <option value="{{ path }}"{% if path == value %} selected{% endif %}>{{ example is same as('') ? path : 'builder.form.path_option'|trans({'%path%': path, '%example%': example}) }}</option>
+            {%- endfor -%}
+        </select>
+    {%- endif -%}
+{%- endblock path_widget -%}
+
+{%- block textarea_widget -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' min-h-20 rounded border border-line bg-surface px-2 py-1.5 text-ink aria-invalid:border-danger')|trim}) -%}
+    {{- parent() -}}
+{%- endblock textarea_widget -%}
+
+{%- block choice_widget_collapsed -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' min-h-10 w-full min-w-0 rounded border border-line bg-surface px-2 text-ink aria-invalid:border-danger')|trim}) -%}
+    {{- parent() -}}
+{%- endblock choice_widget_collapsed -%}
+
+{# The add button of a collection has a dashed border and a plus, so that #}
+{# it does not look like the save buttons. The label tells what it adds. #}
+{%- block live_collection_button_add_widget -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' inline-flex min-h-10 cursor-pointer items-center gap-2 rounded border border-dashed border-primary bg-surface px-4 font-semibold text-primary')|trim}) -%}
+    <button type="button" {{ block('button_attributes') }}>
+        <span aria-hidden="true" class="text-lg leading-none">+</span>
+        {{- block('form_label_content') -}}
+    </button>
+{%- endblock live_collection_button_add_widget -%}
+
+{# The delete button of an item is a small text button in the header of the item. #}
+{%- block live_collection_button_delete_widget -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' cursor-pointer border-0 bg-transparent p-1 text-sm font-semibold text-danger underline')|trim}) -%}
+    <button type="button" {{ block('button_attributes') }}>
+        {{- block('form_label_content') -}}
+    </button>
+{%- endblock live_collection_button_delete_widget -%}
+
+{%- block form_errors -%}
+    {%- if errors|length > 0 -%}
+        <ul class="m-0 mt-1 list-none p-0 text-danger">
+            {%- for error in errors -%}
+                <li id="{{ id ~ '_error' ~ loop.index }}">{{ error.message }}</li>
+            {%- endfor -%}
+        </ul>
+    {%- endif -%}
+{%- endblock form_errors -%}

@@ -40,6 +40,13 @@ final class FakeEnter
     public bool $down = false;
 
     /**
+     * The IDs of the data sets whose entities fail with HTTP 500.
+     *
+     * @var list<string>
+     */
+    public array $failingDataSets = [];
+
+    /**
      * The URLs of the requests, in the order that they came.
      *
      * @var list<string>
@@ -95,14 +102,22 @@ final class FakeEnter
         if ('/ngsi-ld/v1/entities' === $path) {
             parse_str((string) parse_url($url, \PHP_URL_QUERY), $query);
             $dataSetId = preg_match('/^sourceId=="([^"]+)"/', (string) ($query['q'] ?? ''), $matches) ? $matches[1] : '';
+            if (\in_array($dataSetId, $this->failingDataSets, true)) {
+                return new MockResponse('', ['http_code' => 500]);
+            }
             $limit = (int) ($query['limit'] ?? 0);
             $offset = (int) ($query['offset'] ?? 0);
             $features = $this->features[$dataSetId] ?? [];
             $page = \array_slice($features, $offset, $limit);
 
-            // The broker links the next page in the Link header, as Scorpio does.
+            // With count=true, the broker gives the number of entities in a header.
             $headers = [];
-            if ($offset + $limit < \count($features)) {
+            if ('true' === ($query['count'] ?? null)) {
+                $headers['NGSILD-Results-Count'] = (string) \count($features);
+            }
+
+            // The broker links the next page in the Link header, as Scorpio does.
+            if ($limit > 0 && $offset + $limit < \count($features)) {
                 $next = '/ngsi-ld/v1/entities?'.http_build_query([...$query, 'offset' => $offset + $limit]);
                 $headers['Link'] = \sprintf('<%s>;rel="next";type="application/ld+json"', $next);
             }

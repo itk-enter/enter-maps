@@ -1,0 +1,99 @@
+# The default values of a new layer in the map form, for each NGSI-LD type.
+# The type of a data set is "model" in /sources.json of Enter. The keys of
+# an entry are the keys of a layer in the map configuration (see
+# config/schema/map-config.v1.json), without id, dataSet and label.
+#
+# "_default" applies to a data set without a type, or with a type that is
+# not in the list. If an entry has no path for the title, the form uses the
+# property "name", or else the first property of the data set.
+#
+# LayerDefaultsConfigTest validates each entry against the schema.
+parameters:
+    app.layer_defaults:
+        _default:
+            colour: '#3661d8'
+        PublicToilet:
+            colour: '#6b3fa0'
+            icon:
+                name: toilet
+            row:
+                title:
+                    path: name
+                    fallback: Toilet
+                subtitle:
+                    path: address.streetAddress
+                    fallback: Adresse ikke registreret
+            detail:
+                - path: description
+                  label: Beskrivelse
+                - path: openingHours
+                  label: Åbningstider
+                  format: list
+        ParkingSpot:
+            colour: '#1f6fb2'
+            icon:
+                name: handicap-parking
+            row:
+                title:
+                    path: address.streetAddress
+                    fallback: Parkering
+                subtitle:
+                    path: totalSpotNumber
+                    label: Pladser
+                    format: number
+            detail:
+                - path: totalSpotNumber
+                  label: Antal pladser
+                  format: number
+                - path: maximumParkingDuration
+                  label: Maks. parkeringstid
+                  fallback: Ingen grænse
+        # https://itk-enter.github.io/data-models/dataModel.PointOfInterest/Bench
+        # A bench has no name, so the title is the street, or else "Bænk".
+        Bench:
+            colour: '#8a5a00'
+            icon:
+                name: bench
+            row:
+                title:
+                    path: address.streetAddress
+                    fallback: Bænk
+                subtitle:
+                    path: armrest
+                    label: Armlæn
+                    format: boolean
+            detail:
+                - path: description
+                  label: Beskrivelse
+                - path: address.streetAddress
+                  label: Adresse
+                - path: seats
+                  label: Antal pladser
+                  format: number
+                - path: material
+                  label: Materiale
+                  values:
+                      wood: Træ
+                      metal: Metal
+                      steel: Stål
+                      concrete: Beton
+                      stone: Sten
+                      granite: Granit
+                      plastic: Plast
+                - path: backrest
+                  label: Ryglæn
+                  format: boolean
+                - path: armrest
+                  label: Armlæn
+                  format: boolean
+                - path: covered
+                  label: Overdækket
+                  format: boolean
+                - path: wasteBasket
+                  label: Skraldespand
+                  format: boolean
+                - path: inscription
+                  label: Indskrift
+                - path: dataProvider
+                  label: Dataudbyder
+                  format: text

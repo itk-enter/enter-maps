@@ -70,12 +70,25 @@ If you change `docker-compose.override.yml` while the containers run, run `docke
 
 The builder at <http://enter-maps.local.itkdev.dk/builder> lists the maps. On the list, you can:
 
+- Make a new map, or edit a map, in a form with four steps: the settings, the data sets, the layers and the
+  preview. "Gem og vis kortet" saves and shows the map. The menu of the form links to the embed code of a saved map.
 - Show a map.
 - Get the embed code of a map: the `<iframe>` tag for the page that shows the map.
 - Delete a map, and restore a deleted map.
 
-The form that makes a new map comes later. Until then, import map configurations from JSON files with a command. The
-command gives the embed URL of each map. The files in `tests/Fixtures/map-config/` are test data, not real maps.
+A tick on a data set adds a layer with the defaults of the NGSI-LD type of the data set. The type is `model` in
+`/sources.json` of Enter. The defaults are in `config/packages/map_layer_defaults.yaml`, with the same keys as a layer
+in the map configuration. To add the defaults of a type, add an entry to the file, and run `task test`. A test
+validates each entry against the JSON Schema.
+
+A condition of the fixed filter can be a condition that the user turns on and off. Then the sidebar of the map shows
+a checkbox for it, below the layer.
+
+The form does not edit all of a map configuration yet, for example the open filters in `filters` and the report
+link. A save keeps these parts as they are.
+
+The command `app:map-config:import` imports map configurations from JSON files, for example the fixtures. It gives
+the embed URL of each map. The files in `tests/Fixtures/map-config/` are test data, not real maps.
 
 ```shell
 task console -- app:map-config:import tests/Fixtures/map-config/*.json
@@ -252,7 +265,8 @@ On the server, set `ENTER_BASE_URI` in `.env.local` to the address of Enter. On 
 `ENTER_BASIC_AUTH` to `user:password`, because the staging site of Enter is behind basic auth.
 
 The builder at `/builder` can change and delete the maps on all sites. The project has no login yet, so protect
-`/builder` with basic auth on the server.
+`/builder` with basic auth on the server. The form sends its changes to `/builder/_components/`, so the same basic
+auth protects them.
 
 The address search sends `ADRESSEVAELGER_TOKEN` from `.env` to Adressevælger. If Klimadatastyrelsen gives the project
 its own token, set it in `.env.local`.

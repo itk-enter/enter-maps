@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=../../vendor/symfony/routing/Loader/schema/routing.schema.json
+live_component:
+    resource: '@LiveComponentBundle/config/routes.php'
+    # Under /builder, so that the basic auth of the builder also protects the
+    # actions of the form.
+    prefix: '/builder/_components'

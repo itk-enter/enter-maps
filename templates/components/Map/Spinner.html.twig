@@ -1,0 +1,6 @@
+{# A spinner over the whole map, while the map loads the data. The map #}
+{# controller hides it when the data is loaded or the load fails. #}
+<div data-map-target="spinner" role="status" class="fixed inset-0 z-[2000] flex flex-col items-center justify-center gap-3 bg-surface/80">
+    <span aria-hidden="true" class="size-10 rounded-full border-4 border-line border-t-primary motion-safe:animate-spin"></span>
+    <span class="font-semibold">{{ 'embed.loading'|trans }}</span>
+</div>
