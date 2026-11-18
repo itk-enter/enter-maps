@@ -1,0 +1,15 @@
+{# The markup of one row of the list. The map-list controller clones it #}
+{# and fills the fields with textContent. #}
+<li class="border-b border-line">
+    <button type="button" aria-pressed="false" data-action="map-list#choose" class="flex w-full cursor-pointer items-start gap-3 border-0 bg-transparent px-1 py-4 text-left text-inherit hover:bg-surface-2 aria-pressed:bg-surface-2">
+        <span class="min-w-0 flex-1">
+            <span data-field="title" class="block font-bold"></span>
+            <span data-field="subtitle" class="mt-0.5 block"></span>
+            <span data-field="layer" class="mt-1.5 flex items-center gap-1.5 text-sm text-text-muted">
+                <twig:Map:Swatch size="sm" />
+                <span data-field="layer-label"></span>
+            </span>
+        </span>
+        <span data-field="distance" class="flex-none text-text-muted"></span>
+    </button>
+</li>

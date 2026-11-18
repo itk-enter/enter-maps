@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-17](https://github.com/itk-enter/enter-maps/pull/17)
+  Added the embed page for Leaflet at `/embed/leaflet/{id}`, with Tailwind, Stimulus and Twig components
 * [PR-16](https://github.com/itk-enter/enter-maps/pull/16)
   Added the `MapConfiguration` entity and the `app:map-config:import` command
 * [PR-13](https://github.com/itk-enter/enter-maps/pull/13)

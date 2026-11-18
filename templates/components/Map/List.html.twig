@@ -1,0 +1,23 @@
+{% props id %}
+{# The list of the places in the map view. The map-list controller fills #}
+{# it from the row template. The heading and the count are in a status #}
+{# element, so that a screen reader tells about a change. #}
+<div id="{{ id }}" {{ stimulus_controller('map-list', {messages: {
+    results: 'embed.list.results'|trans,
+    nearest: 'embed.list.nearest'|trans,
+    loadError: 'embed.list.load_error'|trans,
+}}) }} data-map-list-target="box" class="min-h-0 flex-auto overscroll-contain px-5 max-wide:pb-5 wide:overflow-y-auto">
+    <div role="status" class="sticky top-0 z-[1] border-b border-line bg-surface pt-5 pb-3">
+        <twig:Heading level="2" size="sm">
+            <span data-map-list-target="heading">{{ 'embed.list.results'|trans }}</span>
+        </twig:Heading>
+        <p class="mt-0.5 mb-0 text-sm text-text-muted">
+            <span data-map-list-target="count">…</span> {{ 'embed.list.in_view'|trans }}
+        </p>
+    </div>
+    <ul data-map-list-target="list" class="m-0 list-none p-0"></ul>
+    <p data-map-list-target="empty" hidden class="mt-4 mb-0 text-text-muted">{{ 'embed.list.empty'|trans }}</p>
+    <template data-map-list-target="row">
+        <twig:Map:ListItem />
+    </template>
+</div>

@@ -1,0 +1,9 @@
+{% props id, label %}
+{# A select with its label. The content of the component is the options. #}
+{# `attributes` go on the select. #}
+<div class="flex flex-col gap-1">
+    <label for="{{ id }}" class="text-sm font-semibold text-text-muted">{{ label }}</label>
+    <select id="{{ id }}" {{ attributes.defaults({class: 'h-11 rounded border border-line bg-surface px-3'}) }}>
+        {%- block content %}{% endblock -%}
+    </select>
+</div>

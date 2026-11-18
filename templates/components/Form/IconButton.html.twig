@@ -1,0 +1,5 @@
+{% props label %}
+{# A round button with only an icon. `label` is the accessible name. #}
+<button type="button" aria-label="{{ label }}" {{ attributes.defaults({class: 'flex size-10 cursor-pointer items-center justify-center rounded-full border-0 bg-surface text-ink shadow'}) }}>
+    {%- block content %}{% endblock -%}
+</button>

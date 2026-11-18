@@ -1,0 +1,13 @@
+{% props position = 'left' %}
+{# The sidebar of the map. On a narrow screen it goes under the map, and #}
+{# the page scrolls. On a wide screen it has a fixed width, and the list #}
+{# scrolls inside it. With "off", only the detail view is shown, over the #}
+{# map. #}
+{% set positions = {
+    left: 'relative bg-surface wide:flex wide:w-panel wide:flex-none wide:flex-col wide:overflow-hidden wide:border-r wide:border-line',
+    right: 'relative bg-surface wide:order-last wide:flex wide:w-panel wide:flex-none wide:flex-col wide:overflow-hidden wide:border-l wide:border-line',
+    off: 'pointer-events-none absolute inset-y-0 left-0 z-[600] w-full wide:w-panel',
+} %}
+<div {{ attributes.defaults({class: positions[position]}) }}>
+    {%- block content %}{% endblock -%}
+</div>

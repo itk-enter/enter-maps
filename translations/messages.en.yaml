@@ -1,0 +1,36 @@
+embed:
+  skip_link: Skip to the list and the map
+  map_label: Map
+  not_available:
+    title: The map is not available
+    text: The map does not exist, or it was removed.
+  search:
+    label: Search for a place or an address
+    label_local: Search for a place
+    label_address: Search for an address
+    help: Type to search the list. Choose an address to see the nearest places.
+    help_local: Type to search the list.
+    help_address: Choose an address to see the nearest places.
+    suggestions: Suggestions
+    narrow: Choose to search on this street
+    error: The address search does not answer now. You can still search the list.
+  categories:
+    legend: Show on the map
+  filters:
+    all: All
+  zoom_gate:
+    title: See places on the map
+    text: Type an address to search for a place, or zoom in to see the places on the map.
+    label: Zoom in to see places
+  list:
+    results: Results
+    nearest: Nearest places to %label%
+    in_view: in the map view
+    empty: No places in this map view. Move the map, zoom out or search for more.
+    load_error: Could not get the data
+  detail:
+    close: Close
+    route: Show the route
+  boolean:
+    "yes": "Yes"
+    "no": "No"

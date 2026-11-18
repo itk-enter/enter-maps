@@ -1,0 +1,7 @@
+symfonycasts_tailwind:
+    binary_version: v4.3.5
+
+# The server image is Alpine, which uses musl.
+when@prod:
+    symfonycasts_tailwind:
+        binary_platform: 'linux-x64-musl'
