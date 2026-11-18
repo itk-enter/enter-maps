@@ -1,17 +1,15 @@
 #!/bin/sh
 # Deletes all data in the dev database, runs the migrations and imports the
-# fixtures. Writes the id of each map to var/browser/maps.json, for example
-# {"toilets": "01M7…"}. "task test:browser" asks the user first, and then
-# runs this script in the phpfpm container.
+# fixtures. Writes the imported maps to var/browser/maps.json, as the JSON of
+# "app:map-config:import --format=json". support.js reads the id of each map
+# from it. "task test:browser" asks the user first, and then runs this script
+# in the phpfpm container.
 set -eu
 
 bin/console doctrine:schema:drop --full-database --force --quiet
 bin/console doctrine:migrations:migrate --no-interaction --quiet
 mkdir -p var/browser
 
-COLUMNS=200 bin/console app:map-config:import tests/Fixtures/map-config/*.json \
-  | sed -n 's#.*Imported tests/Fixtures/map-config/\(.*\)\.json as \([0-9A-Z]\{26\}\)\..*#"\1": "\2"#p' \
-  | paste -sd, - \
-  | sed 's/^/{/; s/$/}/' > var/browser/maps.json
+bin/console app:map-config:import --format=json tests/Fixtures/map-config/*.json > var/browser/maps.json
 
 cat var/browser/maps.json

@@ -4,6 +4,8 @@ twig:
     globals:
         # The browser sends the token to Adressevælger. See .env.
         adressevaelger_token: '%env(ADRESSEVAELGER_TOKEN)%'
+        # The address search gives only addresses in this municipality. See .env.
+        adressevaelger_municipality_code: '%env(ADRESSEVAELGER_MUNICIPALITY_CODE)%'
 
 when@test:
     twig:

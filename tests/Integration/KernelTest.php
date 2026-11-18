@@ -17,4 +17,13 @@ final class KernelTest extends KernelTestCase
 
         $this->assertSame('test', $kernel->getEnvironment());
     }
+
+    public function testUsesUtcAsTheDefaultTimeZone(): void
+    {
+        date_default_timezone_set('Europe/Copenhagen');
+
+        self::bootKernel();
+
+        $this->assertSame('UTC', date_default_timezone_get());
+    }
 }

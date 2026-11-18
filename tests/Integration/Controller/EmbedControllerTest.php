@@ -72,6 +72,10 @@ final class EmbedControllerTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertSame('combobox', $crawler->filter('#search')->attr('role'));
+        // The search controller gets the token and the municipality of Adressevælger from .env.
+        $search = $crawler->filter('[data-controller="address-search"]');
+        $this->assertSame('adressevaelger123', $search->attr('data-address-search-token-value'));
+        $this->assertSame('0751', $search->attr('data-address-search-municipality-value'));
         $this->assertCount(1, $crawler->filter('#filter-0'));
         $this->assertStringContainsString('Ret eller tilføj oplysninger', $crawler->filter('#map-detail template')->html());
     }
