@@ -47,3 +47,29 @@ tasks:
       - task: :compose
         vars:
           TASK_ARGS: run --rm --no-deps phpfpm vendor/bin/coverage-check coverage/clover.xml {{.COVERAGE_THRESHOLD}}
+
+  browser:
+    desc: "Run the browser tests with Playwright and axe-core. Deletes all data in the dev database"
+    # The tests run in the playwright container against the dev site. The
+    # task deletes all data in the dev database and imports the fixtures, so
+    # it asks first. Give "--yes" to Task to skip the question, as CI does.
+    # Give Playwright options after --. The report goes to
+    # var/browser/report/index.html.
+    #
+    # The steps do not use the ":compose" task, because it adds the options
+    # after -- to each command. Only Playwright gets them.
+    prompt: The browser tests delete all maps and other data in the dev database, and import the fixtures. Continue?
+    cmds:
+      - docker compose up --detach --wait
+      - docker compose exec -T phpfpm composer install --no-scripts
+      - docker compose exec -T phpfpm bin/console importmap:install
+      - docker compose exec -T phpfpm bin/console tailwind:build
+      - docker compose exec -T phpfpm tests/Browser/setup.sh
+      - docker compose run --rm --no-deps playwright sh -c "npm ci --no-audit --no-fund --loglevel=error && npx playwright test {{.CLI_ARGS}}"
+
+  browser:report:
+    desc: "Show the report of the last browser tests on http://localhost:9323"
+    # The playwright container serves the report, so the trace viewer works
+    # and Node is not necessary on the host. Stop it with Ctrl+C.
+    cmds:
+      - docker compose run --rm -p 9323:9323 playwright npx playwright show-report ../../var/browser/report --host 0.0.0.0

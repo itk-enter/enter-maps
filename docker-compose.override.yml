@@ -12,3 +12,20 @@ services:
     networks:
       - app
       - frontend
+
+  # Playwright with Chromium, for "task test:browser". It opens the dev site
+  # through nginx. The version must be the same as the version of
+  # @playwright/test in tests/Browser/package.json.
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.64.1-noble
+    profiles:
+      - browser
+    networks:
+      - app
+    environment:
+      - BASE_URL=http://nginx:8080
+      - CI=${CI:-}
+      - NPM_CONFIG_UPDATE_NOTIFIER=false
+    working_dir: /app/tests/Browser
+    volumes:
+      - .:/app

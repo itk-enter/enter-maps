@@ -157,6 +157,43 @@ workflow runs the same task. Put unit tests in `tests/Unit` and integration test
 The tests use SQLite, not MariaDB, because the `Tests` workflow runs without MariaDB. The schema comes from the
 entities, so a test does not run the migrations.
 
+### Browser tests
+
+The browser tests open the embed pages in Chromium with [Playwright](https://playwright.dev/), and check them with
+[axe-core](https://github.com/dequelabs/axe-core). To run them:
+
+```shell
+task test:browser
+```
+
+You need only Docker. The task does these steps:
+
+1. It asks you to continue, because the next step deletes all data in the dev database.
+2. It deletes the data, runs the migrations and imports the fixtures in `tests/Fixtures/map-config`.
+3. It runs the tests in the `playwright` container against the dev site.
+
+After the tests, the dev database holds only the fixtures. To run the task without the question, give `--yes` to
+Task: `task --yes test:browser`.
+
+The tests do not call Enter, Adressevælger or the tiles. `tests/Browser/support.js` gives fixed answers.
+
+To run some of the tests, give Playwright options after `--`:
+
+```shell
+task test:browser -- --grep detail
+```
+
+If a test fails, look at the report. It has a screenshot and a trace of each failed test. To see it, run this
+command and open <http://localhost:9323>:
+
+```shell
+task test:browser:report
+```
+
+The site does not serve `var/`, so the report is not on the address of the site.
+
+The `Browser tests` workflow runs the same tests, and uploads the report if a test fails.
+
 The GitHub Actions workflows in `.github/workflows/` run the same checks.
 
 ## The data proxy

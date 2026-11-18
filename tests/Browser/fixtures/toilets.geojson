@@ -1,0 +1,40 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "urn:toilet:dokk1",
+      "geometry": { "type": "Point", "coordinates": [10.2143, 56.1536] },
+      "properties": {
+        "name": "Dokk1",
+        "address": { "streetAddress": "Hack Kampmanns Plads 2" },
+        "description": "Ved indgangen",
+        "openingHours": ["Mandag til fredag 8-22", "Lørdag og søndag 10-16"],
+        "wheelchairAccessible": "yes",
+        "isAccessibleForFree": true,
+        "seeAlso": ["urn:source:a", "urn:source:b"]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "urn:toilet:aaen",
+      "geometry": { "type": "Point", "coordinates": [10.2105, 56.1555] },
+      "properties": {
+        "name": "Toilet ved Åen",
+        "wheelchairAccessible": "no",
+        "isAccessibleForFree": false
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "urn:toilet:havnen",
+      "geometry": { "type": "Point", "coordinates": [10.217, 56.152] },
+      "properties": {
+        "name": "Havnen",
+        "address": { "streetAddress": "Havnegade 20" },
+        "wheelchairAccessible": "limited",
+        "isAccessibleForFree": true
+      }
+    }
+  ]
+}
