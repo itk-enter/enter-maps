@@ -211,6 +211,9 @@ On the server, set `ENTER_BASE_URI` in `.env.local` to the address of Enter. On 
 The address search sends `ADRESSEVAELGER_TOKEN` from `.env` to Adressevælger. If Klimadatastyrelsen gives the project
 its own token, set it in `.env.local`.
 
+The address search gives only addresses in the municipality in `ADRESSEVAELGER_MUNICIPALITY_CODE`. The default is
+`0751`, Aarhus. For another municipality, set its code in `.env.local`.
+
 ## Related projects
 
 - [itk-enter/enter](https://github.com/itk-enter/enter): the data platform that this project reads from.
