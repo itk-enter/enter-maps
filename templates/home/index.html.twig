@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'home.title'|trans }}{% endblock %}
+
+{% block body %}
+    <twig:Layout:SkipLink href="#content">{{ 'builder.skip_link'|trans }}</twig:Layout:SkipLink>
+    <main id="content" aria-labelledby="page-heading" class="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8">
+        <twig:Heading level="1" size="lg" id="page-heading">{{ 'home.title'|trans }}</twig:Heading>
+        <div class="grid gap-6 wide:grid-cols-2 lg:grid-cols-3">
+            <twig:Card heading="{{ 'home.builder.title'|trans }}" href="{{ path('app_builder') }}" link="{{ 'home.builder.link'|trans }}">
+                <twig:block name="icon"><twig:Icon:Map /></twig:block>
+                {{ 'home.builder.text'|trans }}
+            </twig:Card>
+        </div>
+    </main>
+{% endblock %}
