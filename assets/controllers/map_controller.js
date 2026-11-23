@@ -680,7 +680,10 @@ export default class extends Controller {
   origin({ detail }) {
     this.state.origin = detail;
     this.state.query = "";
-    this.map.setView([detail.lat, detail.lon], ADDRESS_ZOOM);
+    // With reduced motion, the map jumps.
+    this.map.setView([detail.lat, detail.lon], ADDRESS_ZOOM, {
+      animate: !this.reducedMotion,
+    });
     this.render();
   }
 }
