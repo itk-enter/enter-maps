@@ -96,3 +96,16 @@ test("deletes and restores a map", async ({ page }) => {
     title,
   );
 });
+
+test("links to the builder from the front page", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Kortbygger" }),
+  ).toBeVisible();
+  await expectNoAxeViolations(page);
+
+  await page.getByRole("link", { name: "Åbn kortbyggeren" }).click();
+
+  await expect(page).toHaveURL("/builder");
+});
