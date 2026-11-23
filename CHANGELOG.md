@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-26](https://github.com/itk-enter/enter-maps/pull/26)
+  Added `task screenshot` and `task screenshot:publish` for the screenshots of a pull request
 * [PR-21](https://github.com/itk-enter/enter-maps/pull/21)
   Improved how the map loads tiles and moves to a selected place
 * [PR-23](https://github.com/itk-enter/enter-maps/pull/23)
