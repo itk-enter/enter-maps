@@ -89,6 +89,22 @@ test.describe("the toilets map", () => {
     ).toBeFocused();
   });
 
+  test("selects a place when the map has no size", async ({ page }) => {
+    // A host page can show the frame in a closed tab, where the map has no
+    // size.
+    await page.addInitScript(() => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync('[data-map-target="map"] { display: none; }');
+      document.adoptedStyleSheets = [sheet];
+    });
+    await page.goto(`${toilets}?zoom=16&select=urn:toilet:havnen`);
+
+    await expect(page.getByRole("region", { name: "Kort" })).toBeHidden();
+    await expect(
+      page.getByRole("heading", { level: 2, name: "Havnen" }),
+    ).toBeVisible();
+  });
+
   test("filters the list with the select filter", async ({ page }) => {
     await page.goto(`${toilets}?zoom=16`);
 
