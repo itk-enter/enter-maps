@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-23](https://github.com/itk-enter/enter-maps/pull/23)
+  Removed the value `off` of the embed option `sidebar`
 * [PR-20](https://github.com/itk-enter/enter-maps/pull/20)
   Added the map form in the builder in four steps, with a fixed filter for each layer
 * [PR-15](https://github.com/itk-enter/enter-maps/pull/15)
