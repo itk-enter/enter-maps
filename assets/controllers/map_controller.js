@@ -192,6 +192,10 @@ export default class extends Controller {
       this.postView();
     });
 
+    // A click on the map removes the selection. A click on a place does not
+    // get to the map, because the markers and the areas stop it.
+    this.map.on("click", () => this.clearSelection());
+
     this.updateGate();
     this.postView();
     this.load();
@@ -466,6 +470,7 @@ export default class extends Controller {
         place.geometry.type === "MultiPolygon"
       ) {
         L.geoJSON(place.geometry, {
+          bubblingMouseEvents: false,
           style: {
             color: place.layer.colour,
             weight: 2,
@@ -571,6 +576,23 @@ export default class extends Controller {
    */
   select({ detail }) {
     this.selectPlace(detail.id, detail.returnFocusTo);
+  }
+
+  /**
+   * Removes the selection after a click on the map. The detail view closes
+   * and sends map-detail:close, which calls deselect(). Focus stays on the
+   * map.
+   */
+  clearSelection() {
+    if (this.state.selected === null) {
+      return;
+    }
+
+    if (this.hasMapDetailOutlet) {
+      this.mapDetailOutlet.hide();
+    } else {
+      this.deselect();
+    }
   }
 
   /** Action for map-detail:close. */
