@@ -504,7 +504,6 @@ export default class extends Controller {
         place.geometry.type === "MultiPolygon"
       ) {
         L.geoJSON(place.geometry, {
-          bubblingMouseEvents: false,
           style: {
             color: place.layer.colour,
             weight: 2,
@@ -512,7 +511,12 @@ export default class extends Controller {
             fillOpacity: selected ? 0.45 : 0.25,
           },
         })
-          .on("click", () => this.selectPlace(place.id))
+          .on("click", (event) => {
+            // Only the click stops here. A double click on the area still
+            // zooms the map.
+            L.DomEvent.stopPropagation(event);
+            this.selectPlace(place.id);
+          })
           .addTo(this.markerLayer);
       }
 
