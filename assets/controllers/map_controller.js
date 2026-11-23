@@ -182,6 +182,8 @@ export default class extends Controller {
       zoomAnimation: !reducedMotion,
       fadeAnimation: !reducedMotion,
       markerZoomAnimation: !reducedMotion,
+      // The areas get the same margin as the markers.
+      renderer: L.svg({ padding: MARKER_MARGIN }),
     });
 
     // The map loads the tiles while it moves, also on a phone, and keeps more
