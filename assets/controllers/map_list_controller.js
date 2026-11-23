@@ -34,9 +34,20 @@ export default class extends Controller {
       : this.messagesValue.results;
     this.countTarget.textContent = String(places.length);
     this.emptyTarget.hidden = places.length > 0;
+
+    // The new rows replace the old rows. If a row has focus, the new row of
+    // the same place gets it, so that focus does not go to the page.
+    const focused = this.listTarget.contains(document.activeElement)
+      ? document.activeElement.dataset.id
+      : undefined;
+
     this.listTarget.replaceChildren(
       ...places.map((place) => this.row(place, selected, showLayer)),
     );
+
+    if (focused !== undefined) {
+      this.rowFor(focused)?.focus({ preventScroll: true });
+    }
   }
 
   /** Tells that the data did not load. */

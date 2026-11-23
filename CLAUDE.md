@@ -56,7 +56,7 @@ The structure now:
 
 ```text
 assets/controllers/                Stimulus controllers for the map and the builder. See its README.
-assets/lib/                        JavaScript modules without Stimulus: fields and Adressevælger
+assets/lib/                        JavaScript modules without Stimulus: fields, Adressevælger and the map flight
 assets/styles/                     app.css, the design tokens, the base styles and changes to Leaflet
 config/packages/enter.yaml         The HTTP client for Enter
 config/packages/map_layer_defaults.yaml The defaults of a new layer in the builder, for each NGSI-LD type
