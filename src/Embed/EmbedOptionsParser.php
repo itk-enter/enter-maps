@@ -32,7 +32,7 @@ final readonly class EmbedOptionsParser
 
         return new EmbedOptions(
             locale: $this->locale($query, $settings),
-            sidebar: $this->choice($query, 'sidebar', ['left', 'right', 'off']) ?? ($sidebar->position ?? 'left'),
+            sidebar: $this->choice($query, 'sidebar', ['left', 'right']) ?? ($sidebar->position ?? 'left'),
             list: $this->flag($query, 'list') ?? (bool) ($sidebar->list ?? true),
             report: isset($settings->report) && false !== $this->flag($query, 'report'),
             zoom: $this->zoom($query),
