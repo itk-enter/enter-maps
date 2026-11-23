@@ -1,0 +1,15 @@
+# Basic auth on the server for all paths, except the paths that a map on another site needs.
+#
+# Use this file after docker-compose.server.yml. On staging, it can also come after docker-compose.dev.yml.
+# A later file cannot remove the basic auth of the main router. Thus a second router with a higher priority
+# gets the public paths, and it has no middleware.
+services:
+  nginx:
+    labels:
+      # Basic auth on all paths: the front page, /builder and the form actions in /builder/_components.
+      # docker-compose.dev.yml sets the same label. This file sets it again, so it also works without that file.
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:?}.middlewares=ITKBasicAuth@file"
+      # No basic auth on the paths of the map: the embed page, the data proxy and the CSS and JavaScript.
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:?}-public.rule=Host(`${COMPOSE_SERVER_DOMAIN:?}`) && (PathPrefix(`/embed/`) || PathPrefix(`/data/`) || PathPrefix(`/assets/`))"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:?}-public.entrypoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:?}-public.priority=100"
