@@ -12,7 +12,8 @@
  * Map.flyTo in Leaflet starts at full speed and slows down only at the end.
  * The flight here uses the same path as Map.flyTo in Leaflet 1.9.4
  * (BSD-2-Clause), from "Smooth and efficient zooming and panning" by van
- * Wijk and Nuij. Only the timing is different.
+ * Wijk and Nuij. Only the speed along the path is different. The symbols in
+ * the comments, for example w0 and r0, are the symbols of the paper.
  *
  * The movement uses private parts of Leaflet 1.9, as Map.flyTo does: the
  * methods _stop, _moveStart, _move and _moveEnd, and the property
@@ -21,6 +22,7 @@
 
 import * as L from "leaflet";
 
+// How much a flight zooms out on the way (rho). Map.flyTo uses the same value.
 const RHO = 1.42;
 
 /**
@@ -34,9 +36,9 @@ function easeInOut(t) {
 }
 
 /**
- * Moves the map to a centre and a zoom. A drag, a zoom or a new movement
- * stops it. At the end, the map sends "moveend", as Map.flyTo does. If the
- * map does not move, it sends no "moveend".
+ * Moves the map to a centre and a zoom. A drag, a zoom or a new call of
+ * fly() stops it. At the end, the map sends "moveend", as Map.flyTo does. If
+ * the map does not move, it sends no "moveend".
  *
  * @param {L.Map} map The map.
  * @param {L.LatLngExpression} center The new centre.
@@ -57,7 +59,9 @@ export function fly(map, center, zoom, { flightSeconds, panSeconds, animate }) {
   // movement.
   map._stop();
 
+  // The new centre.
   const target = L.latLng(center);
+  // The distance from the centre to the new centre, in pixels.
   const offset = map
     .project(target)
     .subtract(map.project(map.getCenter()))
@@ -82,11 +86,15 @@ function pan(map, offset, duration) {
     return;
   }
 
+  // The pane that holds the layers. A drag moves this pane too.
   const pane = map.getPane("mapPane");
+  // The position of the pane at the start.
   const from = L.DomUtil.getPosition(pane);
+  // The time at the start, in milliseconds.
   const start = performance.now();
 
   const frame = () => {
+    // The part of the time that has gone, from 0 to 1.
     const t = Math.min(1, (performance.now() - start) / (duration * 1000));
 
     L.DomUtil.setPosition(pane, from.subtract(offset.multiplyBy(easeInOut(t))));
@@ -104,7 +112,8 @@ function pan(map, offset, duration) {
 }
 
 /**
- * Flies the map to a centre and a zoom on the path of Map.flyTo.
+ * Flies the map to a centre and a zoom on the path of Map.flyTo. All the
+ * lengths are in pixels at the start zoom.
  *
  * @param {L.Map} map The map.
  * @param {L.LatLng} target The new centre.
@@ -112,33 +121,51 @@ function pan(map, offset, duration) {
  * @param {number} duration The time of the flight, in seconds.
  */
 function flight(map, target, zoom, duration) {
+  // The zoom at the start.
   const startZoom = map.getZoom();
+  // The centre at the start.
   const from = map.project(map.getCenter());
+  // The new centre.
   const to = map.project(target);
+  // The size of the map.
   const size = map.getSize();
+  // The width of the view at the start (w0).
   const w0 = Math.max(size.x, size.y);
+  // The width of the view at the end (w1).
   const w1 = w0 * map.getZoomScale(startZoom, zoom);
+  // The distance to the new centre (u1). The math divides by it, so 0
+  // becomes 1.
   const u1 = to.distanceTo(from) || 1;
+  // RHO squared.
   const rho2 = RHO * RHO;
 
+  // Gives r0 for the start or r1 for the end. The width of the view follows
+  // the curve 1 / cosh(r) from r0 to r1, and it is largest at r = 0.
   const r = (end) => {
+    // b0 or b1 of the paper.
     const b =
       (w1 * w1 - w0 * w0 + (end ? -1 : 1) * rho2 * rho2 * u1 * u1) /
       (2 * (end ? w1 : w0) * rho2 * u1);
+    // The value in the log.
     const sq = Math.sqrt(b * b + 1) - b;
 
     // If sq is 0, the log is -Infinity, and the flight never ends.
     return sq < 1e-9 ? -18 : Math.log(sq);
   };
+  // Where the flight starts on the curve (r0).
   const r0 = r(false);
+  // The length of the path (S). The flight goes from 0 to this length.
   const length = (r(true) - r0) / RHO;
+  // The width of the view at the point s of the path (w(s)).
   const width = (s) => w0 * (Math.cosh(r0) / Math.cosh(r0 + RHO * s));
+  // The distance from the start centre at the point s of the path (u(s)).
   const travel = (s) =>
     (w0 * (Math.cosh(r0) * Math.tanh(r0 + RHO * s) - Math.sinh(r0))) / rho2;
-
+  // The time at the start, in milliseconds.
   const start = performance.now();
 
   const frame = () => {
+    // The part of the time that has gone, from 0 to 1.
     const t = (performance.now() - start) / (duration * 1000);
 
     if (t >= 1) {
@@ -147,6 +174,7 @@ function flight(map, target, zoom, duration) {
       return;
     }
 
+    // The point of the path for this frame.
     const s = easeInOut(t) * length;
 
     map._flyToFrame = L.Util.requestAnimFrame(frame);

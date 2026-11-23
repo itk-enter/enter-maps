@@ -91,16 +91,27 @@ import {
  * Outlets: map-list and map-detail.
  */
 
+// The start view if the settings and the options have none, in Aarhus.
 const DEFAULT_VIEW = { center: [56.15355, 10.21432], zoom: 15 };
+// The number of places in the list for a chosen address.
 const NEAREST_COUNT = 5;
+// The bar of the zoom gate fills over this number of zoom steps.
 const GATE_STEPS = 4;
+// The smallest zoom after a selection.
 const SELECTED_ZOOM = 17;
+// The zoom after the user chooses an address.
 const ADDRESS_ZOOM = 16;
+// The size of a marker, in pixels.
 const MARKER_SIZE = 30;
+// The size of the marker of the selected place, in pixels.
 const SELECTED_MARKER_SIZE = 38;
+// The width of the ring of extra tiles around the view, in tiles.
 const LOOK_AHEAD_TILES = 1;
+// The time of a flight to a selected place, in seconds.
 const FLIGHT_SECONDS = 1;
+// The time of a pan to a selected place, in seconds.
 const PAN_SECONDS = 0.7;
+// The margin around the view where the map draws places, as a part of the view.
 const MARKER_MARGIN = 0.5;
 
 /**
