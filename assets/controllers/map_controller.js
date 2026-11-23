@@ -97,6 +97,28 @@ const SELECTED_ZOOM = 17;
 const ADDRESS_ZOOM = 16;
 const MARKER_SIZE = 30;
 const SELECTED_MARKER_SIZE = 38;
+const LOOK_AHEAD_TILES = 1;
+
+/**
+ * A tile layer that also loads a ring of tiles around the view. Thus a tile
+ * is often ready before a pan shows it. The ring is one tile wide, because
+ * the tile policy of OpenStreetMap permits only a short look-ahead.
+ *
+ * Leaflet has no option for this, so the layer changes
+ * _getTiledPixelBounds, a private method of Leaflet 1.9. If you update
+ * Leaflet, make sure that the method still exists.
+ */
+const LookAheadTileLayer = L.TileLayer.extend({
+  _getTiledPixelBounds(center) {
+    const bounds = L.TileLayer.prototype._getTiledPixelBounds.call(
+      this,
+      center,
+    );
+    const margin = this.getTileSize().multiplyBy(LOOK_AHEAD_TILES);
+
+    return L.bounds(bounds.min.subtract(margin), bounds.max.add(margin));
+  },
+});
 
 export default class extends Controller {
   static values = { settings: Object, options: Object, messages: Object };
@@ -146,9 +168,14 @@ export default class extends Controller {
       markerZoomAnimation: !reducedMotion,
     });
 
-    L.tileLayer(settings.baseMap.url, {
+    // The map loads the tiles while it moves, also on a phone, and keeps more
+    // of the tiles that the user saw.
+    new LookAheadTileLayer(settings.baseMap.url, {
       maxZoom: settings.baseMap.maxZoom,
       attribution: settings.baseMap.attribution,
+      updateWhenIdle: false,
+      updateInterval: 100,
+      keepBuffer: 4,
     }).addTo(this.map);
 
     this.markerLayer = L.layerGroup().addTo(this.map);
