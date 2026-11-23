@@ -8,6 +8,7 @@ use App\Builder\EmbedCode;
 use App\Builder\PreviewStore;
 use App\Embed\LeafletPage;
 use App\Entity\MapConfiguration;
+use App\Form\EmbedCodeType;
 use App\Repository\MapConfigurationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -72,12 +73,17 @@ final class BuilderController extends AbstractController
     }
 
     #[Route('/{id}/embed', name: 'app_builder_embed', methods: [Request::METHOD_GET])]
-    public function embed(MapConfiguration $map): Response
+    public function embed(Request $request, MapConfiguration $map): Response
     {
+        $form = $this->createForm(EmbedCodeType::class)->handleRequest($request);
+        // A height that is not valid gives the default code, and the form shows the error.
+        $height = $form->isSubmitted() && $form->isValid() ? $form->get('height')->getData() : null;
+
         return $this->render('builder/embed.html.twig', [
             'map' => $map,
+            'form' => $form,
             'script' => $this->embedCode->script($map),
-            'code' => $this->embedCode->html($map),
+            'code' => $this->embedCode->html($map, \is_int($height) ? $height : EmbedCode::HEIGHT),
         ]);
     }
 

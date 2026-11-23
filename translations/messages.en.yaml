@@ -36,6 +36,12 @@ embed:
   boolean:
     "yes": "Yes"
     "no": "No"
+home:
+  title: Enter maps
+  builder:
+    title: Map builder
+    text: Make maps with data from Enter. Select the data sets, and set how the places show. Copy the embed code, so that other sites can show the map.
+    link: Open the map builder
 builder:
   name: Map builder
   skip_link: Skip to the content
@@ -62,11 +68,14 @@ builder:
     script_text: The script puts the map into the page, and gives the frame the height that the map needs. If the page blocks the script, it shows a link to the map.
     copy_script: Copy the code with the script
     iframe_heading: Only an iframe
-    iframe_text: For pages that cannot run a script. The frame is 700 pixels high, and the map fills it.
+    iframe_text: For pages that cannot run a script. The frame has a fixed height, and the map fills it.
     copy_iframe: Copy the iframe code
     copied: The code is copied.
     failed: The code could not be copied. Select the code, and copy it yourself.
     back: Back to all maps
+    height: Height in pixels
+    height_help: The map fills the frame. If the frame is narrower than 820 pixels, the sidebar goes below the map, and the content scrolls in the frame. Select a height from %min% to %max%.
+    update: Update the code
   delete:
     title: Delete the map "%title%"?
     text: The map disappears from all sites that show it. The sites show "The map is not available" instead.

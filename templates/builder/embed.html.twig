@@ -11,6 +11,13 @@
         }) }} class="flex flex-col gap-3">
             <twig:Heading level="2" id="code-{{ kind }}">{{ ('builder.embed.' ~ kind ~ '_heading')|trans }}</twig:Heading>
             <p class="m-0 max-w-2xl">{{ ('builder.embed.' ~ kind ~ '_text')|trans }}</p>
+            {# Only the iframe code has a fixed height. The script sets the height itself. #}
+            {% if kind == 'iframe' %}
+                {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col items-start gap-3'}}) }}
+                    {{ form_row(form.height, {row_attr: {class: 'max-w-2xl'}}) }}
+                    <twig:Form:Button variant="secondary">{{ 'builder.embed.update'|trans }}</twig:Form:Button>
+                {{ form_end(form) }}
+            {% endif %}
             {# Long lines wrap, so the box does not scroll sideways. The copy keeps the code as it is. #}
             <pre class="m-0 whitespace-pre-wrap break-all rounded border border-line bg-surface-2 p-4 text-sm"><code data-clipboard-target="source">{{ source }}</code></pre>
             <div class="flex flex-wrap items-center gap-4">

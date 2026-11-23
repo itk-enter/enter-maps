@@ -74,6 +74,27 @@ test("shows and copies the embed code", async ({ page }) => {
   );
 });
 
+test("changes the height of the embed code", async ({ page }) => {
+  await page.goto(`/builder/${maps.toilets}/embed`);
+  // Only the iframe code has a height field.
+  const code = page
+    .getByRole("region", { name: "Kun en iframe" })
+    .locator("code");
+  await expect(code).toContainText('height="700"');
+
+  await page.getByLabel("Højde i pixels").fill("900");
+  await page.getByRole("button", { name: "Opdater koden" }).click();
+
+  await expect(code).toContainText('height="900"');
+
+  await page.getByLabel("Højde i pixels").fill("50");
+  await page.getByRole("button", { name: "Opdater koden" }).click();
+
+  await expect(page.getByText("Værdien skal være mellem 300 og 3000.")).toBeVisible();
+  await expect(code).toContainText('height="700"');
+  await expectNoAxeViolations(page);
+});
+
 test("deletes and restores a map", async ({ page }) => {
   const title = "Tilgængelighed i midtbyen";
 
@@ -104,4 +125,17 @@ test("deletes and restores a map", async ({ page }) => {
   await expect(page.getByRole("region", { name: "Alle kort" })).toContainText(
     title,
   );
+});
+
+test("links to the builder from the front page", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Kortbygger" }),
+  ).toBeVisible();
+  await expectNoAxeViolations(page);
+
+  await page.getByRole("link", { name: "Åbn kortbyggeren" }).click();
+
+  await expect(page).toHaveURL("/builder");
 });

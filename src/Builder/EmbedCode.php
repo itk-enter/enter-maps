@@ -13,9 +13,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  *
  * The title is necessary for screen readers. In the code with the script,
  * the link text is the title. In the iframe code, the height is fixed, and
- * the map fills the frame. The referrer policy is the default of the
- * browsers, but the code writes it, so that a site does not set a stricter
- * value by mistake.
+ * the map fills the frame. The editor can change the height on the embed
+ * code page. The referrer policy is the default of the browsers, but the
+ * code writes it, so that a site does not set a stricter value by mistake.
  *
  * Example with the script:
  *
@@ -33,6 +33,10 @@ final readonly class EmbedCode
 {
     public const int HEIGHT = 700;
 
+    public const int MIN_HEIGHT = 300;
+
+    public const int MAX_HEIGHT = 3000;
+
     private const string INDENT = '        ';
 
     public function __construct(
@@ -40,7 +44,10 @@ final readonly class EmbedCode
     ) {
     }
 
-    public function html(MapConfiguration $map): string
+    /**
+     * @param int $height the height of the frame in pixels, from MIN_HEIGHT to MAX_HEIGHT
+     */
+    public function html(MapConfiguration $map, int $height = self::HEIGHT): string
     {
         $url = $this->urlGenerator->generate('app_embed_leaflet', ['id' => $map->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
         $title = $map->getConfig()->title ?? null;
@@ -48,7 +55,7 @@ final readonly class EmbedCode
         return implode("\n", [
             \sprintf('<iframe src="%s"', $this->escape($url)),
             \sprintf('%stitle="%s"', self::INDENT, $this->escape(\is_string($title) ? $title : '')),
-            \sprintf('%swidth="100%%" height="%d" loading="lazy" style="border:0"', self::INDENT, self::HEIGHT),
+            \sprintf('%swidth="100%%" height="%d" loading="lazy" style="border:0"', self::INDENT, $height),
             self::INDENT.'referrerpolicy="strict-origin-when-cross-origin"></iframe>',
         ]);
     }
