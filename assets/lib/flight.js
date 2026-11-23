@@ -10,14 +10,46 @@
  * sees, so a pan is better there.
  *
  * Map.flyTo in Leaflet starts at full speed and slows down only at the end.
- * The flight here uses the same path as Map.flyTo in Leaflet 1.9.4
- * (BSD-2-Clause), from "Smooth and efficient zooming and panning" by van
- * Wijk and Nuij. Only the speed along the path is different. The symbols in
- * the comments, for example w0 and r0, are the symbols of the paper.
+ * The flight here uses the same path as Map.flyTo in Leaflet 1.9.4, from
+ * "Smooth and efficient zooming and panning" by van Wijk and Nuij. Only the
+ * speed along the path is different. The symbols in the comments, for
+ * example w0 and r0, are the symbols of the paper.
  *
  * The movement uses private parts of Leaflet 1.9, as Map.flyTo does: the
  * methods _stop, _moveStart, _move and _moveEnd, and the property
  * _flyToFrame. If you update Leaflet, make sure that they still exist.
+ */
+
+/*
+ * flight() is a changed copy of Map.flyTo in Leaflet 1.9.4, which has this
+ * license:
+ *
+ * BSD 2-Clause License
+ *
+ * Copyright (c) 2010-2023, Volodymyr Agafonkin
+ * Copyright (c) 2010-2011, CloudMade
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 import * as L from "leaflet";
