@@ -101,6 +101,7 @@ const SELECTED_MARKER_SIZE = 38;
 const LOOK_AHEAD_TILES = 1;
 const FLIGHT_SECONDS = 1;
 const PAN_SECONDS = 0.7;
+const MARKER_MARGIN = 0.5;
 
 /**
  * A tile layer that also loads a ring of tiles around the view. Thus a tile
@@ -369,17 +370,18 @@ export default class extends Controller {
   }
 
   /**
-   * Tells if the list shows a place. The list holds what the map shows.
+   * Tells if a place is in an area and matches what the user chose.
    *
    * @param {Place} place The place.
-   * @returns {boolean} True if the layer is on, the place is in the view, and
+   * @param {L.LatLngBounds} bounds The area, for example the view.
+   * @returns {boolean} True if the layer is on, the place is in the area, and
    *   the place matches the filters and the search text.
    */
-  matches(place) {
+  matches(place, bounds) {
     if (!this.state.layers.has(place.layer.id)) {
       return false;
     }
-    if (!this.map.getBounds().contains([place.lat, place.lon])) {
+    if (!bounds.contains([place.lat, place.lon])) {
       return false;
     }
     if (!matchesFilters(place, this.state.filters)) {
@@ -412,8 +414,8 @@ export default class extends Controller {
   }
 
   /**
-   * Gives the places to show. With a chosen address, gives the nearest
-   * places, sorted by distance.
+   * Gives the places of the list. The list holds what the map shows. With a
+   * chosen address, gives the nearest places, sorted by distance.
    *
    * @returns {Place[]} The places. Empty behind the zoom gate.
    */
@@ -422,7 +424,10 @@ export default class extends Controller {
       return [];
     }
 
-    const places = this.state.places.filter((place) => this.matches(place));
+    const bounds = this.map.getBounds();
+    const places = this.state.places.filter((place) =>
+      this.matches(place, bounds),
+    );
 
     if (!this.state.origin) {
       places.forEach((place) => delete place.distance);
@@ -458,11 +463,29 @@ export default class extends Controller {
     this.renderMarkers();
   }
 
-  /** Draws a marker for each visible place, and the area of a polygon. */
+  /**
+   * Gives the places that get a marker. These are the places that match in
+   * the view and in a margin around it. Thus the markers are there before a
+   * pan or a flight shows them. With a chosen address, only the places of
+   * the list get a marker.
+   *
+   * @returns {Place[]} The places. Empty behind the zoom gate.
+   */
+  markedPlaces() {
+    if (this.state.gated || this.state.origin) {
+      return this.visible;
+    }
+
+    const bounds = this.map.getBounds().pad(MARKER_MARGIN);
+
+    return this.state.places.filter((place) => this.matches(place, bounds));
+  }
+
+  /** Draws a marker for each marked place, and the area of a polygon. */
   renderMarkers() {
     this.markerLayer.clearLayers();
 
-    this.visible.forEach((place) => {
+    this.markedPlaces().forEach((place) => {
       const selected = this.state.selected === place.id;
 
       if (
