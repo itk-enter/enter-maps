@@ -8,6 +8,10 @@
         failed: 'builder.embed.failed'|trans,
     }) }} class="flex flex-col gap-4">
         <p class="m-0 max-w-2xl">{{ 'builder.embed.text'|trans }}</p>
+        {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col items-start gap-3'}}) }}
+            {{ form_row(form.height, {row_attr: {class: 'max-w-2xl'}}) }}
+            <twig:Form:Button variant="secondary">{{ 'builder.embed.update'|trans }}</twig:Form:Button>
+        {{ form_end(form) }}
         <pre class="m-0 overflow-x-auto rounded border border-line bg-surface-2 p-4 text-sm"><code data-clipboard-target="source">{{ code }}</code></pre>
         <div class="flex flex-wrap items-center gap-4">
             <twig:Form:Button type="button" hidden data-clipboard-target="button" data-action="clipboard#copy">{{ 'builder.embed.copy'|trans }}</twig:Form:Button>

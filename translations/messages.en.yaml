@@ -68,6 +68,9 @@ builder:
     copied: The code is copied.
     failed: The code could not be copied. Select the code, and copy it yourself.
     back: Back to all maps
+    height: Height in pixels
+    height_help: The map fills the frame. If the frame is narrower than 820 pixels, the sidebar goes below the map, and the content scrolls in the frame. Select a height from %min% to %max%.
+    update: Update the code
   delete:
     title: Delete the map "%title%"?
     text: The map disappears from all sites that show it. The sites show "The map is not available" instead.
