@@ -107,6 +107,33 @@ final class BuilderControllerTest extends WebTestCase
         $this->assertNotNull($crawler->filter('[data-clipboard-target="button"]')->attr('hidden'));
     }
 
+    public function testChangesTheHeightOfTheEmbedCode(): void
+    {
+        $map = $this->import('toilets');
+
+        $crawler = $this->browser->request('GET', '/builder/'.$map->getId().'/embed');
+        $crawler = $this->browser->submit($crawler->selectButton('Opdater koden')->form(['height' => '900']));
+
+        $this->assertResponseIsSuccessful();
+        $this->assertStringEndsWith('/builder/'.$map->getId().'/embed?height=900', (string) $this->browser->getRequest()->getUri());
+        $this->assertSame('900', $crawler->filter('#height')->attr('value'));
+        $this->assertStringContainsString('height="900"', $crawler->filter('[data-clipboard-target="source"]')->text());
+    }
+
+    public function testShowsTheDefaultHeightAndAnErrorForAHeightThatIsNotValid(): void
+    {
+        $map = $this->import('toilets');
+
+        foreach (['50', '9000', 'high', ''] as $height) {
+            $crawler = $this->browser->request('GET', '/builder/'.$map->getId().'/embed', ['height' => $height]);
+
+            // Symfony gives 422 for a form with errors.
+            $this->assertResponseStatusCodeSame(422);
+            $this->assertCount(1, $crawler->filter('#height_error1'), $height);
+            $this->assertStringContainsString('height="700"', $crawler->filter('[data-clipboard-target="source"]')->text(), $height);
+        }
+    }
+
     public function testDoesNotFindAnUnknownMap(): void
     {
         foreach (['embed', 'edit', 'preview'] as $page) {
