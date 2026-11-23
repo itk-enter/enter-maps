@@ -268,7 +268,7 @@ The builder at `/builder` can change and delete the maps on all sites. The proje
 `/builder` with basic auth on the server. The form sends its changes to `/builder/_components/`, so the same basic
 auth protects them.
 
-`docker-compose.server.override.yml` puts basic auth on all paths, except `/embed/`, `/data/` and `/assets/`. A map
+`docker-compose.dev-server.override.yml` puts basic auth on all paths, except `/embed/`, `/data/` and `/assets/`. A map
 on another site needs these paths without a login. Use the file after `docker-compose.server.yml`. On staging, put it
 after `docker-compose.dev.yml`. To check the setup, send these requests:
 
