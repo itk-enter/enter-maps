@@ -90,7 +90,9 @@ test("changes the height of the embed code", async ({ page }) => {
   await page.getByLabel("Højde i pixels").fill("50");
   await page.getByRole("button", { name: "Opdater koden" }).click();
 
-  await expect(page.getByText("Værdien skal være mellem 300 og 3000.")).toBeVisible();
+  await expect(
+    page.getByText("Værdien skal være mellem 300 og 3000."),
+  ).toBeVisible();
   await expect(code).toContainText('height="700"');
   await expectNoAxeViolations(page);
 });

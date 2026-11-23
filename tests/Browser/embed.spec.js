@@ -206,7 +206,9 @@ test.describe("the toilets map", () => {
     await page.goto(`${toilets}?zoom=16&sidebar=off`);
 
     await expect(page.getByRole("combobox", SEARCH)).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Resultater" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Resultater" }),
+    ).toBeVisible();
     await expectNoAxeViolations(page);
   });
 });
