@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus";
 import * as L from "leaflet";
+import { fly } from "../lib/flight.js";
 import {
   formatField,
   matchesCondition,
@@ -98,6 +99,8 @@ const ADDRESS_ZOOM = 16;
 const MARKER_SIZE = 30;
 const SELECTED_MARKER_SIZE = 38;
 const LOOK_AHEAD_TILES = 1;
+const FLIGHT_SECONDS = 1;
+const PAN_SECONDS = 0.7;
 
 /**
  * A tile layer that also loads a ring of tiles around the view. Thus a tile
@@ -134,6 +137,7 @@ export default class extends Controller {
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
+    this.reducedMotion = reducedMotion;
 
     this.state = {
       places: [],
@@ -526,11 +530,20 @@ export default class extends Controller {
     }
 
     this.state.selected = id;
-    this.map.setView(
+    // A slow movement is softer than a jump. With reduced motion, the map
+    // jumps.
+    fly(
+      this.map,
       [place.lat, place.lon],
       Math.max(this.map.getZoom(), SELECTED_ZOOM),
+      {
+        flightSeconds: FLIGHT_SECONDS,
+        panSeconds: PAN_SECONDS,
+        animate: !this.reducedMotion,
+      },
     );
-    // setView renders the list and the markers again on "moveend". If the
+    // The list and the markers render again on "moveend", at the end of the
+    // movement. Render them now too, so the selection shows at once. If the
     // view does not change, there is no "moveend".
     this.render();
 
