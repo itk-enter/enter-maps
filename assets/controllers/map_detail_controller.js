@@ -159,11 +159,23 @@ export default class extends Controller {
    * action of the close button.
    */
   close() {
+    this.hide();
+    this.returnFocus?.()?.focus();
+  }
+
+  /**
+   * Closes the view and sends map-detail:close, but does not move focus.
+   * The map calls it after a click on the map, which then has focus. If the
+   * view is closed, it does nothing.
+   */
+  hide() {
+    if (this.hostTarget.hidden) {
+      return;
+    }
+
     this.hostTarget.hidden = true;
     this.hostTarget.replaceChildren();
     document.body.toggleAttribute("data-detail-open", false);
     this.dispatch("close", { detail: { id: this.place?.id } });
-
-    this.returnFocus?.()?.focus();
   }
 }
