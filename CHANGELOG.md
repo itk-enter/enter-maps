@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-22](https://github.com/itk-enter/enter-maps/pull/22)
+  Added basic auth on the server for all paths, except `/embed/`, `/data/` and `/assets/`
 * [PR-25](https://github.com/itk-enter/enter-maps/pull/25)
   Added a front page at `/` with a card for the builder
 * [PR-24](https://github.com/itk-enter/enter-maps/pull/24)
