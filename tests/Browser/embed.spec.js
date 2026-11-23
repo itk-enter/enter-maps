@@ -202,11 +202,11 @@ test.describe("the toilets map", () => {
     await expectNoAxeViolations(page);
   });
 
-  test("shows only the map with sidebar=off", async ({ page }) => {
+  test("shows the sidebar with sidebar=off", async ({ page }) => {
     await page.goto(`${toilets}?zoom=16&sidebar=off`);
 
-    await expect(page.getByRole("combobox", SEARCH)).toHaveCount(0);
-    await expect(page.locator(".leaflet-marker-icon")).toHaveCount(3);
+    await expect(page.getByRole("combobox", SEARCH)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Resultater" })).toBeVisible();
     await expectNoAxeViolations(page);
   });
 });

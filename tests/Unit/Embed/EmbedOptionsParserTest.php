@@ -35,14 +35,14 @@ final class EmbedOptionsParserTest extends TestCase
             'center' => '10.2, 56.15',
             'layers' => 'parking,toilets,parking',
             'select' => 'urn:ngsi-ld:PublicToilet:1',
-            'sidebar' => 'off',
+            'sidebar' => 'left',
             'list' => '1',
             'report' => '0',
             'lang' => 'en',
         ], $this->settings());
 
         $this->assertSame('en', $options->locale);
-        $this->assertSame('off', $options->sidebar);
+        $this->assertSame('left', $options->sidebar);
         $this->assertTrue($options->list);
         $this->assertFalse($options->report);
         $this->assertSame([
@@ -66,6 +66,7 @@ final class EmbedOptionsParserTest extends TestCase
         yield 'unknown layers only' => [['layers' => 'benches']];
         yield 'select too long' => [['select' => str_repeat('x', 501)]];
         yield 'unknown sidebar' => [['sidebar' => 'top']];
+        yield 'sidebar off' => [['sidebar' => 'off']];
         yield 'list not a flag' => [['list' => 'yes']];
         yield 'unknown language' => [['lang' => 'de']];
         yield 'array value' => [['zoom' => ['16']]];
