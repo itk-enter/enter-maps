@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus";
 import * as L from "leaflet";
+import { fly } from "../lib/flight.js";
 import {
   formatField,
   matchesCondition,
@@ -90,13 +91,49 @@ import {
  * Outlets: map-list and map-detail.
  */
 
+// The start view if the settings and the options have none, in Aarhus.
 const DEFAULT_VIEW = { center: [56.15355, 10.21432], zoom: 15 };
+// The number of places in the list for a chosen address.
 const NEAREST_COUNT = 5;
+// The bar of the zoom gate fills over this number of zoom steps.
 const GATE_STEPS = 4;
+// The smallest zoom after a selection.
 const SELECTED_ZOOM = 17;
+// The zoom after the user chooses an address.
 const ADDRESS_ZOOM = 16;
+// The size of a marker, in pixels.
 const MARKER_SIZE = 30;
+// The size of the marker of the selected place, in pixels.
 const SELECTED_MARKER_SIZE = 38;
+// The width of the ring of extra tiles around the view, in tiles.
+const LOOK_AHEAD_TILES = 1;
+// The time of a flight to a selected place, in seconds.
+const FLIGHT_SECONDS = 1;
+// The time of a pan to a selected place, in seconds.
+const PAN_SECONDS = 0.7;
+// The margin around the view where the map draws places, as a part of the view.
+const MARKER_MARGIN = 0.5;
+
+/**
+ * A tile layer that also loads a ring of tiles around the view. Thus a tile
+ * is often ready before a pan shows it. The ring is one tile wide, because
+ * the tile policy of OpenStreetMap permits only a short look-ahead.
+ *
+ * Leaflet has no option for this, so the layer changes
+ * _getTiledPixelBounds, a private method of Leaflet 1.9. If you update
+ * Leaflet, make sure that the method still exists.
+ */
+const LookAheadTileLayer = L.TileLayer.extend({
+  _getTiledPixelBounds(center) {
+    const bounds = L.TileLayer.prototype._getTiledPixelBounds.call(
+      this,
+      center,
+    );
+    const margin = this.getTileSize().multiplyBy(LOOK_AHEAD_TILES);
+
+    return L.bounds(bounds.min.subtract(margin), bounds.max.add(margin));
+  },
+});
 
 export default class extends Controller {
   static values = { settings: Object, options: Object, messages: Object };
@@ -112,6 +149,7 @@ export default class extends Controller {
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
+    this.reducedMotion = reducedMotion;
 
     this.state = {
       places: [],
@@ -144,11 +182,18 @@ export default class extends Controller {
       zoomAnimation: !reducedMotion,
       fadeAnimation: !reducedMotion,
       markerZoomAnimation: !reducedMotion,
+      // The areas get the same margin as the markers.
+      renderer: L.svg({ padding: MARKER_MARGIN }),
     });
 
-    L.tileLayer(settings.baseMap.url, {
+    // The map loads the tiles while it moves, also on a phone, and keeps more
+    // of the tiles that the user saw.
+    new LookAheadTileLayer(settings.baseMap.url, {
       maxZoom: settings.baseMap.maxZoom,
       attribution: settings.baseMap.attribution,
+      updateWhenIdle: false,
+      updateInterval: 100,
+      keepBuffer: 4,
     }).addTo(this.map);
 
     this.markerLayer = L.layerGroup().addTo(this.map);
@@ -160,6 +205,10 @@ export default class extends Controller {
       this.render();
       this.postView();
     });
+
+    // A click on the map removes the selection. A click on a place does not
+    // get to the map, because the markers and the areas stop it.
+    this.map.on("click", () => this.clearSelection());
 
     this.updateGate();
     this.postView();
@@ -334,17 +383,18 @@ export default class extends Controller {
   }
 
   /**
-   * Tells if the list shows a place. The list holds what the map shows.
+   * Tells if a place is in an area and matches what the user chose.
    *
    * @param {Place} place The place.
-   * @returns {boolean} True if the layer is on, the place is in the view, and
+   * @param {L.LatLngBounds} bounds The area, for example the view.
+   * @returns {boolean} True if the layer is on, the place is in the area, and
    *   the place matches the filters and the search text.
    */
-  matches(place) {
+  matches(place, bounds) {
     if (!this.state.layers.has(place.layer.id)) {
       return false;
     }
-    if (!this.map.getBounds().contains([place.lat, place.lon])) {
+    if (!bounds.contains([place.lat, place.lon])) {
       return false;
     }
     if (!matchesFilters(place, this.state.filters)) {
@@ -377,8 +427,8 @@ export default class extends Controller {
   }
 
   /**
-   * Gives the places to show. With a chosen address, gives the nearest
-   * places, sorted by distance.
+   * Gives the places of the list. The list holds what the map shows. With a
+   * chosen address, gives the nearest places, sorted by distance.
    *
    * @returns {Place[]} The places. Empty behind the zoom gate.
    */
@@ -387,7 +437,10 @@ export default class extends Controller {
       return [];
     }
 
-    const places = this.state.places.filter((place) => this.matches(place));
+    const bounds = this.map.getBounds();
+    const places = this.state.places.filter((place) =>
+      this.matches(place, bounds),
+    );
 
     if (!this.state.origin) {
       places.forEach((place) => delete place.distance);
@@ -423,11 +476,29 @@ export default class extends Controller {
     this.renderMarkers();
   }
 
-  /** Draws a marker for each visible place, and the area of a polygon. */
+  /**
+   * Gives the places that get a marker. These are the places that match in
+   * the view and in a margin around it. Thus the markers are there before a
+   * pan or a flight shows them. With a chosen address, only the places of
+   * the list get a marker.
+   *
+   * @returns {Place[]} The places. Empty behind the zoom gate.
+   */
+  markedPlaces() {
+    if (this.state.gated || this.state.origin) {
+      return this.visible;
+    }
+
+    const bounds = this.map.getBounds().pad(MARKER_MARGIN);
+
+    return this.state.places.filter((place) => this.matches(place, bounds));
+  }
+
+  /** Draws a marker for each marked place, and the area of a polygon. */
   renderMarkers() {
     this.markerLayer.clearLayers();
 
-    this.visible.forEach((place) => {
+    this.markedPlaces().forEach((place) => {
       const selected = this.state.selected === place.id;
 
       if (
@@ -442,7 +513,12 @@ export default class extends Controller {
             fillOpacity: selected ? 0.45 : 0.25,
           },
         })
-          .on("click", () => this.selectPlace(place.id))
+          .on("click", (event) => {
+            // Only the click stops here. A double click on the area still
+            // zooms the map.
+            L.DomEvent.stopPropagation(event);
+            this.selectPlace(place.id);
+          })
           .addTo(this.markerLayer);
       }
 
@@ -499,11 +575,20 @@ export default class extends Controller {
     }
 
     this.state.selected = id;
-    this.map.setView(
+    // A slow movement is softer than a jump. With reduced motion, the map
+    // jumps.
+    fly(
+      this.map,
       [place.lat, place.lon],
       Math.max(this.map.getZoom(), SELECTED_ZOOM),
+      {
+        flightSeconds: FLIGHT_SECONDS,
+        panSeconds: PAN_SECONDS,
+        animate: !this.reducedMotion,
+      },
     );
-    // setView renders the list and the markers again on "moveend". If the
+    // The list and the markers render again on "moveend", at the end of the
+    // movement. Render them now too, so the selection shows at once. If the
     // view does not change, there is no "moveend".
     this.render();
 
@@ -533,10 +618,30 @@ export default class extends Controller {
     this.selectPlace(detail.id, detail.returnFocusTo);
   }
 
-  /** Action for map-detail:close. */
+  /**
+   * Removes the selection after a click on the map. The detail view closes
+   * and sends map-detail:close, which calls deselect(). Focus stays on the
+   * map.
+   */
+  clearSelection() {
+    if (this.state.selected === null) {
+      return;
+    }
+
+    if (this.hasMapDetailOutlet) {
+      this.mapDetailOutlet.hide();
+    } else {
+      this.deselect();
+    }
+  }
+
+  /**
+   * Action for map-detail:close. The list and the markers render again
+   * without the selection.
+   */
   deselect() {
     this.state.selected = null;
-    this.renderMarkers();
+    this.render();
   }
 
   /**
@@ -575,7 +680,10 @@ export default class extends Controller {
   origin({ detail }) {
     this.state.origin = detail;
     this.state.query = "";
-    this.map.setView([detail.lat, detail.lon], ADDRESS_ZOOM);
+    // With reduced motion, the map jumps.
+    this.map.setView([detail.lat, detail.lon], ADDRESS_ZOOM, {
+      animate: !this.reducedMotion,
+    });
     this.render();
   }
 }
