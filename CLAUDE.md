@@ -256,6 +256,10 @@ and "Checklist". Keep the order of the sections. Write in ASD-STE100.
 - Give only the primary files of the change. The diff shows all the files.
 - In the checklist, tick only the items that are true. If a test fails, give its name and tell if it also fails on
   `develop`.
+- If the PR changes a page, add screenshots to "Screenshot of the result". Run `task screenshot` and
+  `task screenshot:publish`, and paste the Markdown that the second task writes. See "Screenshots for a pull request"
+  in the README. Do not upload the images to GitHub by hand.
+- Do not merge or delete the branch `pr-screenshots`. The descriptions of old PRs link to its images.
 
 ## Commits
 

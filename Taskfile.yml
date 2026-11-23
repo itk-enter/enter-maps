@@ -29,6 +29,20 @@ tasks:
       vars:
         TASK_ARGS: bin/console tailwind:build
 
+  screenshot:
+    desc: 'Take screenshots of pages of the dev site, e.g. `task {{.TASK}} -- / builder=/builder`'
+    # The playwright container takes a desktop and a phone screenshot of each
+    # page, and saves them in var/screenshots/. See tests/Browser/screenshot.js.
+    cmds:
+      - docker compose run --rm --no-deps playwright sh -c "npm ci --no-audit --no-fund --loglevel=error && node screenshot.js {{.CLI_ARGS}}"
+
+  screenshot:publish:
+    desc: 'Put the screenshots on the branch pr-screenshots, e.g. `task {{.TASK}} -- 26`'
+    # Runs on the host, because it pushes with git. It writes the Markdown for
+    # the description of the pull request. See tests/Browser/publish-screenshots.sh.
+    cmds:
+      - tests/Browser/publish-screenshots.sh {{.CLI_ARGS}}
+
   compose:
     internal: true
     cmd: 'docker compose {{.TASK_ARGS}} {{.CLI_ARGS}}'
