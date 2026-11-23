@@ -99,12 +99,14 @@ final class BuilderControllerTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextSame('h1', 'Embedkode til "Toiletter i Aarhus"');
-        $this->assertSame(
-            self::getContainer()->get(EmbedCode::class)->html($map),
-            $crawler->filter('[data-clipboard-target="source"]')->text(normalizeWhitespace: false),
-        );
-        // Without JavaScript, the copy button does nothing, so it is hidden.
-        $this->assertNotNull($crawler->filter('[data-clipboard-target="button"]')->attr('hidden'));
+        $embedCode = self::getContainer()->get(EmbedCode::class);
+        $sources = $crawler->filter('[data-clipboard-target="source"]');
+        $this->assertSame($embedCode->script($map), $sources->eq(0)->text(normalizeWhitespace: false));
+        $this->assertSame($embedCode->html($map), $sources->eq(1)->text(normalizeWhitespace: false));
+        $this->assertSame(['Kode med script (anbefalet)', 'Kun en iframe'], $crawler->filter('main h2')->each(static fn ($heading): string => $heading->text()));
+        // Without JavaScript, the copy buttons do nothing, so they are hidden.
+        $this->assertNotNull($crawler->filter('[data-clipboard-target="button"]')->eq(0)->attr('hidden'));
+        $this->assertNotNull($crawler->filter('[data-clipboard-target="button"]')->eq(1)->attr('hidden'));
     }
 
     public function testDoesNotFindAnUnknownMap(): void

@@ -58,7 +58,12 @@ builder:
   embed:
     title: Embedkode til "%title%"
     text: Kopiér koden, og indsæt den i HTML'en på den side, som skal vise kortet.
-    copy: Kopiér koden
+    script_heading: Kode med script (anbefalet)
+    script_text: Scriptet indsætter kortet og giver rammen den højde, som kortet skal bruge. Blokerer siden scriptet, viser den et link til kortet i stedet.
+    copy_script: Kopiér koden med script
+    iframe_heading: Kun en iframe
+    iframe_text: Til sider, som ikke kan køre et script. Rammen er 700 pixels høj, og kortet fylder den.
+    copy_iframe: Kopiér iframe-koden
     copied: Koden er kopieret.
     failed: Koden kunne ikke kopieres. Markér koden, og kopiér den selv.
     back: Tilbage til alle kort

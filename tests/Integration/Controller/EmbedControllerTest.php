@@ -161,6 +161,36 @@ final class EmbedControllerTest extends WebTestCase
         $this->assertCount(2, $crawler->filter('[data-map-filters-target="openFilter"]'));
     }
 
+    public function testSendsTheHeightToThePageWithAutoheight(): void
+    {
+        $id = $this->store('toilets');
+
+        $crawler = $this->browser->request('GET', '/embed/leaflet/'.$id.'?autoheight=1');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame('map embed-height', $crawler->filter('main')->attr('data-controller'));
+        // 50vh would depend on the height of the frame, which depends on the content.
+        $this->assertStringContainsString('h-96', (string) $crawler->filter('[data-map-target="map"]')->attr('class'));
+
+        $crawler = $this->browser->request('GET', '/embed/leaflet/'.$id);
+        $this->assertStringContainsString('h-[50vh]', (string) $crawler->filter('[data-map-target="map"]')->attr('class'));
+    }
+
+    public function testGivesTheEmbedScriptWithTheAddressOfTheSite(): void
+    {
+        $this->browser->request('GET', 'https://maps.example.dk/embed/v1.js');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseHeaderSame('Content-Type', 'text/javascript; charset=UTF-8');
+        $this->assertResponseNotHasHeader('Set-Cookie');
+        $this->assertTrue($this->browser->getResponse()->headers->hasCacheControlDirective('public'));
+        $this->assertSame('300', $this->browser->getResponse()->headers->getCacheControlDirective('max-age'));
+        $script = (string) $this->browser->getResponse()->getContent();
+        $this->assertStringContainsString('const ORIGIN = "https:\/\/maps.example.dk";', $script);
+        $this->assertStringContainsString('const HEIGHT = 700;', $script);
+        $this->assertStringNotContainsString('{#', $script);
+    }
+
     public function testSaysThatAMapThatDoesNotExistIsNotAvailable(): void
     {
         $crawler = $this->browser->request('GET', '/embed/leaflet/01M7A9NR64B762Z5NDXFSSAM1Z?lang=en');

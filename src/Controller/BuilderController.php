@@ -74,7 +74,11 @@ final class BuilderController extends AbstractController
     #[Route('/{id}/embed', name: 'app_builder_embed', methods: [Request::METHOD_GET])]
     public function embed(MapConfiguration $map): Response
     {
-        return $this->render('builder/embed.html.twig', ['map' => $map, 'code' => $this->embedCode->html($map)]);
+        return $this->render('builder/embed.html.twig', [
+            'map' => $map,
+            'script' => $this->embedCode->script($map),
+            'code' => $this->embedCode->html($map),
+        ]);
     }
 
     #[Route('/{id}/delete', name: 'app_builder_delete', methods: [Request::METHOD_GET, Request::METHOD_POST])]

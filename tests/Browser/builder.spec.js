@@ -50,18 +50,27 @@ test("shows and copies the embed code", async ({ page }) => {
       name: 'Embedkode til "Toiletter i Aarhus"',
     }),
   ).toBeVisible();
-  const code = page.locator("pre code");
-  await expect(code).toContainText(`/embed/leaflet/${maps.toilets}"`);
-  await expect(code).toContainText('title="Toiletter i Aarhus"');
+  const script = page.getByRole("region", { name: "Kode med script" });
+  const iframe = page.getByRole("region", { name: "Kun en iframe" });
+  await expect(script.locator("code")).toContainText(
+    `<div data-enter-map="${maps.toilets}">`,
+  );
+  await expect(script.locator("code")).toContainText("/embed/v1.js");
+  await expect(iframe.locator("code")).toContainText(
+    `/embed/leaflet/${maps.toilets}"`,
+  );
+  await expect(iframe.locator("code")).toContainText(
+    'title="Toiletter i Aarhus"',
+  );
   await expectNoAxeViolations(page);
 
-  await page.getByRole("button", { name: "Kopiér koden" }).click();
+  await iframe.getByRole("button", { name: "Kopiér iframe-koden" }).click();
 
   // The test site uses http, so the controller selects the code and uses the
   // old copy command. The real site uses https and the clipboard API.
-  await expect(page.getByRole("status")).toHaveText("Koden er kopieret.");
+  await expect(iframe.getByRole("status")).toHaveText("Koden er kopieret.");
   expect(await page.evaluate(() => window.getSelection().toString())).toBe(
-    await code.textContent(),
+    await iframe.locator("code").textContent(),
   );
 });
 

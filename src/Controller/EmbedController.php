@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Builder\EmbedCode;
 use App\Embed\LeafletPage;
 use App\Renderer\Renderer;
 use App\Repository\MapConfigurationRepository;
@@ -37,5 +38,27 @@ final class EmbedController extends AbstractController
         $settings = $this->repository->find($id)?->getMapJson(Renderer::Leaflet);
 
         return null === $settings ? $this->page->notAvailable($query) : $this->page->render($settings, $query);
+    }
+
+    /**
+     * The embed script, which replaces a div with the frame of the map and
+     * sets the height of the frame. See EmbedCode::script().
+     *
+     * The address does not change, because the embed codes on other sites
+     * load it. A browser keeps it for 5 minutes, so a deploy reaches the
+     * sites soon.
+     */
+    #[Route(path: '/embed/v1.js', name: 'app_embed_script', methods: [Request::METHOD_GET], stateless: true)]
+    public function script(Request $request): Response
+    {
+        $response = $this->render('embed/v1.js.twig', [
+            'origin' => $request->getSchemeAndHttpHost(),
+            'height' => EmbedCode::HEIGHT,
+        ]);
+        $response->headers->set('Content-Type', 'text/javascript; charset=UTF-8');
+        $response->setPublic();
+        $response->setMaxAge(300);
+
+        return $response;
     }
 }

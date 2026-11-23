@@ -8,7 +8,7 @@ namespace App\Embed;
  * Applies the query string of an embed URL to the settings of a map.
  *
  * The parser accepts only these parameters: zoom, center, layers, select,
- * sidebar, list, report and lang. It ignores an unknown parameter and a value
+ * sidebar, list, report, lang and autoheight. It ignores an unknown parameter and a value
  * that is not valid, and it does not give an error. An embed code on another site must not break
  * because of a wrong value. An option can only select, hide or move. It
  * cannot add a layer or a report link that the map does not have.
@@ -39,6 +39,7 @@ final readonly class EmbedOptionsParser
             center: $this->center($query),
             layers: $this->layers($query, $settings),
             select: $this->select($query),
+            autoHeight: true === $this->flag($query, 'autoheight'),
         );
     }
 
