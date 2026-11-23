@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-27](https://github.com/itk-enter/enter-maps/pull/27)
+  Added the embed script `/embed/v1.js`, which sets the height of the frame of the map
 * [PR-21](https://github.com/itk-enter/enter-maps/pull/21)
   Improved how the map loads tiles and moves to a selected place
 * [PR-23](https://github.com/itk-enter/enter-maps/pull/23)
