@@ -215,6 +215,31 @@ The `Browser tests` workflow runs the same tests, and uploads the report if a te
 
 The GitHub Actions workflows in `.github/workflows/` run the same checks.
 
+### Screenshots for a pull request
+
+A pull request that changes a page shows screenshots of the result. The images are on the branch `pr-screenshots`, in
+a folder for each pull request. That branch has no history in common with `develop`, so the images never go into the
+code. Do not merge or delete the branch, because the descriptions of old pull requests link to it.
+
+1. Take the screenshots of the dev site. Give a path for each page, or a name and a path with `=`:
+
+   ```shell
+   task screenshot -- / embed-code=/builder/<id>/embed
+   ```
+
+   The task saves a desktop and a phone image of each page in `var/screenshots/`.
+
+2. Put the images on the branch, and get the Markdown for the description:
+
+   ```shell
+   task screenshot:publish -- <number of the pull request>
+   ```
+
+3. Paste the Markdown into the section "Screenshot of the result".
+
+`task screenshot` does not click or type. For a page after a click, copy `tests/Browser/screenshot.js`, and add the
+steps.
+
 ## The data proxy
 
 The maps get their data from this project, not from Enter:

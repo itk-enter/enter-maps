@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-26](https://github.com/itk-enter/enter-maps/pull/26)
+  Added `task screenshot` and `task screenshot:publish` for the screenshots of a pull request
 * [PR-25](https://github.com/itk-enter/enter-maps/pull/25)
   Added a front page at `/` with a card for the builder
 * [PR-24](https://github.com/itk-enter/enter-maps/pull/24)
