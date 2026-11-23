@@ -633,10 +633,13 @@ export default class extends Controller {
     }
   }
 
-  /** Action for map-detail:close. */
+  /**
+   * Action for map-detail:close. The list and the markers render again
+   * without the selection.
+   */
   deselect() {
     this.state.selected = null;
-    this.renderMarkers();
+    this.render();
   }
 
   /**

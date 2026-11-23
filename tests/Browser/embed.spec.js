@@ -89,6 +89,28 @@ test.describe("the toilets map", () => {
     ).toBeFocused();
   });
 
+  test("removes the selection after a click on the map", async ({ page }) => {
+    // The map jumps to the place. Thus no flight ends after the click and
+    // renders the list again.
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(`${toilets}?zoom=16`);
+
+    const row = rows(page).filter({ hasText: "Dokk1" }).getByRole("button");
+    const title = page.getByRole("heading", { level: 2, name: "Dokk1" });
+    await row.click();
+    await expect(title).toBeVisible();
+    await expect(row).toHaveAttribute("aria-pressed", "true");
+
+    // The top right corner of the map has no place and no control.
+    const map = page.getByRole("region", { name: "Kort" });
+    const box = await map.boundingBox();
+    await map.click({ position: { x: box.width - 30, y: 30 } });
+
+    await expect(title).toBeHidden();
+    await expect(row).toHaveAttribute("aria-pressed", "false");
+    await expectNoAxeViolations(page);
+  });
+
   test("selects a place when the map has no size", async ({ page }) => {
     // A host page can show the frame in a closed tab, where the map has no
     // size.
