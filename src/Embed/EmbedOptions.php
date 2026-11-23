@@ -18,7 +18,7 @@ final readonly class EmbedOptions
      * @param 'da'|'en'                $locale  the language of the texts on the page
      * @param array{float, float}|null $center  latitude and longitude
      * @param list<string>|null        $layers  the ids of the layers that are on at the start
-     * @param 'left'|'right'|'off'     $sidebar the position of the sidebar, or no sidebar
+     * @param 'left'|'right'           $sidebar the position of the sidebar
      */
     public function __construct(
         public string $locale,

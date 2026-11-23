@@ -89,6 +89,44 @@ test.describe("the toilets map", () => {
     ).toBeFocused();
   });
 
+  test("removes the selection after a click on the map", async ({ page }) => {
+    // The map jumps to the place. Thus no flight ends after the click and
+    // renders the list again.
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(`${toilets}?zoom=16`);
+
+    const row = rows(page).filter({ hasText: "Dokk1" }).getByRole("button");
+    const title = page.getByRole("heading", { level: 2, name: "Dokk1" });
+    await row.click();
+    await expect(title).toBeVisible();
+    await expect(row).toHaveAttribute("aria-pressed", "true");
+
+    // The top right corner of the map has no place and no control.
+    const map = page.getByRole("region", { name: "Kort" });
+    const box = await map.boundingBox();
+    await map.click({ position: { x: box.width - 30, y: 30 } });
+
+    await expect(title).toBeHidden();
+    await expect(row).toHaveAttribute("aria-pressed", "false");
+    await expectNoAxeViolations(page);
+  });
+
+  test("selects a place when the map has no size", async ({ page }) => {
+    // A host page can show the frame in a closed tab, where the map has no
+    // size.
+    await page.addInitScript(() => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync('[data-map-target="map"] { display: none; }');
+      document.adoptedStyleSheets = [sheet];
+    });
+    await page.goto(`${toilets}?zoom=16&select=urn:toilet:havnen`);
+
+    await expect(page.getByRole("region", { name: "Kort" })).toBeHidden();
+    await expect(
+      page.getByRole("heading", { level: 2, name: "Havnen" }),
+    ).toBeVisible();
+  });
+
   test("filters the list with the select filter", async ({ page }) => {
     await page.goto(`${toilets}?zoom=16`);
 
@@ -164,11 +202,11 @@ test.describe("the toilets map", () => {
     await expectNoAxeViolations(page);
   });
 
-  test("shows only the map with sidebar=off", async ({ page }) => {
+  test("shows the sidebar with sidebar=off", async ({ page }) => {
     await page.goto(`${toilets}?zoom=16&sidebar=off`);
 
-    await expect(page.getByRole("combobox", SEARCH)).toHaveCount(0);
-    await expect(page.locator(".leaflet-marker-icon")).toHaveCount(3);
+    await expect(page.getByRole("combobox", SEARCH)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Resultater" })).toBeVisible();
     await expectNoAxeViolations(page);
   });
 });
