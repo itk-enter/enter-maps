@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-24](https://github.com/itk-enter/enter-maps/pull/24)
+  Added a height field to the embed code page in the builder
 * [PR-21](https://github.com/itk-enter/enter-maps/pull/21)
   Improved how the map loads tiles and moves to a selected place
 * [PR-23](https://github.com/itk-enter/enter-maps/pull/23)
