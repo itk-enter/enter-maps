@@ -15,8 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * The options of the embed code on the embed code page.
  *
  * The form uses GET and has no name, so the options are in the query string,
- * for example "?height=900". The page then has the same code after a reload,
- * and an editor can send the address to a colleague.
+ * for example "?height=900".
  */
 final class EmbedCodeType extends AbstractType
 {
