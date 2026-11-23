@@ -185,10 +185,28 @@ final class EmbedControllerTest extends WebTestCase
         $this->assertResponseNotHasHeader('Set-Cookie');
         $this->assertTrue($this->browser->getResponse()->headers->hasCacheControlDirective('public'));
         $this->assertSame('300', $this->browser->getResponse()->headers->getCacheControlDirective('max-age'));
+        $this->assertResponseHeaderSame('Access-Control-Allow-Origin', '*');
         $script = (string) $this->browser->getResponse()->getContent();
         $this->assertStringContainsString('const ORIGIN = "https:\/\/maps.example.dk";', $script);
         $this->assertStringContainsString('const HEIGHT = 700;', $script);
         $this->assertStringNotContainsString('{#', $script);
+    }
+
+    public function testUsesHttpsBehindTheProxy(): void
+    {
+        // Traefik in Docker has a private address, and sends the scheme of the request in X-Forwarded-Proto.
+        $this->browser->request('GET', 'http://maps.example.dk/embed/v1.js', server: [
+            'REMOTE_ADDR' => '172.18.0.2',
+            'HTTP_X_FORWARDED_PROTO' => 'https',
+        ]);
+        $this->assertStringContainsString('const ORIGIN = "https:\/\/maps.example.dk";', (string) $this->browser->getResponse()->getContent());
+
+        // A client on the internet cannot change the scheme with the header.
+        $this->browser->request('GET', 'http://maps.example.dk/embed/v1.js', server: [
+            'REMOTE_ADDR' => '203.0.113.7',
+            'HTTP_X_FORWARDED_PROTO' => 'https',
+        ]);
+        $this->assertStringContainsString('const ORIGIN = "http:\/\/maps.example.dk";', (string) $this->browser->getResponse()->getContent());
     }
 
     public function testSaysThatAMapThatDoesNotExistIsNotAvailable(): void

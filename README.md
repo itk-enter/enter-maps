@@ -283,6 +283,10 @@ The builder at `/builder` can change and delete the maps on all sites. The proje
 `/builder` with basic auth on the server. The form sends its changes to `/builder/_components/`, so the same basic
 auth protects them.
 
+Traefik receives the https requests and sends them to nginx. Symfony trusts the `X-Forwarded-*` headers from the
+addresses in `TRUSTED_PROXIES`. The default `private_ranges` covers Traefik in Docker. Without it, the embed codes get
+`http://` addresses, and a site on https blocks them.
+
 The address search sends `ADRESSEVAELGER_TOKEN` from `.env` to Adressevælger. If Klimadatastyrelsen gives the project
 its own token, set it in `.env.local`.
 

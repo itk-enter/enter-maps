@@ -58,6 +58,9 @@ final class EmbedController extends AbstractController
         $response->headers->set('Content-Type', 'text/javascript; charset=UTF-8');
         $response->setPublic();
         $response->setMaxAge(300);
+        // A site can load the script with "crossorigin" or "integrity". Then the
+        // browser needs this header. The script is public, so all sites get it.
+        $response->headers->set('Access-Control-Allow-Origin', '*');
 
         return $response;
     }
