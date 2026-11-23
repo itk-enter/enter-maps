@@ -72,8 +72,8 @@ function easeInOut(t) {
  * fly() stops it. At the end, the map sends "moveend", as Map.flyTo does. If
  * the map does not move, it sends no "moveend".
  *
- * If the map has no size, for example in a frame that is hidden, the map
- * moves at once.
+ * The zoom stays in the limits of the map, as with Map.setView. If the map
+ * has no size, for example in a frame that is hidden, the map moves at once.
  *
  * @param {L.Map} map The map.
  * @param {L.LatLngExpression} center The new centre.
@@ -87,9 +87,11 @@ export function fly(map, center, zoom, { flightSeconds, panSeconds, animate }) {
   // The size of the map, in pixels. With no size, the math of the flight
   // divides by 0.
   const size = map.getSize();
+  // The new zoom, in the limits of the map.
+  const endZoom = Math.min(Math.max(zoom, map.getMinZoom()), map.getMaxZoom());
 
   if (!animate || !L.Browser.any3d || !size.x || !size.y) {
-    map.setView(center, zoom, { animate: false });
+    map.setView(center, endZoom, { animate: false });
 
     return;
   }
@@ -106,10 +108,10 @@ export function fly(map, center, zoom, { flightSeconds, panSeconds, animate }) {
     .subtract(map.project(map.getCenter()))
     .round();
 
-  if (zoom === map.getZoom() && size.contains(offset)) {
+  if (endZoom === map.getZoom() && size.contains(offset)) {
     pan(map, offset, panSeconds);
   } else {
-    flight(map, target, zoom, flightSeconds);
+    flight(map, target, endZoom, flightSeconds);
   }
 }
 
