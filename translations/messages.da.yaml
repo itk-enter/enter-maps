@@ -36,6 +36,12 @@ embed:
   boolean:
     "yes": Ja
     "no": Nej
+home:
+  title: Enter maps
+  builder:
+    title: Kortbygger
+    text: Lav kort med data fra Enter. Vælg datasæt, og bestem, hvordan stederne vises. Kopiér embedkoden, så andre sider kan vise kortet.
+    link: Åbn kortbyggeren
 builder:
   name: Kortbygger
   skip_link: Spring til indholdet
@@ -62,6 +68,9 @@ builder:
     copied: Koden er kopieret.
     failed: Koden kunne ikke kopieres. Markér koden, og kopiér den selv.
     back: Tilbage til alle kort
+    height: Højde i pixels
+    height_help: Kortet fylder rammen. Er rammen smallere end 820 pixels, kommer sidepanelet under kortet, og indholdet ruller inde i rammen. Vælg en højde fra %min% til %max%.
+    update: Opdater koden
   delete:
     title: Slet kortet "%title%"?
     text: Kortet forsvinder fra alle sider, som viser det. Siderne viser i stedet "Kortet er ikke tilgængeligt".

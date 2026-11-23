@@ -29,6 +29,14 @@ final class EmbedCodeTest extends KernelTestCase
             HTML, $code);
     }
 
+    public function testWritesTheHeight(): void
+    {
+        self::bootKernel();
+        $map = new MapConfiguration((object) ['version' => 1, 'title' => 'Toiletter'], [Renderer::Leaflet], []);
+
+        $this->assertStringContainsString('height="900"', self::getContainer()->get(EmbedCode::class)->html($map, 900));
+    }
+
     public function testWritesAnEmptyTitleIfTheConfigHasNoTitle(): void
     {
         self::bootKernel();
