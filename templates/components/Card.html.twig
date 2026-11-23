@@ -1,0 +1,14 @@
+{% props heading, href, link, level = 2 %}
+{# A card with an icon, a heading, a short text and a link. The icon is #}
+{# the block "icon", and the text is the content. The link has its own #}
+{# text, so that a screen reader can read it without the card. See #}
+{# templates/home/index.html.twig for an example. #}
+<article {{ attributes.defaults({class: 'flex flex-col gap-3 rounded border border-line bg-surface p-6'}) }}>
+    <div class="text-primary">{% block icon %}{% endblock %}</div>
+    <twig:Heading level="{{ level }}">{{ heading }}</twig:Heading>
+    <p class="m-0">{% block content %}{% endblock %}</p>
+    <a href="{{ href }}" class="mt-auto inline-flex items-center gap-2 font-semibold text-link underline">
+        {{- link -}}
+        <twig:Icon:ArrowRight />
+    </a>
+</article>

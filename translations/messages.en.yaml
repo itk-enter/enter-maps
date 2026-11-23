@@ -36,6 +36,12 @@ embed:
   boolean:
     "yes": "Yes"
     "no": "No"
+home:
+  title: Enter maps
+  builder:
+    title: Map builder
+    text: Make maps with data from Enter. Select the data sets, and set how the places show. Copy the embed code, so that other sites can show the map.
+    link: Open the map builder
 builder:
   name: Map builder
   skip_link: Skip to the content
