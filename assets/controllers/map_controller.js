@@ -1,6 +1,10 @@
 import { Controller } from "@hotwired/stimulus";
 import * as L from "leaflet";
-import { formatField, matchesFilters } from "../lib/fields.js";
+import {
+  formatField,
+  matchesCondition,
+  matchesFilters,
+} from "../lib/fields.js";
 
 /**
  * A layer from map_json.leaflet.
@@ -16,6 +20,9 @@ import { formatField, matchesFilters } from "../lib/fields.js";
  *   row in the list.
  * @property {import("../lib/fields.js").Field[]} detail The fields of the
  *   detail view.
+ * @property {import("../lib/fields.js").OpenFilter[]} [openFilters] The
+ *   conditions that the user can turn on and off. A map_json from before
+ *   the open filters has none.
  */
 
 /**
@@ -94,7 +101,7 @@ const SELECTED_MARKER_SIZE = 38;
 export default class extends Controller {
   static values = { settings: Object, options: Object, messages: Object };
 
-  static targets = ["map", "status", "marker", "gate", "gateBar"];
+  static targets = ["map", "status", "marker", "gate", "gateBar", "spinner"];
 
   static outlets = ["map-list", "map-detail"];
 
@@ -113,6 +120,16 @@ export default class extends Controller {
         options.layers ?? settings.layers.map((layer) => layer.id),
       ),
       filters: [],
+      // The open filters of the layers that are on, as "<layer>:<index>".
+      openFilters: new Set(
+        settings.layers.flatMap((layer) =>
+          (layer.openFilters ?? [])
+            .map((filter, index) =>
+              filter.checked ? `${layer.id}:${index}` : null,
+            )
+            .filter((key) => key !== null),
+        ),
+      ),
       origin: null,
       selected: null,
       gated: false,
@@ -141,10 +158,33 @@ export default class extends Controller {
     this.map.on("moveend", () => {
       this.updateGate();
       this.render();
+      this.postView();
     });
 
     this.updateGate();
+    this.postView();
     this.load();
+  }
+
+  /**
+   * Tells the page around the frame the view of the map. The builder uses it
+   * to fill in the view fields. The message goes only to a page on the same
+   * origin, so other sites that show the map do not get it.
+   */
+  postView() {
+    if (window.parent === window) {
+      return;
+    }
+    const center = this.map.getCenter();
+    window.parent.postMessage(
+      {
+        type: "enter-maps:view",
+        longitude: center.lng,
+        latitude: center.lat,
+        zoom: this.map.getZoom(),
+      },
+      window.location.origin,
+    );
   }
 
   /** Removes the Leaflet map. */
@@ -155,7 +195,8 @@ export default class extends Controller {
   /**
    * Loads the data of each layer from the data proxy. Then shows the places
    * and selects the place in the "select" option. If a layer fails, the
-   * list shows an error.
+   * list shows an error. At the end, the spinner goes away, if the map has
+   * one.
    *
    * @returns {Promise<void>}
    */
@@ -191,6 +232,10 @@ export default class extends Controller {
       }
 
       return;
+    } finally {
+      if (this.hasSpinnerTarget) {
+        this.spinnerTarget.remove();
+      }
     }
 
     this.render();
@@ -305,6 +350,9 @@ export default class extends Controller {
     if (!matchesFilters(place, this.state.filters)) {
       return false;
     }
+    if (!this.matchesOpenFilters(place)) {
+      return false;
+    }
     if (!this.state.query) {
       return true;
     }
@@ -313,6 +361,19 @@ export default class extends Controller {
       `${place.title} ${place.subtitle} ${place.layer.label}`.toLowerCase();
 
     return text.includes(this.state.query.toLowerCase());
+  }
+  /**
+   * Tells if a place matches each open filter of its layer that is on.
+   *
+   * @param {Place} place The place.
+   * @returns {boolean} True if the place matches.
+   */
+  matchesOpenFilters(place) {
+    return (place.layer.openFilters ?? []).every(
+      (filter, index) =>
+        !this.state.openFilters.has(`${place.layer.id}:${index}`) ||
+        matchesCondition(place.properties, filter.condition),
+    );
   }
 
   /**
@@ -482,10 +543,12 @@ export default class extends Controller {
    * Action for map-filters:change.
    *
    * @param {CustomEvent<{layers: string[],
-   *   filters: {index: number, codes: string[]}[]}>} event
+   *   filters: {index: number, codes: string[]}[],
+   *   openFilters: string[]}>} event
    */
   filter({ detail }) {
     this.state.layers = new Set(detail.layers);
+    this.state.openFilters = new Set(detail.openFilters);
     this.state.filters = detail.filters.map(({ index, codes }) => ({
       filter: this.settingsValue.filters[index],
       codes,

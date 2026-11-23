@@ -55,6 +55,19 @@ class MapConfiguration extends AbstractITKDevEntity implements TimestampableInte
         array $mapJson,
     ) {
         parent::__construct();
+        $this->change($config, $renderers, $mapJson);
+    }
+
+    /**
+     * Replaces the config and the result of the converters. Use
+     * MapConfigurationFactory::update(), which makes both.
+     *
+     * @param list<Renderer>                      $renderers
+     * @param array<string, array<string, mixed>> $mapJson   the result of the converter of each renderer, with the renderer as key
+     */
+    public function change(\stdClass $config, array $renderers, array $mapJson): void
+    {
+        $this->config = $config;
         $this->renderers = array_map(static fn (Renderer $renderer): string => $renderer->value, $renderers);
         // Store the same objects that the database gives back after a load. An encoded object decodes to an object.
         /** @var \stdClass $mapJson */

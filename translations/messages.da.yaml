@@ -16,8 +16,10 @@ embed:
     error: Adressesøgningen svarer ikke lige nu. Du kan stadig søge i listen.
   categories:
     legend: Vis på kortet
+    open_filters: "Filtre for %layer%"
   filters:
     all: Alle
+  loading: Henter stederne …
   zoom_gate:
     title: Se steder på kortet
     text: Skriv en adresse for at søge på et sted, eller zoom ind for at se stederne på kortet.
@@ -41,7 +43,7 @@ builder:
   index:
     title: Kort
     maps: Alle kort
-    empty: Der er ingen kort endnu. Indtil formularen er klar, importerer kommandoen app:map-config:import et kort fra en JSON-fil.
+    empty: Der er ingen kort endnu.
     map: Kort
     updated: Ændret
     actions: Handlinger
@@ -71,3 +73,144 @@ builder:
     submit: Gendan
     label: Gendan kortet "%title%"
     done: Kortet "%title%" er gendannet.
+  form:
+    new_title: Nyt kort
+    edit_title: Ret kortet "%title%"
+    new: Nyt kort
+    edit: Ret
+    edit_label: Ret kortet "%title%"
+    steps: Trin i formularen
+    step_settings: Indstillinger
+    step_datasets: Datasæt
+    step_layers: Lag
+    step_view: Forhåndsvisning
+    step_embed: Embedkode
+    steps_locked: Skriv en titel, og vælg mindst ét datasæt for at åbne Lag og Forhåndsvisning. Embedkoden kommer, når kortet er gemt.
+    steps_embed_locked: Embedkoden kommer, når kortet er gemt.
+    step_error: (har fejl)
+    data_sets: Datasæt
+    data_sets_help: Vælg datasættene til kortet. Hvert datasæt bliver et lag. Fjerner du fluebenet, fjernes lagene med datasættet.
+    data_sets_unavailable: Enter svarer ikke, så listen over datasæt mangler. Du kan tilføje et lag og skrive id'et på datasættet under Lag.
+    general: Generelt
+    title: Titel
+    title_help: Kortet viser titlen, og embedkoden bruger den som titel på iframen.
+    description: Beskrivelse
+    locale: Sprog
+    locale_da: Dansk
+    locale_en: Engelsk
+    sidebar: Sidepanel
+    position: Placering
+    position_left: Til venstre for kortet
+    position_right: Til højre for kortet
+    list: Vis listen over steder
+    categories: Brugeren kan slå lagene til og fra
+    route_link: Vis et link til en rute til stedet (Google Maps)
+    loading_spinner: Vis en spinner over kortet, indtil stederne er hentet
+    search: Søgefelt
+    search_none: Intet søgefelt
+    search_local: Søg i stederne
+    search_address: Søg efter adresse
+    search_both: Søg i stederne og efter adresse
+    view: Forhåndsvisning
+    view_help: Kortet viser formularen, når du åbner Forhåndsvisning, og felterne får kortets visning. Flyt og zoom kortet, og klik på Brug kortets visning for at bruge den nye visning. Visningen er kortets start, når det vises på andre sider. Du kan også udfylde felterne selv.
+    view_use: Brug kortets visning
+    longitude: Længdegrad
+    latitude: Breddegrad
+    zoom: Zoom
+    zoom_gate: Mindste zoom for at vise stederne
+    zoom_gate_help: Til datasæt med mange steder. Er kortet zoomet længere ud, viser det ingen steder og beder brugeren om at zoome ind eller søge. Lad feltet være tomt for altid at vise stederne.
+    layers: Lag
+    layer_heading: "Lag %number%: %label%"
+    layer_new: Nyt lag
+    layer_summary: "Datasæt: %dataSet%"
+    layer_add: Tilføj et lag til kortet
+    layer_delete: Fjern laget
+    layer_delete_label: Fjern laget (lag %number%)
+    layer_label: Navn på laget
+    data_set: Datasæt
+    data_set_select: Vælg et datasæt
+    data_set_count: "{0} ingen steder|{1} 1 sted|]1,Inf[ %count% steder"
+    data_set_unavailable: Enter svarer ikke, så skriv id'et på datasættet.
+    colour: Farve
+    icon: Ikon
+    icon_default: Standard (nål)
+    icon_toilet: Toilet
+    icon_parking: Parkering
+    icon_handicap_parking: Handicapparkering
+    icon_bench: Bænk
+    icon_pin: Nål
+    row: Titel og undertitel på hvert sted
+    row_help: Vises i listen i sidepanelet, øverst i detaljevisningen og når brugeren holder musen over stedet på kortet. Skriv stien til den værdi i datasættet, som skal vises.
+    row_title: Titel
+    row_subtitle: Undertitel (valgfri)
+    row_subtitle_label_help: 'Står foran værdien, fx Pladser giver "Pladser: 2".'
+    detail: Detaljevisningen
+    detail_help: Felterne vises, når brugeren vælger et sted på kortet eller i listen, i denne rækkefølge.
+    detail_empty: Der er ingen felter endnu.
+    field_heading: Felt %number%
+    field_add: Tilføj felt til detaljevisningen
+    field_delete: Fjern feltet
+    field_delete_label: Fjern feltet (felt %number%)
+    field_label: Etiket
+    field_label_help: Overskriften over værdien i detaljevisningen.
+    path: Sti
+    path_help: Egenskaben i datasættet. Eksemplet kommer fra de første steder i datasættet.
+    path_select: Vælg en egenskab
+    path_option: "%path% – fx %example%"
+    paths_empty: Vælg et datasæt til laget for at vælge egenskaberne.
+    paths_none: Datasættet gav ingen egenskaber. Enter svarer måske ikke. Skriv stierne i felterne, fx address.streetAddress.
+    example: Eksempel
+    format: Type
+    format_text: Tekst
+    format_list: Liste
+    format_boolean: Ja/nej
+    format_number: Tal
+    format_date: Dato
+    format_link: Link
+    format_help: Bestemmer, hvordan værdien vises. Liste viser flere værdier med komma imellem. Tal og Dato vises på sidens sprog. Link bliver til et link, hvis værdien er en webadresse.
+    fallback: Tekst, hvis værdien mangler
+    fallback_help: Vises, når stedet ikke har en værdi på stien. Lad feltet være tomt for ikke at vise noget.
+    filter: Fast filter
+    filter_help: Kortet viser kun de steder, som passer. Uden betingelser viser kortet hele datasættet.
+    filter_raw: Filteret har grupper, så formularen kan ikke redigere det. Det bliver gemt uændret.
+    combine: Betingelserne
+    combine_and: Alle betingelser skal passe
+    combine_or: Mindst én betingelse skal passe
+    condition_heading: Betingelse %number%
+    condition_add: Tilføj betingelse til filteret
+    condition_delete: Fjern betingelsen
+    condition_delete_label: Fjern betingelsen (betingelse %number%)
+    condition_open: Brugeren kan slå betingelsen til og fra
+    condition_open_help: Betingelsen bliver et filter under laget i sidepanelet. Den indgår ikke i det faste filter. Er den slået til, viser kortet kun de steder, som passer.
+    condition_label: Tekst i sidepanelet
+    condition_label_help: Fx Kun gratis eller Mindst 2 pladser.
+    condition_checked: Slået til fra start
+    operator: Betingelse
+    operator_eq: er lig med
+    operator_ne: er ikke
+    operator_lt: er mindre end
+    operator_le: er højst
+    operator_gt: er større end
+    operator_ge: er mindst
+    operator_in: er en af
+    operator_null: mangler
+    type: Type af værdi
+    type_text: Tekst
+    type_number: Tal
+    type_boolean: Ja/nej
+    value: Værdi
+    values: Værdier
+    values_help: Én værdi på hver linje.
+    "yes": Ja
+    "no": Nej
+    preview_update: Opdater kortet
+    preview_empty: Vælg et datasæt til laget, og klik på Opdater kortet for at se kortet.
+    preview_frame: Forhåndsvisning af "%title%"
+    save_preview: Gem og vis kortet
+    cancel: Annullér
+    saved: Kortet "%title%" er gemt.
+    not_saved: Kortet blev ikke gemt. Ret disse fejl.
+  preview:
+    title: Kortet "%title%"
+    edit: Ret kortet
+    embed: Vis embedkode

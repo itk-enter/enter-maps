@@ -1,7 +1,7 @@
-{% props id, report = null %}
+{% props id, report = null, routeLink = true %}
 {# The detail view of a place, over the list. The map-detail controller #}
 {# fills the template and puts it in the host. `report` is the report link #}
-{# of the configuration, or null. #}
+{# of the configuration, or null. `routeLink` shows the link to a route. #}
 <div id="{{ id }}" {{ stimulus_controller('map-detail', report ? {report: report} : {}) }}>
     <div data-map-detail-target="host" hidden class="pointer-events-auto fixed inset-0 z-[1000] overflow-y-auto overscroll-contain bg-surface wide:absolute wide:z-[600]"></div>
     <template data-map-detail-target="template">
@@ -12,7 +12,9 @@
             <twig:Heading level="2" size="lg" data-field="title" tabindex="-1" class="mb-4"></twig:Heading>
             <div class="mb-3.5 flex items-start justify-between gap-4">
                 <p data-field="subtitle" class="m-0 font-semibold"></p>
-                <a data-field="route" target="_blank" rel="noopener" class="flex-none text-link underline">{{ 'embed.detail.route'|trans }}</a>
+                {% if routeLink %}
+                    <a data-field="route" target="_blank" rel="noopener" class="flex-none text-link underline">{{ 'embed.detail.route'|trans }}</a>
+                {% endif %}
             </div>
             <dl data-field="details" class="m-0"></dl>
             <template data-field="detail-template">

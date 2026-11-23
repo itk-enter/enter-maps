@@ -16,8 +16,10 @@ embed:
     error: The address search does not answer now. You can still search the list.
   categories:
     legend: Show on the map
+    open_filters: "Filters for %layer%"
   filters:
     all: All
+  loading: Loading the places …
   zoom_gate:
     title: See places on the map
     text: Type an address to search for a place, or zoom in to see the places on the map.
@@ -41,7 +43,7 @@ builder:
   index:
     title: Maps
     maps: All maps
-    empty: There are no maps yet. Until the form is ready, the command app:map-config:import imports a map from a JSON file.
+    empty: There are no maps yet.
     map: Map
     updated: Changed
     actions: Actions
@@ -71,3 +73,144 @@ builder:
     submit: Restore
     label: Restore the map "%title%"
     done: The map "%title%" is restored.
+  form:
+    new_title: New map
+    edit_title: Edit the map "%title%"
+    new: New map
+    edit: Edit
+    edit_label: Edit the map "%title%"
+    steps: Steps of the form
+    step_settings: Settings
+    step_datasets: Data sets
+    step_layers: Layers
+    step_view: Preview
+    step_embed: Embed code
+    steps_locked: Type a title, and select one or more data sets to open Layers and Preview. The embed code comes when you save the map.
+    steps_embed_locked: The embed code comes when you save the map.
+    step_error: (has errors)
+    data_sets: Data sets
+    data_sets_help: Select the data sets of the map. Each data set becomes a layer. If you remove the tick, the form removes the layers with the data set.
+    data_sets_unavailable: Enter does not answer, so the list of data sets is not available. You can add a layer and type the id of the data set under Layers.
+    general: General
+    title: Title
+    title_help: The map shows the title, and the embed code uses it as the title of the iframe.
+    description: Description
+    locale: Language
+    locale_da: Danish
+    locale_en: English
+    sidebar: Sidebar
+    position: Position
+    position_left: To the left of the map
+    position_right: To the right of the map
+    list: Show the list of places
+    categories: The user can turn the layers on and off
+    route_link: Show a link to a route to the place (Google Maps)
+    loading_spinner: Show a spinner over the map until the places are loaded
+    search: Search field
+    search_none: No search field
+    search_local: Search the places
+    search_address: Search for an address
+    search_both: Search the places and for an address
+    view: Preview
+    view_help: The map shows the form when you open Preview, and the fields get the view of the map. Move and zoom the map, and click Use the view of the map to use the new view. The view is the start of the map on other sites. You can also fill in the fields.
+    view_use: Use the view of the map
+    longitude: Longitude
+    latitude: Latitude
+    zoom: Zoom
+    zoom_gate: Minimum zoom to show the places
+    zoom_gate_help: For data sets with many places. If the map is zoomed out more, it shows no places and asks the user to zoom in or search. Leave the field empty to always show the places.
+    layers: Layers
+    layer_heading: "Layer %number%: %label%"
+    layer_new: New layer
+    layer_summary: "Data set: %dataSet%"
+    layer_add: Add a layer to the map
+    layer_delete: Remove the layer
+    layer_delete_label: Remove the layer (layer %number%)
+    layer_label: Name of the layer
+    data_set: Data set
+    data_set_select: Select a data set
+    data_set_count: "{0} no places|{1} 1 place|]1,Inf[ %count% places"
+    data_set_unavailable: Enter does not answer, so type the id of the data set.
+    colour: Colour
+    icon: Icon
+    icon_default: Default (pin)
+    icon_toilet: Toilet
+    icon_parking: Parking
+    icon_handicap_parking: Disabled parking
+    icon_bench: Bench
+    icon_pin: Pin
+    row: Title and subtitle of each place
+    row_help: Shows in the list in the sidebar, at the top of the detail view, and when the user holds the mouse over the place on the map. Type the path to the value in the data set that must show.
+    row_title: Title
+    row_subtitle: Subtitle (optional)
+    row_subtitle_label_help: 'Comes before the value, for example Spots gives "Spots: 2".'
+    detail: The detail view
+    detail_help: The fields show when the user selects a place on the map or in the list, in this order.
+    detail_empty: There are no fields yet.
+    field_heading: Field %number%
+    field_add: Add a field to the detail view
+    field_delete: Remove the field
+    field_delete_label: Remove the field (field %number%)
+    field_label: Label
+    field_label_help: The heading above the value in the detail view.
+    path: Path
+    path_help: The property in the data set. The example comes from the first places in the data set.
+    path_select: Select a property
+    path_option: "%path% – for example %example%"
+    paths_empty: Select a data set for the layer to select the properties.
+    paths_none: The data set gave no properties. Maybe Enter does not answer. Type the paths in the fields, for example address.streetAddress.
+    example: Example
+    format: Type
+    format_text: Text
+    format_list: List
+    format_boolean: Yes/no
+    format_number: Number
+    format_date: Date
+    format_link: Link
+    format_help: Sets how the map shows the value. List shows more than one value, with commas between them. Number and Date use the language of the page. Link makes a link if the value is a web address.
+    fallback: Text if the value is missing
+    fallback_help: The map shows this text if the place has no value at the path. Leave the field empty to show nothing.
+    filter: Fixed filter
+    filter_help: The map shows only the places that match. Without conditions, the map shows all of the data set.
+    filter_raw: The filter has groups, so the form cannot edit it. A save keeps it as it is.
+    combine: The conditions
+    combine_and: All conditions must match
+    combine_or: At least one condition must match
+    condition_heading: Condition %number%
+    condition_add: Add a condition to the filter
+    condition_delete: Remove the condition
+    condition_delete_label: Remove the condition (condition %number%)
+    condition_open: The user can turn the condition on and off
+    condition_open_help: The condition becomes a filter below the layer in the sidebar. It is not part of the fixed filter. If it is on, the map shows only the places that match.
+    condition_label: Text in the sidebar
+    condition_label_help: For example Only free or 2 or more spaces.
+    condition_checked: On at the start
+    operator: Condition
+    operator_eq: is equal to
+    operator_ne: is not
+    operator_lt: is less than
+    operator_le: is at most
+    operator_gt: is more than
+    operator_ge: is at least
+    operator_in: is one of
+    operator_null: is missing
+    type: Type of the value
+    type_text: Text
+    type_number: Number
+    type_boolean: Yes/no
+    value: Value
+    values: Values
+    values_help: One value on each line.
+    "yes": "Yes"
+    "no": "No"
+    preview_update: Update the map
+    preview_empty: Select a data set for the layer, and click Update the map to see the map.
+    preview_frame: Preview of "%title%"
+    save_preview: Save and show the map
+    cancel: Cancel
+    saved: The map "%title%" is saved.
+    not_saved: The map is not saved. Correct these errors.
+  preview:
+    title: The map "%title%"
+    edit: Edit the map
+    embed: Show the embed code

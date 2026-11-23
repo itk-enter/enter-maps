@@ -4,7 +4,8 @@
 {% set sidebar = map.sidebar %}
 {% set hasSidebar = options.sidebar != 'off' %}
 {% set hasSearch = hasSidebar and (sidebar.localSearch or sidebar.addressSearch) %}
-{% set hasFilters = hasSidebar and (sidebar.categories or map.filters is not empty) %}
+{% set hasOpenFilters = map.layers|filter(layer => layer.openFilters|default([]) is not empty) is not empty %}
+{% set hasFilters = hasSidebar and (sidebar.categories or map.filters is not empty or hasOpenFilters) %}
 {% set report = options.report ? map.report : null %}
 
 {% block title %}{{ map.title }}{% endblock %}
@@ -43,7 +44,7 @@
             {% if hasSidebar and options.list %}
                 <twig:Map:List id="map-list" />
             {% endif %}
-            <twig:Map:Detail id="map-detail" :report="report" />
+            <twig:Map:Detail id="map-detail" :report="report" :routeLink="sidebar.routeLink ?? true" />
         </twig:Map:Sidebar>
 
         <div data-map-target="map" role="region" aria-label="{{ 'embed.map_label'|trans }}"
@@ -52,5 +53,10 @@
         {% for layer in map.layers %}
             <twig:Map:Marker :layer="layer" />
         {% endfor %}
+
+        {# A map that was saved before the setting existed has no loadingSpinner. #}
+        {% if map.loadingSpinner ?? false %}
+            <twig:Map:Spinner />
+        {% endif %}
     </main>
 {% endblock %}

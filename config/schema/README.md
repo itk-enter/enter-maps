@@ -22,6 +22,7 @@ Your editor shows it if you connect the schema to a JSON file.
 ```text
 version, title, description, locale   The map
 view, zoomGate                         The start view and the minimum zoom level
+loadingSpinner                         A spinner over the map until the data is loaded
 sidebar                                The list, the categories and the search
 layers[]                               The data sets, each with its own fields
 filters[]                              The open filters that the user can change
@@ -70,6 +71,23 @@ the value:
 
 - Without `codes`, the value in the data is the code of the filter.
 - A filter does not change the features of a layer that is not in `appliesTo`.
+
+A layer can also have conditions that the user turns on and off, in `openFilters`. The sidebar shows a checkbox for
+each condition, below the layer. A condition that is on shows only the features of the layer that match it:
+
+```json
+"openFilters": [
+  {
+    "label": "Mindst 2 pladser",
+    "condition": { "op": ">=", "args": [{ "property": "totalSpotNumber" }, 2] },
+    "checked": true
+  }
+]
+```
+
+- `condition` is one comparison in CQL2-JSON, without `and` or `or`.
+- `checked` is true if the condition is on at the start. The default is false.
+- The map applies the conditions in the browser, after the closed filter. The data proxy does not get them.
 
 ## Icons
 

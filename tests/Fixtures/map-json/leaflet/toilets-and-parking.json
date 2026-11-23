@@ -4,6 +4,7 @@
     "locale": "da-DK",
     "view": null,
     "minZoom": null,
+    "loadingSpinner": true,
     "baseMap": {
         "url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
         "attribution": "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a>",
@@ -14,7 +15,8 @@
         "list": true,
         "categories": true,
         "localSearch": false,
-        "addressSearch": false
+        "addressSearch": false,
+        "routeLink": true
     },
     "layers": [
         {
@@ -78,6 +80,22 @@
                     "format": "boolean",
                     "values": {}
                 }
+            ],
+            "openFilters": [
+                {
+                    "label": "Kørestolsvenligt",
+                    "checked": true,
+                    "condition": {
+                        "op": "in",
+                        "path": [
+                            "wheelchairAccessible"
+                        ],
+                        "values": [
+                            "yes",
+                            "limited"
+                        ]
+                    }
+                }
             ]
         },
         {
@@ -138,6 +156,21 @@
                     "values": {
                         "no": "Gratis",
                         "yes": "Betaling"
+                    }
+                }
+            ],
+            "openFilters": [
+                {
+                    "label": "Mindst 2 pladser",
+                    "checked": false,
+                    "condition": {
+                        "op": ">=",
+                        "path": [
+                            "totalSpotNumber"
+                        ],
+                        "values": [
+                            2
+                        ]
                     }
                 }
             ]

@@ -1,0 +1,283 @@
+{# The form of a map. See App\Twig\Components\MapEditor. The server renders #}
+{# it again after each change, so a condition shows only the value field #}
+{# that its operator and type need. #}
+{% set section = 'flex flex-col gap-4' %}
+{% set box = 'flex flex-col gap-4 rounded border border-line p-4' %}
+{% set grid = 'grid grid-cols-1 gap-4 sm:grid-cols-2' %}
+{% set group = 'flex flex-col gap-3 border-t border-line pt-4' %}
+{% set fieldset = 'm-0 flex flex-col gap-3 border-0 p-0' %}
+{% set legend = 'mb-2 p-0 font-semibold' %}
+{% set card = 'm-0 flex flex-col gap-3 rounded border border-line bg-surface-2 p-3' %}
+<div {{ attributes }}>
+    {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col gap-6', 'data-action': 'live#action:prevent', 'data-live-action-param': 'save'}}) }}
+        {% if saveErrors is not empty %}
+            <twig:Layout:ErrorList title="{{ 'builder.form.not_saved'|trans }}" :errors="saveErrors" />
+        {% endif %}
+        {{ form_errors(form) }}
+
+        <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-[14rem_minmax(0,1fr)]">
+            {# The steps of the form, on one page. The menu shows one step, and the #}
+            {# other steps stay in the page, so that the form keeps their values. #}
+            {# A step that is not available is disabled. The embed code is a link to #}
+        {# its own page, and it needs a stored map. #}
+        {% set errorSteps = this.stepsWithErrors %}
+        {% set availableSteps = this.availableSteps %}
+            <nav aria-label="{{ 'builder.form.steps'|trans }}" class="flex flex-col gap-3 lg:sticky lg:top-4">
+                <ul class="m-0 flex list-none flex-wrap gap-1 p-0 lg:flex-col">
+                    {% for name in constant('App\\Twig\\Components\\MapEditor::STEPS') %}
+                        <li>
+                            <twig:Form:StepButton :current="step == name" :invalid="name in errorSteps" :disabled="name not in availableSteps" controls="step-{{ name }}" data-action="live#action" data-live-action-param="showStep" data-live-step-param="{{ name }}">
+                                {{- ('builder.form.step_' ~ name)|trans -}}
+                            </twig:Form:StepButton>
+                        </li>
+                    {% endfor %}
+                    <li>
+                        <twig:Form:StepButton :href="mapId ? path('app_builder_embed', {id: mapId}) : null" :disabled="mapId is null">
+                            {{- 'builder.form.step_embed'|trans -}}
+                        </twig:Form:StepButton>
+                    </li>
+                </ul>
+                {% if availableSteps|length < 4 or mapId is null %}
+                    <p class="m-0 text-sm text-text-muted">{{ (availableSteps|length < 4 ? 'builder.form.steps_locked' : 'builder.form.steps_embed_locked')|trans }}</p>
+                {% endif %}
+            </nav>
+
+            <div class="flex min-w-0 flex-col gap-8">
+                <div id="step-settings" class="flex flex-col gap-8" {{ step == 'settings' ? '' : 'hidden' }}>
+                    <section aria-labelledby="general-heading" class="{{ section }}">
+                        <twig:Heading level="2" id="general-heading">{{ 'builder.form.general'|trans }}</twig:Heading>
+                        {{ form_row(form.title) }}
+                        {{ form_row(form.description) }}
+                        {{ form_row(form.locale) }}
+                    </section>
+
+                    <section aria-labelledby="sidebar-heading" class="{{ section }}">
+                        <twig:Heading level="2" id="sidebar-heading">{{ 'builder.form.sidebar'|trans }}</twig:Heading>
+                        {# The choices are in the first column, and the checkboxes in the second. #}
+                        <div class="{{ grid }} items-start">
+                            <div class="flex flex-col gap-4">
+                                {{ form_row(form.sidebarPosition) }}
+                                {{ form_row(form.search) }}
+                            </div>
+                            <div class="flex flex-col gap-4">
+                                {{ form_row(form.showList) }}
+                                {{ form_row(form.categories) }}
+                                {{ form_row(form.routeLink) }}
+                                {{ form_row(form.loadingSpinner) }}
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                {# A tick adds a layer with the data set. To remove the tick removes the #}
+                {# layers with the data set. The check boxes have no name, so they are #}
+                {# not part of the form data. #}
+                <section id="step-datasets" aria-labelledby="datasets-heading" class="{{ section }}" {{ step == 'datasets' ? '' : 'hidden' }}>
+                    <twig:Heading level="2" id="datasets-heading">{{ 'builder.form.data_sets'|trans }}</twig:Heading>
+                    <p class="m-0 text-sm text-text-muted">{{ 'builder.form.data_sets_help'|trans }}</p>
+                        {% set dataSets = this.dataSets %}
+                    {% if dataSets is null %}
+                        <p class="m-0">{{ 'builder.form.data_sets_unavailable'|trans }}</p>
+                    {% else %}
+                        {% set selected = this.selectedDataSets %}
+                        <fieldset class="{{ fieldset }}">
+                            <legend class="sr-only">{{ 'builder.form.data_sets'|trans }}</legend>
+                            {% for id, dataSet in dataSets %}
+                                <twig:Form:Checkbox value="{{ id }}" :checked="id in selected" data-action="change->live#action" data-live-action-param="toggleDataSet" data-live-id-param="{{ id }}">
+                                    {{- dataSet.label -}}
+                                </twig:Form:Checkbox>
+                            {% endfor %}
+                        </fieldset>
+                    {% endif %}
+                </section>
+
+                <section id="step-layers" aria-labelledby="layers-heading" class="{{ section }}" {{ step == 'layers' ? '' : 'hidden' }}>
+                    <twig:Heading level="2" id="layers-heading">{{ 'builder.form.layers'|trans }}</twig:Heading>
+                    {% for layer in form.layers %}
+                        {% set number = loop.index %}
+                        {% set key = layer.vars.name %}
+                        {% set open = key in openLayers %}
+                        <div class="{{ box }}">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <twig:Heading level="3" size="md">
+                                    <twig:Form:DisclosureButton :expanded="open" controls="layer-{{ key }}" data-action="live#action" data-live-action-param="toggleLayer" data-live-key-param="{{ key }}">
+                                        {{- 'builder.form.layer_heading'|trans({'%number%': number, '%label%': layer.label.vars.value ?: 'builder.form.layer_new'|trans}) -}}
+                                    </twig:Form:DisclosureButton>
+                                </twig:Heading>
+                                {{ form_widget(layer.vars.button_delete, {attr: {'aria-label': 'builder.form.layer_delete_label'|trans({'%number%': number})}}) }}
+                            </div>
+                            {% if not open and layer.dataSet.vars.value %}
+                                <p class="m-0 text-sm text-text-muted">{{ 'builder.form.layer_summary'|trans({'%dataSet%': layer.dataSet.vars.value}) }}</p>
+                            {% endif %}
+                            {# A closed layer keeps its fields in the page, so that the form #}
+                            {# still has their values. #}
+                            <div id="layer-{{ key }}" class="flex flex-col gap-4" {{ open ? '' : 'hidden' }}>
+                            {{ form_widget(layer.id) }}
+                            {{ form_widget(layer.extra) }}
+                            {{ form_widget(layer.rawFilter) }}
+                            <div class="{{ grid }}">
+                                {{ form_row(layer.label) }}
+                                {{ form_row(layer.dataSet) }}
+                                {{ form_row(layer.colour) }}
+                                {{ form_row(layer.icon) }}
+                            </div>
+
+                            {# The paths in the first entities of the data set are the choices #}
+                            {# of each path field of the layer. #}
+                            {% set paths = this.paths(layer.dataSet.vars.value) %}
+                            {% if not layer.dataSet.vars.value %}
+                                <p class="m-0 text-sm text-text-muted">{{ 'builder.form.paths_empty'|trans }}</p>
+                            {% elseif paths is empty %}
+                                <p class="m-0 text-sm text-text-muted">{{ 'builder.form.paths_none'|trans }}</p>
+                            {% endif %}
+
+                            <div class="{{ group }}">
+                                <twig:Heading level="4" size="sm">{{ 'builder.form.row'|trans }}</twig:Heading>
+                                <p class="m-0 text-sm text-text-muted">{{ 'builder.form.row_help'|trans }}</p>
+                                <fieldset class="{{ fieldset }}">
+                                    <legend class="{{ legend }}">{{ 'builder.form.row_title'|trans }}</legend>
+                                    <div class="{{ grid }}">
+                                        {{ form_row(layer.title.path, {paths: paths}) }}
+                                        {{ form_row(layer.title.fallback) }}
+                                        {{ form_widget(layer.title.extra) }}
+                                    </div>
+                                </fieldset>
+                                <fieldset class="{{ fieldset }}">
+                                    <legend class="{{ legend }}">{{ 'builder.form.row_subtitle'|trans }}</legend>
+                                    <div class="{{ grid }}">
+                                        {{ form_row(layer.subtitle.path, {required: false, paths: paths}) }}
+                                        {{ form_row(layer.subtitle.label, {help: 'builder.form.row_subtitle_label_help'}) }}
+                                        {{ form_row(layer.subtitle.format) }}
+                                        {{ form_row(layer.subtitle.fallback) }}
+                                        {{ form_widget(layer.subtitle.extra) }}
+                                    </div>
+                                </fieldset>
+                            </div>
+
+                            <div class="{{ group }}">
+                                <twig:Heading level="4" size="sm">{{ 'builder.form.filter'|trans }}</twig:Heading>
+                                <p class="m-0 text-sm text-text-muted">{{ 'builder.form.filter_help'|trans }}</p>
+                                {% if layer.rawFilter.vars.value %}
+                                    <p class="m-0">{{ 'builder.form.filter_raw'|trans }}</p>
+                                    <pre class="m-0 overflow-x-auto rounded bg-surface-2 p-3 text-sm whitespace-pre-wrap"><code>{{ layer.rawFilter.vars.value }}</code></pre>
+                                    {% do layer.combine.setRendered %}
+                                    {% do layer.conditions.setRendered %}
+                                {% else %}
+                                    {# The choice of "and" or "or" applies to the conditions that the user cannot turn on and off. #}
+                            {% if layer.conditions|filter(condition => not condition.open.vars.checked)|length > 1 %}
+                                        {{ form_row(layer.combine) }}
+                                    {% else %}
+                                        {% do layer.combine.setRendered %}
+                                    {% endif %}
+                                    {% for condition in layer.conditions %}
+                                        {% set operator = condition.operator.vars.value %}
+                                        {% set type = condition.type.vars.value %}
+                                        <fieldset class="{{ card }}">
+                                            <legend class="sr-only">{{ 'builder.form.condition_heading'|trans({'%number%': loop.index}) }}</legend>
+                                            <div class="flex items-center justify-between gap-2">
+                                                <span aria-hidden="true" class="font-semibold">{{ 'builder.form.condition_heading'|trans({'%number%': loop.index}) }}</span>
+                                                {{ form_widget(condition.vars.button_delete, {attr: {'aria-label': 'builder.form.condition_delete_label'|trans({'%number%': loop.index})}}) }}
+                                            </div>
+                                            <div class="{{ grid }}">
+                                                {{ form_row(condition.path, {paths: paths}) }}
+                                                {{ form_row(condition.operator) }}
+                                                {% if operator == 'isNull' %}
+                                                    {% do condition.type.setRendered %}
+                                                {% else %}
+                                                    {{ form_row(condition.type) }}
+                                                {% endif %}
+                                                {% if operator == 'in' %}
+                                                    {{ form_row(condition.values) }}
+                                                {% elseif operator != 'isNull' and type == 'boolean' %}
+                                                    {{ form_row(condition.flag) }}
+                                                {% elseif operator != 'isNull' %}
+                                                    {{ form_row(condition.value) }}
+                                                {% endif %}
+                                                {% do condition.value.setRendered %}
+                                                {% do condition.flag.setRendered %}
+                                                {% do condition.values.setRendered %}
+                                            </div>
+                                            {{ form_row(condition.open) }}
+                                            {% if condition.open.vars.checked %}
+                                                {{ form_row(condition.label) }}
+                                                {{ form_row(condition.checked) }}
+                                            {% else %}
+                                                {% do condition.label.setRendered %}
+                                                {% do condition.checked.setRendered %}
+                                            {% endif %}
+                                        </fieldset>
+                                    {% endfor %}
+                                    <div>{{ form_widget(layer.conditions.vars.button_add) }}</div>
+                                    {% do layer.conditions.setRendered %}
+                                {% endif %}
+                            </div>
+
+                            <div class="{{ group }}">
+                                <twig:Heading level="4" size="sm">{{ 'builder.form.detail'|trans }}</twig:Heading>
+                                <p class="m-0 text-sm text-text-muted">{{ 'builder.form.detail_help'|trans }}</p>
+                                {% for field in layer.detail %}
+                                    <fieldset class="{{ card }}">
+                                        <legend class="sr-only">{{ 'builder.form.field_heading'|trans({'%number%': loop.index}) }}</legend>
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span aria-hidden="true" class="font-semibold">{{ 'builder.form.field_heading'|trans({'%number%': loop.index}) }}</span>
+                                            {{ form_widget(field.vars.button_delete, {attr: {'aria-label': 'builder.form.field_delete_label'|trans({'%number%': loop.index})}}) }}
+                                        </div>
+                                        <div class="{{ grid }}">
+                                            {{ form_row(field.label, {help: 'builder.form.field_label_help'}) }}
+                                            {{ form_row(field.path, {paths: paths}) }}
+                                            {{ form_row(field.format) }}
+                                            {{ form_row(field.fallback) }}
+                                            {{ form_widget(field.extra) }}
+                                        </div>
+                                    </fieldset>
+                                {% else %}
+                                    <p class="m-0">{{ 'builder.form.detail_empty'|trans }}</p>
+                                {% endfor %}
+                                <div>{{ form_widget(layer.detail.vars.button_add) }}</div>
+                                {% do layer.detail.setRendered %}
+                            </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <div>{{ form_widget(form.layers.vars.button_add) }}</div>
+                    {% do form.layers.setRendered %}
+                </section>
+
+                {# The map from the form, without a save. The frame shows the stored map #}
+                {# until the first update. A new update has a new token, so the frame #}
+                {# loads the new map. The map-view controller copies the view of the map #}
+                {# into the fields. #}
+                {% set frameSource = previewToken ? path('app_builder_draft', {token: previewToken}) : (mapId ? path('app_embed_leaflet', {id: mapId}) : null) %}
+                <section id="step-view" aria-labelledby="view-heading" class="{{ section }}" data-controller="map-view" {{ step == 'view' ? '' : 'hidden' }}>
+                    <twig:Heading level="2" id="view-heading">{{ 'builder.form.view'|trans }}</twig:Heading>
+                    <p class="m-0 text-sm text-text-muted">{{ 'builder.form.view_help'|trans }}</p>
+                    {# The frame loads only on this step, so that the map gets its size. #}
+                    {% if frameSource and step == 'view' %}
+                        <iframe id="map-preview-{{ previewToken ?? 'stored' }}" src="{{ frameSource }}" title="{{ 'builder.form.preview_frame'|trans({'%title%': form.title.vars.value}) }}" data-map-view-target="frame" class="h-[600px] w-full rounded border border-line"></iframe>
+                    {% else %}
+                        <p class="m-0 rounded border border-line bg-surface-2 p-4">{{ 'builder.form.preview_empty'|trans }}</p>
+                    {% endif %}
+                    <div>
+                        <twig:Form:Button type="button" variant="secondary" data-action="live#action" data-live-action-param="preview">{{ 'builder.form.preview_update'|trans }}</twig:Form:Button>
+                    </div>
+                    <div class="grid grid-cols-1 items-end gap-4 sm:grid-cols-3 wide:grid-cols-[1fr_1fr_1fr_auto]">
+                        {{ form_row(form.viewLongitude, {attr: {'data-map-view-target': 'longitude'}}) }}
+                        {{ form_row(form.viewLatitude, {attr: {'data-map-view-target': 'latitude'}}) }}
+                        {{ form_row(form.viewZoom, {attr: {'data-map-view-target': 'zoom'}}) }}
+                        {% if frameSource %}
+                            <div>
+                                <twig:Form:Button type="button" variant="secondary" data-action="map-view#use">{{ 'builder.form.view_use'|trans }}</twig:Form:Button>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {{ form_row(form.zoomGate) }}
+                </section>
+
+                <div class="flex flex-wrap gap-3 border-t border-line pt-6">
+                    <twig:Form:Button type="button" data-action="live#action" data-live-action-param="save">{{ 'builder.form.save_preview'|trans }}</twig:Form:Button>
+                    <twig:Form:Button variant="secondary" href="{{ path('app_builder') }}">{{ 'builder.form.cancel'|trans }}</twig:Form:Button>
+                </div>
+            </div>
+        </div>
+    {{ form_end(form) }}
+</div>

@@ -59,6 +59,10 @@
         }
       }
     },
+    "loadingSpinner": {
+      "description": "If true, a spinner covers the map until the data of all the layers is loaded. The default is false.",
+      "type": "boolean"
+    },
     "sidebar": {
       "description": "The settings of the sidebar. Without it, the sidebar is on the left with the list, and has no search.",
       "type": "object",
@@ -74,6 +78,10 @@
         },
         "categories": {
           "description": "If true, the user can turn each layer on and off. The default is false.",
+          "type": "boolean"
+        },
+        "routeLink": {
+          "description": "If true, the detail view of a feature has a link to a route to it. The default is true.",
           "type": "boolean"
         },
         "search": {
@@ -258,6 +266,12 @@
           "description": "The closed filter, in CQL2-JSON: the entities must also match it. The user cannot change it. cql2-filter.json defines the supported part.",
           "$ref": "urn:enter-maps:cql2-filter"
         },
+        "openFilters": {
+          "description": "The conditions that the user can turn on and off, below the layer in the sidebar. A condition that is on shows only the features that match it. The map applies the conditions in the browser, after the closed filter.",
+          "type": "array",
+          "maxItems": 10,
+          "items": { "$ref": "#/$defs/openFilter" }
+        },
         "row": {
           "description": "The fields that identify a feature, for example in a list.",
           "type": "object",
@@ -279,6 +293,27 @@
           "type": "array",
           "maxItems": 50,
           "items": { "$ref": "#/$defs/field" }
+        }
+      }
+    },
+    "openFilter": {
+      "description": "A condition of a layer that the user can turn on and off.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "condition"],
+      "properties": {
+        "label": {
+          "description": "The text of the checkbox.",
+          "$ref": "#/$defs/text"
+        },
+        "condition": {
+          "description": "One comparison in CQL2-JSON, without and or or. Example: {\"op\": \">=\", \"args\": [{\"property\": \"seats\"}, 2]}.",
+          "$ref": "urn:enter-maps:cql2-filter",
+          "not": { "required": ["op"], "properties": { "op": { "enum": ["and", "or"] } } }
+        },
+        "checked": {
+          "description": "If true, the condition is on at the start. The default is false.",
+          "type": "boolean"
         }
       }
     },

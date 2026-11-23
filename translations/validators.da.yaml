@@ -1,0 +1,9 @@
+builder:
+  form:
+    error:
+      required: Udfyld feltet.
+      path: Skriv en sti med bogstaver, tal og _, og med punktum mellem delene, fx address.streetAddress.
+      number: Skriv et tal, fx 2 eller 2.5.
+      boolean: Skriv true eller false på hver linje.
+      view: Udfyld længdegrad, breddegrad og zoom, eller lad alle tre være tomme.
+      no_layer: Kortet skal have mindst ét lag.

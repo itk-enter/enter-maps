@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Builder\EmbedCode;
+use App\Builder\PreviewStore;
+use App\Embed\LeafletPage;
 use App\Entity\MapConfiguration;
 use App\Repository\MapConfigurationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,7 +18,8 @@ use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * The list of the maps in the builder, with the embed code, delete and restore.
+ * The pages of the builder: the list of the maps, the form, the preview, the
+ * embed code, delete and restore.
  */
 #[Route('/builder', requirements: ['id' => Requirement::ULID])]
 final class BuilderController extends AbstractController
@@ -25,6 +28,8 @@ final class BuilderController extends AbstractController
         private readonly MapConfigurationRepository $repository,
         private readonly EmbedCode $embedCode,
         private readonly TranslatorInterface $translator,
+        private readonly PreviewStore $previews,
+        private readonly LeafletPage $leafletPage,
     ) {
     }
 
@@ -35,6 +40,35 @@ final class BuilderController extends AbstractController
             'maps' => $this->repository->findActive(),
             'deleted' => $this->repository->findDeleted(),
         ]);
+    }
+
+    #[Route('/new', name: 'app_builder_new', methods: [Request::METHOD_GET])]
+    public function new(): Response
+    {
+        return $this->render('builder/form.html.twig', ['map' => null]);
+    }
+
+    #[Route('/{id}/edit', name: 'app_builder_edit', methods: [Request::METHOD_GET])]
+    public function edit(MapConfiguration $map): Response
+    {
+        return $this->render('builder/form.html.twig', ['map' => $map]);
+    }
+
+    #[Route('/{id}/preview', name: 'app_builder_preview', methods: [Request::METHOD_GET])]
+    public function preview(MapConfiguration $map): Response
+    {
+        return $this->render('builder/preview.html.twig', ['map' => $map, 'code' => $this->embedCode->html($map)]);
+    }
+
+    /**
+     * The map from the form, without a save. See MapEditor::preview().
+     */
+    #[Route('/preview/{token}', name: 'app_builder_draft', requirements: ['token' => '[0-9a-f]{32}'], methods: [Request::METHOD_GET])]
+    public function draft(Request $request, string $token): Response
+    {
+        $settings = $this->previews->get($token) ?? throw $this->createNotFoundException();
+
+        return $this->leafletPage->render($settings, $request->query->all());
     }
 
     #[Route('/{id}/embed', name: 'app_builder_embed', methods: [Request::METHOD_GET])]

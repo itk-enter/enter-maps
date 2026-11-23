@@ -176,4 +176,53 @@ final class EnterClientTest extends TestCase
 
         new EnterClient($client)->getFeatures(new DataSet('toilets', 'Toilets', null, null), null);
     }
+
+    public function testGetSampleReadsOnePageWithTheLimit(): void
+    {
+        $enter = new FakeEnter();
+        $enter->features['toilets'] = array_map(static fn (int $number): array => FakeEnter::feature('urn:'.$number, ['name' => 'Toilet '.$number]), range(1, 5));
+
+        $features = new EnterClient($enter->client())->getSample(new DataSet('toilets', 'Toilets', 'PublicToilet', null), 3);
+
+        $this->assertSame(['urn:1', 'urn:2', 'urn:3'], array_column($features, 'id'));
+        // The same properties are removed as in getFeatures().
+        $this->assertSame(['name' => 'Toilet 1'], $features[0]['properties']);
+        $this->assertCount(1, $enter->requests);
+        $this->assertStringContainsString('limit=3', $enter->requests[0]);
+        $this->assertStringContainsString('type=PublicToilet', $enter->requests[0]);
+    }
+
+    public function testCountEntitiesGivesTheNumberOfEachDataSet(): void
+    {
+        $enter = new FakeEnter();
+        $enter->features['toilets'] = [FakeEnter::feature('urn:1'), FakeEnter::feature('urn:2')];
+        $enter->failingDataSets = ['broken'];
+
+        $counts = new EnterClient($enter->client())->countEntities([
+            new DataSet('toilets', 'Toilets', 'PublicToilet', 'https://example.com/context.jsonld'),
+            new DataSet('benches', 'Benches', null, null),
+            new DataSet('broken', 'Broken', null, null),
+        ]);
+
+        $this->assertSame(['toilets' => 2, 'benches' => 0, 'broken' => null], $counts);
+        $this->assertStringContainsString('count=true', $enter->requests[0]);
+        $this->assertStringContainsString('limit=1', $enter->requests[0]);
+        // The count uses the context of the data set, as the other requests do.
+        $this->assertStringContainsString('context.jsonld', implode("\n", $enter->options[0]['headers'] ?? []));
+    }
+
+    public function testCountEntitiesGivesNullWithoutTheHeader(): void
+    {
+        $client = new MockHttpClient(new MockResponse('', ['http_code' => 200]), 'http://enter.example');
+
+        $this->assertSame(['toilets' => null], new EnterClient($client)->countEntities([new DataSet('toilets', 'Toilets', null, null)]));
+    }
+
+    public function testCountEntitiesGivesNullIfTheCountIsZeroButTheResponseHasAnEntity(): void
+    {
+        $body = json_encode(['type' => 'FeatureCollection', 'features' => [FakeEnter::feature('urn:1')]], \JSON_THROW_ON_ERROR);
+        $client = new MockHttpClient(new MockResponse($body, ['response_headers' => ['NGSILD-Results-Count' => '0']]), 'http://enter.example');
+
+        $this->assertSame(['toilets' => null], new EnterClient($client)->countEntities([new DataSet('toilets', 'Toilets', null, null)]));
+    }
 }

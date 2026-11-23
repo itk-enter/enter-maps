@@ -15,6 +15,7 @@ final readonly class Sidebar
      * @param bool           $categories    show the layers as categories that the user can turn on and off
      * @param bool           $localSearch   search in the features of the map
      * @param bool           $addressSearch search for an address with Adressevælger
+     * @param bool           $routeLink     show a link to a route to the feature in the detail view
      */
     public function __construct(
         public string $position,
@@ -22,11 +23,12 @@ final readonly class Sidebar
         public bool $categories,
         public bool $localSearch,
         public bool $addressSearch,
+        public bool $routeLink = true,
     ) {
     }
 
     /**
-     * @param array{position?: 'left'|'right', list?: bool, categories?: bool, search?: array{local?: bool, address?: bool}} $data
+     * @param array{position?: 'left'|'right', list?: bool, categories?: bool, routeLink?: bool, search?: array{local?: bool, address?: bool}} $data
      */
     public static function fromArray(array $data): self
     {
@@ -36,6 +38,7 @@ final readonly class Sidebar
             categories: $data['categories'] ?? false,
             localSearch: $data['search']['local'] ?? false,
             addressSearch: $data['search']['address'] ?? false,
+            routeLink: $data['routeLink'] ?? true,
         );
     }
 }
