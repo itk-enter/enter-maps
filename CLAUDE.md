@@ -83,7 +83,7 @@ tests/Support/Database.php         Makes an empty SQLite database for a test
 tests/Browser/                     Playwright and axe-core tests of the pages, with stubs for services
 templates/builder/                 The pages of the builder
 templates/components/              Twig components: Layout, Map, Search, Form, Icon, Heading, Card and Table
-templates/embed/                   The embed page, the embed script /embed/v1.js and the page for a map that is not available
+templates/embed/                   The embed page and the page for a map that is not available
 templates/home/                    The front page
 templates/form/theme.html.twig     The form theme: the classes of the design tokens on the Symfony forms
 translations/                      The texts of the pages, in Danish and English

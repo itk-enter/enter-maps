@@ -29,20 +29,6 @@ final class EmbedCodeTest extends KernelTestCase
             HTML, $code);
     }
 
-    public function testWritesADivWithALinkAndTheScript(): void
-    {
-        self::bootKernel();
-        $map = new MapConfiguration((object) ['version' => 1, 'title' => 'Toiletter & "bænke"'], [Renderer::Leaflet], []);
-
-        $code = self::getContainer()->get(EmbedCode::class)->script($map);
-        $site = self::getContainer()->get(RouterInterface::class)->getContext()->getHost();
-
-        $this->assertSame(<<<HTML
-            <div data-enter-map="{$map->getId()}"><a href="http://{$site}/embed/leaflet/{$map->getId()}">Toiletter &amp; &quot;bænke&quot;</a></div>
-            <script src="http://{$site}/embed/v1.js" async></script>
-            HTML, $code);
-    }
-
     public function testWritesTheHeight(): void
     {
         self::bootKernel();
@@ -57,6 +43,5 @@ final class EmbedCodeTest extends KernelTestCase
         $map = new MapConfiguration((object) ['version' => 1], [Renderer::Leaflet], []);
 
         $this->assertStringContainsString('title=""', self::getContainer()->get(EmbedCode::class)->html($map));
-        $this->assertStringContainsString('"></a></div>', self::getContainer()->get(EmbedCode::class)->script($map));
     }
 }

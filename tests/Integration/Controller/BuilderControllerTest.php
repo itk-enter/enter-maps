@@ -99,14 +99,12 @@ final class BuilderControllerTest extends WebTestCase
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextSame('h1', 'Embedkode til "Toiletter i Aarhus"');
-        $embedCode = self::getContainer()->get(EmbedCode::class);
-        $sources = $crawler->filter('[data-clipboard-target="source"]');
-        $this->assertSame($embedCode->script($map), $sources->eq(0)->text(normalizeWhitespace: false));
-        $this->assertSame($embedCode->html($map), $sources->eq(1)->text(normalizeWhitespace: false));
-        $this->assertSame(['Kode med script (anbefalet)', 'Kun en iframe'], $crawler->filter('main h2')->each(static fn ($heading): string => $heading->text()));
-        // Without JavaScript, the copy buttons do nothing, so they are hidden.
-        $this->assertNotNull($crawler->filter('[data-clipboard-target="button"]')->eq(0)->attr('hidden'));
-        $this->assertNotNull($crawler->filter('[data-clipboard-target="button"]')->eq(1)->attr('hidden'));
+        $this->assertSame(
+            self::getContainer()->get(EmbedCode::class)->html($map),
+            $crawler->filter('[data-clipboard-target="source"]')->text(normalizeWhitespace: false),
+        );
+        // Without JavaScript, the copy button does nothing, so it is hidden.
+        $this->assertNotNull($crawler->filter('[data-clipboard-target="button"]')->attr('hidden'));
     }
 
     public function testChangesTheHeightOfTheEmbedCode(): void
@@ -119,7 +117,7 @@ final class BuilderControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $this->assertStringEndsWith('/builder/'.$map->getId().'/embed?height=900', (string) $this->browser->getRequest()->getUri());
         $this->assertSame('900', $crawler->filter('#height')->attr('value'));
-        $this->assertStringContainsString('height="900"', $crawler->filter('[data-clipboard-target="source"]')->eq(1)->text());
+        $this->assertStringContainsString('height="900"', $crawler->filter('[data-clipboard-target="source"]')->text());
     }
 
     public function testShowsTheDefaultHeightAndAnErrorForAHeightThatIsNotValid(): void
@@ -132,7 +130,7 @@ final class BuilderControllerTest extends WebTestCase
             // Symfony gives 422 for a form with errors.
             $this->assertResponseStatusCodeSame(422);
             $this->assertCount(1, $crawler->filter('#height_error1'), $height);
-            $this->assertStringContainsString('height="700"', $crawler->filter('[data-clipboard-target="source"]')->eq(1)->text(), $height);
+            $this->assertStringContainsString('height="700"', $crawler->filter('[data-clipboard-target="source"]')->text(), $height);
         }
     }
 

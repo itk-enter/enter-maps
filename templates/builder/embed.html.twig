@@ -3,31 +3,21 @@
 {% block heading %}{{ 'builder.embed.title'|trans({'%title%': map.config.title}) }}{% endblock %}
 
 {% block content %}
-    <p class="m-0 max-w-2xl">{{ 'builder.embed.text'|trans }}</p>
-    {% for kind, source in {script: script, iframe: code} %}
-        <section aria-labelledby="code-{{ kind }}" {{ stimulus_controller('clipboard', {
-            copied: 'builder.embed.copied'|trans,
-            failed: 'builder.embed.failed'|trans,
-        }) }} class="flex flex-col gap-3">
-            <twig:Heading level="2" id="code-{{ kind }}">{{ ('builder.embed.' ~ kind ~ '_heading')|trans }}</twig:Heading>
-            <p class="m-0 max-w-2xl">{{ ('builder.embed.' ~ kind ~ '_text')|trans }}</p>
-            {# Only the iframe code has a fixed height. The script sets the height itself. #}
-            {% if kind == 'iframe' %}
-                {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col items-start gap-3'}}) }}
-                    {{ form_row(form.height, {row_attr: {class: 'max-w-2xl'}}) }}
-                    <twig:Form:Button variant="secondary">{{ 'builder.embed.update'|trans }}</twig:Form:Button>
-                {{ form_end(form) }}
-            {% endif %}
-            {# Long lines wrap, so the box does not scroll sideways. The copy keeps the code as it is. #}
-            <pre class="m-0 whitespace-pre-wrap break-all rounded border border-line bg-surface-2 p-4 text-sm"><code data-clipboard-target="source">{{ source }}</code></pre>
-            <div class="flex flex-wrap items-center gap-4">
-                <twig:Form:Button type="button" hidden data-clipboard-target="button" data-action="clipboard#copy">{{ ('builder.embed.copy_' ~ kind)|trans }}</twig:Form:Button>
-                <p data-clipboard-target="status" role="status" class="m-0"></p>
-            </div>
-        </section>
-    {% endfor %}
-    <div class="flex flex-wrap items-center gap-4">
-        <twig:Form:Button variant="secondary" href="{{ path('app_embed_leaflet', {id: map.id}) }}" target="_blank" rel="noopener" aria-label="{{ 'builder.index.open_label'|trans({'%title%': map.config.title}) }}">{{ 'builder.index.open'|trans }}</twig:Form:Button>
-        <a href="{{ path('app_builder') }}" class="text-link underline">{{ 'builder.embed.back'|trans }}</a>
+    <div {{ stimulus_controller('clipboard', {
+        copied: 'builder.embed.copied'|trans,
+        failed: 'builder.embed.failed'|trans,
+    }) }} class="flex flex-col gap-4">
+        <p class="m-0 max-w-2xl">{{ 'builder.embed.text'|trans }}</p>
+        {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col items-start gap-3'}}) }}
+            {{ form_row(form.height, {row_attr: {class: 'max-w-2xl'}}) }}
+            <twig:Form:Button variant="secondary">{{ 'builder.embed.update'|trans }}</twig:Form:Button>
+        {{ form_end(form) }}
+        <pre class="m-0 overflow-x-auto rounded border border-line bg-surface-2 p-4 text-sm"><code data-clipboard-target="source">{{ code }}</code></pre>
+        <div class="flex flex-wrap items-center gap-4">
+            <twig:Form:Button type="button" hidden data-clipboard-target="button" data-action="clipboard#copy">{{ 'builder.embed.copy'|trans }}</twig:Form:Button>
+            <twig:Form:Button variant="secondary" href="{{ path('app_embed_leaflet', {id: map.id}) }}" target="_blank" rel="noopener" aria-label="{{ 'builder.index.open_label'|trans({'%title%': map.config.title}) }}">{{ 'builder.index.open'|trans }}</twig:Form:Button>
+            <p data-clipboard-target="status" role="status" class="m-0"></p>
+        </div>
+        <p class="m-0"><a href="{{ path('app_builder') }}" class="text-link underline">{{ 'builder.embed.back'|trans }}</a></p>
     </div>
 {% endblock %}

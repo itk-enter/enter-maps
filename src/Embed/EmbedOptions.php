@@ -15,11 +15,10 @@ namespace App\Embed;
 final readonly class EmbedOptions
 {
     /**
-     * @param 'da'|'en'                $locale     the language of the texts on the page
-     * @param array{float, float}|null $center     latitude and longitude
-     * @param list<string>|null        $layers     the ids of the layers that are on at the start
-     * @param 'left'|'right'           $sidebar    the position of the sidebar
-     * @param bool                     $autoHeight the script of the embed code sets the height of the frame, so the map sends its height
+     * @param 'da'|'en'                $locale  the language of the texts on the page
+     * @param array{float, float}|null $center  latitude and longitude
+     * @param list<string>|null        $layers  the ids of the layers that are on at the start
+     * @param 'left'|'right'           $sidebar the position of the sidebar
      */
     public function __construct(
         public string $locale,
@@ -30,7 +29,6 @@ final readonly class EmbedOptions
         public ?array $center = null,
         public ?array $layers = null,
         public ?string $select = null,
-        public bool $autoHeight = false,
     ) {
     }
 

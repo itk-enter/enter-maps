@@ -12,28 +12,22 @@
 {% block body %}
     <twig:Layout:SkipLink href="#places">{{ 'embed.skip_link'|trans }}</twig:Layout:SkipLink>
 
-    {# With the embed script, the map sends its height to the page around the frame. #}
-    {% set controllers = stimulus_controller('map', {
-          settings: settings,
-          options: options.forScript,
-          messages: {
-              zoomGate: 'embed.zoom_gate.label'|trans,
-              yes: 'embed.boolean.yes'|trans,
-              no: 'embed.boolean.no'|trans,
-          },
-      }, {}, {
-          'map-list': '#map-list',
-          'map-detail': '#map-detail',
-      }) %}
-    {% if options.autoHeight %}
-        {% set controllers = controllers|stimulus_controller('embed-height') %}
-    {% endif %}
-
-    {# The name tells this main from the main of the page around the frame. #}
-    <main id="places" aria-labelledby="map-title" {{ controllers|raw }}
+    <main id="places"
+          {{ stimulus_controller('map', {
+              settings: settings,
+              options: options.forScript,
+              messages: {
+                  zoomGate: 'embed.zoom_gate.label'|trans,
+                  yes: 'embed.boolean.yes'|trans,
+                  no: 'embed.boolean.no'|trans,
+              },
+          }, {}, {
+              'map-list': '#map-list',
+              'map-detail': '#map-detail',
+          }) }}
           data-action="map-list:select->map#select map-detail:close->map#deselect map-filters:change->map#filter address-search:query->map#query address-search:choose->map#origin"
           class="flex flex-col wide:h-dvh wide:flex-row">
-        <twig:Heading level="1" id="map-title" class="sr-only">{{ map.title }}</twig:Heading>
+        <twig:Heading level="1" class="sr-only">{{ map.title }}</twig:Heading>
         <p data-map-target="status" role="status" class="sr-only"></p>
 
         <twig:Map:Sidebar position="{{ options.sidebar }}">
@@ -51,8 +45,7 @@
         </twig:Map:Sidebar>
 
         <div data-map-target="map" role="region" aria-label="{{ 'embed.map_label'|trans }}"
-             {# With the embed script, the frame is as high as the content, so 50vh would depend on itself. #}
-             class="order-first {{ options.autoHeight ? 'h-96' : 'h-[50vh]' }} min-w-0 wide:order-none wide:h-auto wide:flex-1"></div>
+             class="order-first h-[50vh] min-w-0 wide:order-none wide:h-auto wide:flex-1"></div>
 
         {% for layer in map.layers %}
             <twig:Map:Marker :layer="layer" />

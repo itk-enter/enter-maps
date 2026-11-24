@@ -82,7 +82,6 @@ final class BuilderController extends AbstractController
         return $this->render('builder/embed.html.twig', [
             'map' => $map,
             'form' => $form,
-            'script' => $this->embedCode->script($map),
             'code' => $this->embedCode->html($map, \is_int($height) ? $height : EmbedCode::HEIGHT),
         ]);
     }

@@ -140,9 +140,9 @@ test("edits a map and shows the embed code", async ({ page }) => {
     .click();
 
   await expect(page).toHaveURL(`/builder/${maps.toilets}/embed`);
-  await expect(
-    page.getByRole("region", { name: "Kun en iframe" }).locator("code"),
-  ).toContainText(`/embed/leaflet/${maps.toilets}"`);
+  await expect(page.locator("pre code")).toContainText(
+    `/embed/leaflet/${maps.toilets}"`,
+  );
 });
 
 test("previews a change without a save", async ({ page }) => {
