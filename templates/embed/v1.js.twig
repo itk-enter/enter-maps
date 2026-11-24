@@ -14,8 +14,11 @@
  * its own frames.
  */
 (() => {
+  // The site of the map. The script accepts messages only from this origin.
   const ORIGIN = {{ origin|json_encode|raw }};
+  // The height of a frame in pixels, before the first message and when the sidebar is next to the map.
   const HEIGHT = {{ height }};
+  // The id of a map: a ULID of 26 characters in Crockford base 32.
   const ID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
   // A page can load the script more than once, for example with two maps.
   // All copies share the sizes of the frames, and add the listeners once.
@@ -54,6 +57,7 @@
 
   const start = () => document.querySelectorAll("[data-enter-map]").forEach(embed);
 
+  // Only the first copy of the script adds the listeners. With two copies, each message would set the height twice.
   if (!state.listening) {
     state.listening = true;
 
