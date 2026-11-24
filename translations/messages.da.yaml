@@ -65,7 +65,7 @@ builder:
     title: Embedkode til "%title%"
     text: Kopiér koden, og indsæt den i HTML'en på den side, som skal vise kortet.
     script_heading: Kode med script (anbefalet)
-    script_text: Scriptet indsætter kortet og giver rammen den højde, som kortet skal bruge. Blokerer siden scriptet, viser den et link til kortet i stedet.
+    script_text: Scriptet indsætter kortet i en iframe, som ændrer sin højde efter kortet, fx når brugeren søger eller filtrerer. Blokerer siden scriptet, viser den et link til kortet i stedet.
     copy_script: Kopiér koden med script
     iframe_heading: Kun en iframe
     iframe_text: Til sider, som ikke kan køre et script. Rammen har en fast højde, og kortet fylder den.
