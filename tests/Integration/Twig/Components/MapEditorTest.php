@@ -94,10 +94,18 @@ final class MapEditorTest extends WebTestCase
 
         $crawler = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()])->render()->crawler();
 
-        $this->assertSame('/builder/'.$map->getId().'/embed', $crawler->filter('nav a')->attr('href'));
-        $this->assertSame('Embedkode', $crawler->filter('nav a')->text());
+        // The embed code is a button next to the save button, not a step.
+        $this->assertSame('/builder/'.$map->getId().'/embed', $crawler->selectLink('Embedkode')->attr('href'));
+        $this->assertCount(0, $crawler->filter('nav a'));
         $this->assertCount(0, $crawler->filter('nav button[disabled]'));
         $this->assertCount(0, $crawler->filter('nav p'));
+    }
+
+    public function testHasNoEmbedCodeForANewMap(): void
+    {
+        $crawler = $this->createLiveComponent(MapEditor::class)->render()->crawler();
+
+        $this->assertCount(0, $crawler->selectLink('Embedkode'));
     }
 
     public function testShowsTheErrorsOfTheForm(): void
@@ -343,14 +351,16 @@ final class MapEditorTest extends WebTestCase
 
         $crawler = $component->render()->crawler();
 
-        $this->assertSame(['Indstillinger', 'Datasæt', 'Lag', 'Forhåndsvisning', 'Embedkode'], $crawler->filter('nav li')->each(static fn (Crawler $item): string => $item->text()));
-        $this->assertSame('Indstillinger', $crawler->filter('nav [aria-current="step"]')->text());
+        // The steps are numbered in the order of the work. The number is hidden from screen readers.
+        $this->assertSame(['1 Indstillinger', '2 Datasæt', '3 Lag', '4 Forhåndsvisning'], $crawler->filter('nav ol > li')->each(static fn (Crawler $item): string => $item->text()));
+        $this->assertSame(['1', '2', '3', '4'], $crawler->filter('nav li [aria-hidden="true"]')->each(static fn (Crawler $number): string => $number->text()));
+        $this->assertSame('1 Indstillinger', $crawler->filter('nav [aria-current="step"]')->text());
         $this->assertNull($crawler->filter('#step-settings')->attr('hidden'));
         $this->assertNotNull($crawler->filter('#step-layers')->attr('hidden'));
 
         $crawler = $component->call('showStep', ['step' => MapEditor::STEP_LAYERS])->render()->crawler();
 
-        $this->assertSame('Lag', $crawler->filter('nav [aria-current="step"]')->text());
+        $this->assertSame('3 Lag', $crawler->filter('nav [aria-current="step"]')->text());
         $this->assertNotNull($crawler->filter('#step-settings')->attr('hidden'));
         $this->assertNull($crawler->filter('#step-layers')->attr('hidden'));
         // The fields of a hidden step stay in the form.
@@ -371,7 +381,7 @@ final class MapEditorTest extends WebTestCase
         $this->assertCount(0, $crawler->filter('#step-datasets input:checked'));
 
         // Before a title and a data set, the layers, the view and the embed code are disabled.
-        $this->assertSame(['Lag', 'Forhåndsvisning', 'Embedkode'], $crawler->filter('nav button[disabled]')->each(static fn (Crawler $button): string => $button->text()));
+        $this->assertSame(['3 Lag', '4 Forhåndsvisning'], $crawler->filter('nav button[disabled]')->each(static fn (Crawler $button): string => $button->text()));
         $this->assertStringContainsString('Skriv en titel', $crawler->filter('nav p')->text());
         $component->call('showStep', ['step' => MapEditor::STEP_LAYERS]);
         $this->assertSame(MapEditor::STEP_SETTINGS, $component->component()->step);
@@ -383,8 +393,9 @@ final class MapEditorTest extends WebTestCase
         $this->assertSame(['Lag 1: Bænke'], $crawler->filter('h3')->each(static fn (Crawler $heading): string => $heading->text()));
         $this->assertSame('benches', $crawler->filter('#map_layers_0_dataSet option[selected]')->attr('value'));
         $this->assertSame(['benches'], $crawler->filter('#step-datasets input:checked')->each(static fn (Crawler $input): ?string => $input->attr('value')));
-        $this->assertSame(['Embedkode'], $crawler->filter('nav button[disabled]')->each(static fn (Crawler $button): string => $button->text()));
-        $this->assertSame('Embedkoden kommer, når kortet er gemt.', $crawler->filter('nav p')->text());
+        // With a title and a data set, all steps are open.
+        $this->assertCount(0, $crawler->filter('nav button[disabled]'));
+        $this->assertCount(0, $crawler->filter('nav p'));
 
         $crawler = $component->call('toggleDataSet', ['id' => 'merged-public-toilets'])->render()->crawler();
 
