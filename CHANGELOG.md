@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-28](https://github.com/itk-enter/enter-maps/pull/28)
+  Deleted the old Symfony cache before `composer install` in the staging deploy
 * [PR-22](https://github.com/itk-enter/enter-maps/pull/22)
   Added basic auth on the server for all paths, except `/embed/`, `/data/` and `/assets/`
 * [PR-25](https://github.com/itk-enter/enter-maps/pull/25)
