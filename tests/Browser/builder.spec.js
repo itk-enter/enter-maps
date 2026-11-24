@@ -50,24 +50,36 @@ test("shows and copies the embed code", async ({ page }) => {
       name: 'Embedkode til "Toiletter i Aarhus"',
     }),
   ).toBeVisible();
-  const code = page.locator("pre code");
-  await expect(code).toContainText(`/embed/leaflet/${maps.toilets}"`);
-  await expect(code).toContainText('title="Toiletter i Aarhus"');
+  const script = page.getByRole("region", { name: "Kode med script" });
+  const iframe = page.getByRole("region", { name: "Kun en iframe" });
+  await expect(script.locator("code")).toContainText(
+    `<div data-enter-map="${maps.toilets}">`,
+  );
+  await expect(script.locator("code")).toContainText("/embed/v1.js");
+  await expect(iframe.locator("code")).toContainText(
+    `/embed/leaflet/${maps.toilets}"`,
+  );
+  await expect(iframe.locator("code")).toContainText(
+    'title="Toiletter i Aarhus"',
+  );
   await expectNoAxeViolations(page);
 
-  await page.getByRole("button", { name: "Kopiér koden" }).click();
+  await iframe.getByRole("button", { name: "Kopiér iframe-koden" }).click();
 
   // The test site uses http, so the controller selects the code and uses the
   // old copy command. The real site uses https and the clipboard API.
-  await expect(page.getByRole("status")).toHaveText("Koden er kopieret.");
+  await expect(iframe.getByRole("status")).toHaveText("Koden er kopieret.");
   expect(await page.evaluate(() => window.getSelection().toString())).toBe(
-    await code.textContent(),
+    await iframe.locator("code").textContent(),
   );
 });
 
 test("changes the height of the embed code", async ({ page }) => {
   await page.goto(`/builder/${maps.toilets}/embed`);
-  const code = page.locator("pre code");
+  // Only the iframe code has a height field.
+  const code = page
+    .getByRole("region", { name: "Kun en iframe" })
+    .locator("code");
   await expect(code).toContainText('height="700"');
 
   await page.getByLabel("Højde i pixels").fill("900");
@@ -78,7 +90,9 @@ test("changes the height of the embed code", async ({ page }) => {
   await page.getByLabel("Højde i pixels").fill("50");
   await page.getByRole("button", { name: "Opdater koden" }).click();
 
-  await expect(page.getByText("Værdien skal være mellem 300 og 3000.")).toBeVisible();
+  await expect(
+    page.getByText("Værdien skal være mellem 300 og 3000."),
+  ).toBeVisible();
   await expect(code).toContainText('height="700"');
   await expectNoAxeViolations(page);
 });

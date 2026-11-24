@@ -25,7 +25,15 @@ final class EmbedOptionsParserTest extends TestCase
         $this->assertSame('right', $options->sidebar);
         $this->assertFalse($options->list);
         $this->assertTrue($options->report);
+        $this->assertFalse($options->autoHeight);
         $this->assertSame(['zoom' => null, 'center' => null, 'layers' => null, 'select' => null], $options->forScript());
+    }
+
+    public function testSendsTheHeightOnlyWithAutoheight(): void
+    {
+        $this->assertTrue($this->parser->parse(['autoheight' => '1'], $this->settings())->autoHeight);
+        $this->assertFalse($this->parser->parse(['autoheight' => '0'], $this->settings())->autoHeight);
+        $this->assertFalse($this->parser->parse(['autoheight' => 'yes'], $this->settings())->autoHeight);
     }
 
     public function testAppliesTheValidOptions(): void
