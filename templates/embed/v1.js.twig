@@ -33,9 +33,7 @@
 
   // Sets the height of a frame from the last message of its map.
   const fit = (frame) => {
-    // The last height and layout of the map in the frame.
     const size = sizes.get(frame);
-    // The fixed height if the sidebar is next to the map, else the height of the map up to the height of the window.
     const height =
       size.wide || !size.height
         ? HEIGHT
@@ -45,13 +43,11 @@
 
   // Replaces a div with the frame of its map. A div with a frame already, or with an id that is not valid, stays as it is.
   const embed = (container) => {
-    // The id of the map, from the data-enter-map attribute.
     const id = container.dataset.enterMap;
     if (!ID.test(id) || container.querySelector(":scope > iframe")) {
       return;
     }
 
-    // The frame of the map. The link text in the div is its title.
     const frame = document.createElement("iframe");
     frame.src = `${ORIGIN}/embed/leaflet/${id}?autoheight=1`;
     frame.title = container.querySelector("a")?.textContent.trim() ?? "";
@@ -70,7 +66,6 @@
     state.listening = true;
 
     window.addEventListener("message", (event) => {
-      // The message: { type, height, wide }.
       const { data } = event;
       if (
         event.origin !== ORIGIN ||
@@ -81,7 +76,6 @@
         return;
       }
 
-      // The frame that sent the message. A message from a frame that this script did not make has none.
       const frame = frames().find((item) => item.contentWindow === event.source);
       if (frame) {
         sizes.set(frame, { height: Math.ceil(data.height), wide: data.wide === true });
