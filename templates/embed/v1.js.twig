@@ -20,18 +20,22 @@
   const HEIGHT = {{ height }};
   // The id of a map: a ULID of 26 characters in Crockford base 32.
   const ID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
-  // A page can load the script more than once, for example with two maps.
-  // All copies share the sizes of the frames, and add the listeners once.
+  // The state that all copies of the script share. A page can load the script more than once, for example with two maps.
   const state = (window.enterMapScript ??= { sizes: new WeakMap(), listening: false });
+  // The last height and layout that the map in each frame sent, with the frame as key.
   const { sizes } = state;
 
+  // Gives the frames on the page that this script made.
   const frames = () =>
     [...document.querySelectorAll("[data-enter-map] > iframe")].filter((frame) =>
       sizes.has(frame),
     );
 
+  // Sets the height of a frame from the last message of its map.
   const fit = (frame) => {
+    // The last height and layout of the map in the frame.
     const size = sizes.get(frame);
+    // The fixed height if the sidebar is next to the map, else the height of the map up to the height of the window.
     const height =
       size.wide || !size.height
         ? HEIGHT
@@ -39,12 +43,15 @@
     frame.style.height = `${height}px`;
   };
 
+  // Replaces a div with the frame of its map. A div with a frame already, or with an id that is not valid, stays as it is.
   const embed = (container) => {
+    // The id of the map, from the data-enter-map attribute.
     const id = container.dataset.enterMap;
     if (!ID.test(id) || container.querySelector(":scope > iframe")) {
       return;
     }
 
+    // The frame of the map. The link text in the div is its title.
     const frame = document.createElement("iframe");
     frame.src = `${ORIGIN}/embed/leaflet/${id}?autoheight=1`;
     frame.title = container.querySelector("a")?.textContent.trim() ?? "";
@@ -55,6 +62,7 @@
     container.replaceChildren(frame);
   };
 
+  // Replaces all divs with a data-enter-map attribute on the page.
   const start = () => document.querySelectorAll("[data-enter-map]").forEach(embed);
 
   // Only the first copy of the script adds the listeners. With two copies, each message would set the height twice.
@@ -62,6 +70,7 @@
     state.listening = true;
 
     window.addEventListener("message", (event) => {
+      // The message: { type, height, wide }.
       const { data } = event;
       if (
         event.origin !== ORIGIN ||
@@ -72,6 +81,7 @@
         return;
       }
 
+      // The frame that sent the message. A message from a frame that this script did not make has none.
       const frame = frames().find((item) => item.contentWindow === event.source);
       if (frame) {
         sizes.set(frame, { height: Math.ceil(data.height), wide: data.wide === true });
