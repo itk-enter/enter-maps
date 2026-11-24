@@ -109,6 +109,13 @@ final class MapEditor extends AbstractController
     public ?string $previewToken = null;
 
     /**
+     * The token of the map that waits for a confirmation of the save, or null.
+     * With a token, the form shows the map and asks the user to confirm.
+     */
+    #[LiveProp]
+    public ?string $confirmToken = null;
+
+    /**
      * The errors of the schema validation, if the form is valid but the config is not.
      *
      * @var list<string>
@@ -324,11 +331,32 @@ final class MapEditor extends AbstractController
     }
 
     /**
-     * Stores the map, and shows it. The embed code is a link in the menu of the steps.
+     * Validates the form, and asks the user to confirm the save. The question
+     * shows over the map from the form, because a save of a stored map
+     * changes the map on all sites that show it. The map is not stored yet.
+     */
+    #[LiveAction]
+    public function review(): void
+    {
+        $this->confirmToken = $this->draftToken(true);
+    }
+
+    /**
+     * Closes the question of review(), without a save.
+     */
+    #[LiveAction]
+    public function cancelSave(): void
+    {
+        $this->confirmToken = null;
+    }
+
+    /**
+     * Stores the map, and shows it. The user confirms the save first. See review().
      */
     #[LiveAction]
     public function save(): ?Response
     {
+        $this->confirmToken = null;
         $json = $this->submittedConfig();
         $map = $this->map();
 
@@ -367,6 +395,23 @@ final class MapEditor extends AbstractController
      */
     private function updatePreview(bool $showErrorStep): void
     {
+        $token = $this->draftToken($showErrorStep);
+        if (null !== $token) {
+            $this->previewToken = $token;
+            $this->step = self::STEP_VIEW;
+        }
+    }
+
+    /**
+     * Makes the map from the form without a save, and gives the token of its
+     * preview. The map that other sites show does not change.
+     *
+     * @param bool $showErrorStep if true, the form shows the first step with an error
+     *
+     * @return string|null the token, or null if the config is not valid
+     */
+    private function draftToken(bool $showErrorStep): ?string
+    {
         $json = $this->submittedConfig($showErrorStep);
 
         try {
@@ -378,13 +423,13 @@ final class MapEditor extends AbstractController
                 $this->showStepWithError();
             }
 
-            return;
+            return null;
         }
 
         /** @var \stdClass $settings the converter of the renderer ran, so the settings are there */
         $settings = $draft->getMapJson(Renderer::Leaflet);
-        $this->previewToken = $this->previews->add($settings);
-        $this->step = self::STEP_VIEW;
+
+        return $this->previews->add($settings);
     }
 
     /**
