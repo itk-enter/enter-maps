@@ -73,7 +73,7 @@ The builder at <http://enter-maps.local.itkdev.dk/builder> lists the maps. On th
 - Make a new map, or edit a map, in a form with four steps: the settings, the data sets, the layers and the
   preview. "Gem og vis kortet" saves and shows the map. The menu of the form links to the embed code of a saved map.
 - Show a map.
-- Get the embed code of a map: the `<iframe>` tag for the page that shows the map.
+- Get the embed code of a map for the page that shows the map. See "The embed code".
 - Delete a map, and restore a deleted map.
 
 A tick on a data set adds a layer with the defaults of the NGSI-LD type of the data set. The type is `model` in
@@ -102,6 +102,21 @@ task console -- app:map-config:list
 
 The URLs start with `DEFAULT_URI` from `.env`. The page takes the embed options in the query string, for example
 `?lang=en&sidebar=right`.
+
+### The embed code
+
+The embed code page in the builder gives two codes:
+
+- **The code with the script (recommended).** A `div` with a link to the map, and the script `/embed/v1.js`. The
+  script replaces the `div` with the frame of the map, and sets the height of the frame:
+  - If the sidebar is next to the map, the frame is 700 pixels high, and the list scrolls in the sidebar.
+  - If the frame is narrower than 820 pixels, the frame is as high as the map, up to the height of the window.
+  - If the page blocks the script, it shows the link to the map.
+- **Only an iframe.** For pages that cannot run a script. The frame has a fixed height.
+
+The script adds `autoheight=1` to the address of the frame. Then the map sends its height in an `enter-map:height`
+message, and the script accepts it only from the site of the map. The address `/embed/v1.js` must not change,
+because the codes on other sites load it. For a change that breaks the old codes, make `/embed/v2.js`.
 
 ### Frontend
 
@@ -268,6 +283,9 @@ The builder at `/builder` can change and delete the maps on all sites. The proje
 `/builder` with basic auth on the server. The form sends its changes to `/builder/_components/`, so the same basic
 auth protects them.
 
+Traefik receives the https requests and sends them to nginx. Symfony trusts the `X-Forwarded-*` headers from the
+addresses in `TRUSTED_PROXIES`. The default `private_ranges` covers Traefik in Docker. Without it, the embed codes get
+`http://` addresses, and a site on https blocks them.
 `docker-compose.dev-server.override.yml` puts basic auth on all paths, except `/embed/`, `/data/` and `/assets/`. A map
 on another site needs these paths without a login. Use the file after `docker-compose.server.yml`. On staging, put it
 after `docker-compose.dev.yml`. To check the setup, send these requests:

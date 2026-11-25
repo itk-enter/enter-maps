@@ -64,7 +64,12 @@ builder:
   embed:
     title: Embed code of "%title%"
     text: Copy the code, and put it into the HTML of the page that must show the map.
-    copy: Copy the code
+    script_heading: Code with a script (recommended)
+    script_text: The script puts the map into an iframe that changes its height with the map, for example when the user searches or filters. If the page blocks the script, it shows a link to the map.
+    copy_script: Copy the code with the script
+    iframe_heading: Only an iframe
+    iframe_text: For pages that cannot run a script. The frame has a fixed height, and the map fills it.
+    copy_iframe: Copy the iframe code
     copied: The code is copied.
     failed: The code could not be copied. Select the code, and copy it yourself.
     back: Back to all maps

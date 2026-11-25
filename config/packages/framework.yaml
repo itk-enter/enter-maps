@@ -5,6 +5,13 @@ framework:
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 
+    # Traefik receives the https requests and sends them on to nginx. Trust its
+    # headers, so the absolute URLs, for example in the embed codes, use https.
+    # See https://symfony.com/doc/current/deployment/proxies.html
+    trusted_proxies: '%env(TRUSTED_PROXIES)%'
+    trusted_headers:
+        ['x-forwarded-for', 'x-forwarded-proto', 'x-forwarded-port']
+
     #esi: true
     #fragments: true
 
