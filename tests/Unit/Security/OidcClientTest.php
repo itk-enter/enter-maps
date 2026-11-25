@@ -59,7 +59,7 @@ final class OidcClientTest extends TestCase
         $client = $this->client([new JsonMockResponse(self::DISCOVERY), new JsonMockResponse(['access_token' => 'x'])]);
 
         $this->expectException(OidcException::class);
-        $this->expectExceptionMessage('The answer of the provider has no ID token.');
+        $this->expectExceptionMessageIsOrContains('The answer of the provider has no ID token.');
         $client->idToken('code-1', 'https://maps.example.com/login/callback', 'verifier-1');
     }
 
@@ -68,7 +68,7 @@ final class OidcClientTest extends TestCase
         $client = $this->client([new JsonMockResponse(self::DISCOVERY), new JsonMockResponse(['error' => 'invalid_grant'], ['http_code' => 400])]);
 
         $this->expectException(OidcException::class);
-        $this->expectExceptionMessage('The provider did not change the code into a token');
+        $this->expectExceptionMessageIsOrContains('The provider did not change the code into a token');
         $client->idToken('code-1', 'https://maps.example.com/login/callback', 'verifier-1');
     }
 
@@ -95,14 +95,14 @@ final class OidcClientTest extends TestCase
     public function testFailsIfTheDiscoveryDocumentHasNoEndpoint(): void
     {
         $this->expectException(OidcException::class);
-        $this->expectExceptionMessage('The discovery document of the provider has no "authorization_endpoint".');
+        $this->expectExceptionMessageIsOrContains('The discovery document of the provider has no "authorization_endpoint".');
         $this->client([new JsonMockResponse(['token_endpoint' => 'x'])])->authorizationUrl('https://maps.example.com/login/callback', 's', 'v');
     }
 
     public function testFailsIfTheProviderDoesNotAnswer(): void
     {
         $this->expectException(OidcException::class);
-        $this->expectExceptionMessage('The provider did not give its discovery document');
+        $this->expectExceptionMessageIsOrContains('The provider did not give its discovery document');
         $this->client([new MockResponse('', ['http_code' => 503])])->authorizationUrl('https://maps.example.com/login/callback', 's', 'v');
     }
 

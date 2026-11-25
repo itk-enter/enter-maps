@@ -72,7 +72,7 @@ final readonly class OidcClient
                 ],
             ])->toArray();
         } catch (ExceptionInterface $exception) {
-            throw new OidcException('The provider did not change the code into a token: '.$exception->getMessage(), previous: $exception);
+            throw new OidcException('The provider did not change the code into a token: '.$exception->getMessage(), $exception->getCode(), previous: $exception);
         }
 
         if (!\is_string($data['id_token'] ?? null)) {
@@ -123,7 +123,7 @@ final readonly class OidcClient
                 return $this->httpClient->request('GET', rtrim($this->issuer, '/').'/.well-known/openid-configuration')->toArray();
             });
         } catch (ExceptionInterface $exception) {
-            throw new OidcException('The provider did not give its discovery document: '.$exception->getMessage(), previous: $exception);
+            throw new OidcException('The provider did not give its discovery document: '.$exception->getMessage(), $exception->getCode(), previous: $exception);
         }
     }
 }
