@@ -306,13 +306,7 @@ final class MapEditor extends AbstractController
      */
     public function schema(): array
     {
-        $version = null;
-        foreach ([$this->decodeVersion($this->json), $this->decodeVersion($this->baseConfig), $this->map()?->getConfig()->version ?? null] as $candidate) {
-            if (\is_int($candidate) && isset(MapConfigParser::SCHEMAS[$candidate])) {
-                $version = $candidate;
-                break;
-            }
-        }
+        $version = array_find([$this->decodeVersion($this->json), $this->decodeVersion($this->baseConfig), $this->map()?->getConfig()->version ?? null], fn ($candidate): bool => \is_int($candidate) && isset(MapConfigParser::SCHEMAS[$candidate]));
         $version ??= $this->parser->latestVersion();
 
         return ['version' => $version, 'url' => self::SCHEMA_URL.MapConfigParser::SCHEMAS[$version]];
