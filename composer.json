@@ -32,7 +32,8 @@
         "symfony/ux-twig-component": "^3.7",
         "symfony/validator": "~8.1.11",
         "symfony/yaml": "~8.1.11",
-        "symfonycasts/tailwind-bundle": "^1.0"
+        "symfonycasts/tailwind-bundle": "^1.0",
+        "web-token/jwt-library": "~4.2.7"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.57.0",

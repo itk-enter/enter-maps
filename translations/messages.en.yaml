@@ -61,6 +61,15 @@ builder:
     delete_label: Delete the map "%title%"
     deleted: Deleted maps
     deleted_at: Deleted %date%
+  security:
+    login: Log in
+    logout: Log out
+    login_failed_title: The login failed
+    login_failed_text: The map builder could not confirm your login. Log out, and try again.
+    not_employee_title: No access
+    not_employee_text: The map builder is only for employees. Your login does not give access. Log out, and log in with another login.
+    logged_out_title: You are logged out
+    logged_out_text: Log in again to use the map builder.
   embed:
     title: Embed code of "%title%"
     text: Copy the code, and put it into the HTML of the page that must show the map.

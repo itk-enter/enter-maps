@@ -61,6 +61,15 @@ builder:
     delete_label: Slet kortet "%title%"
     deleted: Slettede kort
     deleted_at: Slettet %date%
+  security:
+    login: Log ind
+    logout: Log ud
+    login_failed_title: Login mislykkedes
+    login_failed_text: Kortbyggeren kunne ikke bekræfte dit login. Log ud, og prøv igen.
+    not_employee_title: Ingen adgang
+    not_employee_text: Kortbyggeren er kun for medarbejdere. Dit login giver ikke adgang. Log ud, og log ind med et andet login.
+    logged_out_title: Du er logget ud
+    logged_out_text: Log ind igen for at bruge kortbyggeren.
   embed:
     title: Embedkode til "%title%"
     text: Kopiér koden, og indsæt den i HTML'en på den side, som skal vise kortet.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Controller;
 
+use App\Tests\Support\OidcTestLogin;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class HomeControllerTest extends WebTestCase
@@ -11,6 +12,7 @@ final class HomeControllerTest extends WebTestCase
     public function testShowsACardWithALinkToTheBuilder(): void
     {
         $browser = self::createClient();
+        OidcTestLogin::asEmployee($browser);
 
         $crawler = $browser->request('GET', '/');
 

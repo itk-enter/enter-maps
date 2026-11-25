@@ -47,6 +47,21 @@ The site is at <http://enter-maps.local.itkdev.dk/>.
 `docker-compose.override.yml` changes the template for this project. Docker Compose reads it automatically. It removes
 Mailpit, because the project does not send e-mail.
 
+### Login
+
+All pages need a login with OpenID Connect, except the map and its data: `/embed/`, `/data/` and `/assets/`. Only a
+user in the group `Employee` can use the builder. Other users get the page "Ingen adgang".
+
+`docker-compose.override.yml` includes `docker-compose.oidc.yml`, which runs a mock provider at
+<http://idp-employee.enter-maps.local.itkdev.dk/>. Its login page has two users:
+
+- `employee`, in the group `Employee`. This user can use the builder.
+- `citizen`, in no group. This user gets "Ingen adgang".
+
+The login is the authorization code flow with PKCE in `src/Security/`. The access token authenticator of Symfony checks
+the ID token once, after the login. Then the session keeps the user. The browser tests log in as `employee` in
+`tests/Browser/global-setup.js`.
+
 ### Data from a local Enter
 
 This project reads data from [Enter](https://github.com/itk-enter/enter). To use a local Enter, start the two projects
@@ -264,9 +279,16 @@ become a problem, add a cache to the proxy.
 On the server, set `ENTER_BASE_URI` in `.env.local` to the address of Enter. On staging, also set
 `ENTER_BASIC_AUTH` to `user:password`, because the staging site of Enter is behind basic auth.
 
-The builder at `/builder` can change and delete the maps on all sites. The project has no login yet, so protect
-`/builder` with basic auth on the server. The form sends its changes to `/builder/_components/`, so the same basic
-auth protects them.
+The builder at `/builder` can change and delete the maps on all sites, so it needs a login. On the server, set the
+values of the OpenID Connect provider in `.env.local`:
+
+- `OIDC_ISSUER`: the issuer of the provider, without a slash at the end. The app reads the discovery document from it.
+- `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET`: the client of the app at the provider. Register
+  `https://<server>/login/callback` as the redirect URI, and `https://<server>/logged-out` as the address after a
+  logout.
+- `OIDC_GROUPS_CLAIM` and `OIDC_EMPLOYEE_GROUP`: the claim with the groups of the user, and the group that can use the
+  builder. The defaults are `groups` and `Employee`.
+- `OIDC_ENFORCE_KEY_USAGE`: keep the default `true`. Only the mock provider needs `false`.
 
 `docker-compose.dev-server.override.yml` puts basic auth on all paths, except `/embed/`, `/data/` and `/assets/`. A map
 on another site needs these paths without a login. Use the file after `docker-compose.server.yml`. On staging, put it

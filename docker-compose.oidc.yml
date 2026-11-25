@@ -1,0 +1,30 @@
+# A mock OpenID Connect provider for the login of the builder in development.
+# https://github.com/geigerzaehler/oidc-provider-mock
+#
+# docker-compose.override.yml includes this file. The provider accepts any
+# client id and secret. The login page of the provider lists the users below.
+# Only a user in the group "Employee" can use the builder.
+services:
+  idp-employee:
+    image: ghcr.io/geigerzaehler/oidc-provider-mock:0.4.8
+    # The same name inside and outside Docker, so the issuer in the tokens is
+    # the same for the browser and for phpfpm.
+    container_name: idp-employee.${COMPOSE_DOMAIN}
+    networks:
+      - app
+      - frontend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=frontend"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}_idp-employee.rule=Host(`idp-employee.${COMPOSE_DOMAIN}`)"
+    expose:
+      - "80"
+    command:
+      [
+        "--port",
+        "80",
+        "--user-claims",
+        '{"sub": "employee", "email": "employee@example.com", "name": "Medarbejder", "groups": ["Employee"]}',
+        "--user-claims",
+        '{"sub": "citizen", "email": "citizen@example.com", "name": "Borger", "groups": []}',
+      ]

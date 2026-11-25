@@ -10,6 +10,7 @@ use App\Entity\MapConfiguration;
 use App\Repository\MapConfigurationRepository;
 use App\Tests\Support\Database;
 use App\Tests\Support\FakeEnter;
+use App\Tests\Support\OidcTestLogin;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -24,6 +25,7 @@ final class BuilderControllerTest extends WebTestCase
     protected function setUp(): void
     {
         $this->browser = self::createClient();
+        OidcTestLogin::asEmployee($this->browser);
         Database::reset(self::getContainer()->get(EntityManagerInterface::class));
     }
 
