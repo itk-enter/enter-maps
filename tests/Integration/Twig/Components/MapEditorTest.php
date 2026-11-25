@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Twig\Components;
 
 use App\Builder\MapConfigurationImporter;
 use App\Entity\MapConfiguration;
+use App\MapConfig\MapConfigParser;
 use App\Renderer\Renderer;
 use App\Repository\MapConfigurationRepository;
 use App\Tests\Support\Database;
@@ -274,6 +275,50 @@ final class MapEditorTest extends WebTestCase
         $crawler = $component->call('review')->render()->crawler();
         $this->assertCount(0, $crawler->filter('dialog'));
         $this->assertCount(1, $crawler->filter('#step-json [role="alert"]'));
+    }
+
+    public function testRestoresTheLastValidJsonAndLetsTheUserLeaveTheStep(): void
+    {
+        $map = $this->import('toilets');
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+        $component->call('showStep', ['step' => MapEditor::STEP_JSON]);
+        /** @var MapEditor $editor */
+        $editor = $component->component();
+        $valid = $editor->json;
+
+        $crawler = $component->set('json', '{"title": ')->call('showStep', ['step' => MapEditor::STEP_SETTINGS])->render()->crawler();
+        $this->assertSame('Gendan den sidste gyldige JSON', $crawler->filter('#step-json [role="alert"] button')->text());
+
+        $crawler = $component->call('resetJson')->render()->crawler();
+
+        $this->assertCount(0, $crawler->filter('#step-json [role="alert"]'));
+        $this->assertSame($valid, $crawler->filter('#map-json')->text(normalizeWhitespace: false));
+
+        $crawler = $component->call('showStep', ['step' => MapEditor::STEP_SETTINGS])->render()->crawler();
+        $this->assertNull($crawler->filter('#step-settings')->attr('hidden'));
+    }
+
+    public function testLinksToTheSchemaOfTheVersionOfTheConfig(): void
+    {
+        $map = $this->import('toilets');
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+
+        $crawler = $component->call('showStep', ['step' => MapEditor::STEP_JSON])->render()->crawler();
+
+        $link = $crawler->filter('#step-json a');
+        $this->assertSame('https://github.com/itk-enter/enter-maps/blob/develop/config/schema/map-config.v1.json', $link->attr('href'));
+        $this->assertSame('JSON Schema for version 1 på GitHub (åbner i et nyt vindue)', $link->text());
+
+        // JSON with a version that does not exist links to the version of the stored map.
+        $crawler = $component->set('json', '{"version": 99}')->render()->crawler();
+        $this->assertStringEndsWith('/map-config.v1.json', (string) $crawler->filter('#step-json a')->attr('href'));
+    }
+
+    public function testLinksToTheLatestSchemaForANewMap(): void
+    {
+        $crawler = $this->createLiveComponent(MapEditor::class)->render()->crawler();
+        $latest = self::getContainer()->get(MapConfigParser::class)->latestVersion();
+        $this->assertStringEndsWith('/'.MapConfigParser::SCHEMAS[$latest], (string) $crawler->filter('#step-json a')->attr('href'));
     }
 
     public function testAsksBeforeASaveFromTheJsonStep(): void

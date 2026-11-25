@@ -64,6 +64,11 @@ final class MapEditor extends AbstractController
     public const array STEPS = [self::STEP_SETTINGS, self::STEP_DATA_SETS, self::STEP_LAYERS, self::STEP_JSON, self::STEP_VIEW];
 
     /**
+     * The folder of the schema files on GitHub. The JSON step links to the schema of the version of the config.
+     */
+    private const string SCHEMA_URL = 'https://github.com/itk-enter/enter-maps/blob/develop/config/schema/';
+
+    /**
      * The fields of the map form on each step. The layers are on their own step.
      */
     private const array STEP_FIELDS = [
@@ -278,6 +283,39 @@ final class MapEditor extends AbstractController
         if (self::STEP_VIEW === $step) {
             $this->updatePreview(false);
         }
+    }
+
+    /**
+     * Gives the JSON on the JSON step the values of the form again, and
+     * removes the errors. The form has the values of the last valid JSON,
+     * because JSON that is not valid does not go into the form.
+     */
+    #[LiveAction]
+    public function resetJson(): void
+    {
+        $this->json = $this->prettyJson($this->submittedConfig(false));
+        $this->jsonErrors = [];
+    }
+
+    /**
+     * The address of the schema on GitHub, for the version of the config. The
+     * version comes from the JSON on the JSON step, else from the stored map.
+     * A new map has the latest version.
+     *
+     * @return array{version: int, url: string}
+     */
+    public function schema(): array
+    {
+        $version = null;
+        foreach ([$this->decodeVersion($this->json), $this->decodeVersion($this->baseConfig), $this->map()?->getConfig()->version ?? null] as $candidate) {
+            if (\is_int($candidate) && isset(MapConfigParser::SCHEMAS[$candidate])) {
+                $version = $candidate;
+                break;
+            }
+        }
+        $version ??= $this->parser->latestVersion();
+
+        return ['version' => $version, 'url' => self::SCHEMA_URL.MapConfigParser::SCHEMAS[$version]];
     }
 
     /**
@@ -504,6 +542,16 @@ final class MapEditor extends AbstractController
         $this->shouldAutoSubmitForm = true;
 
         return true;
+    }
+
+    /**
+     * @return mixed the "version" of the JSON, or null if the JSON is not an object
+     */
+    private function decodeVersion(?string $json): mixed
+    {
+        $config = json_decode((string) $json);
+
+        return $config instanceof \stdClass ? ($config->version ?? null) : null;
     }
 
     private function prettyJson(string $json): string

@@ -187,6 +187,9 @@ test("edits the map as JSON", async ({ page }) => {
   const json = page.getByLabel("JSON", { exact: true });
   const config = JSON.parse(await json.inputValue());
   expect(config.title).toBe("Toiletter i Aarhus");
+  await expect(
+    page.getByRole("link", { name: /JSON Schema for version 1/ }),
+  ).toHaveAttribute("href", /\/config\/schema\/map-config\.v1\.json$/);
   await expectNoAxeViolations(page);
 
   // JSON that is not valid keeps the step, with the errors.
@@ -200,6 +203,13 @@ test("edits the map as JSON", async ({ page }) => {
   );
   await expect(json).toHaveAttribute("aria-invalid", "true");
   await expectNoAxeViolations(page);
+
+  // The reset gives the last valid JSON back, and the user can leave the step again.
+  await page
+    .getByRole("button", { name: "Gendan den sidste gyldige JSON" })
+    .click();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  await expect(json).toHaveValue(JSON.stringify(config, null, 4));
 
   // Valid JSON goes into the form. The test does not save, so the other tests still have the map.
   await json.fill(JSON.stringify({ ...config, title: "Toiletter fra JSON" }));
