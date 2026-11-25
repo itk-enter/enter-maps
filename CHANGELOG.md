@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-30](https://github.com/itk-enter/enter-maps/pull/30)
+  Added a question over the map before the builder saves it
 * [PR-29](https://github.com/itk-enter/enter-maps/pull/29)
   Numbered the steps of the map form, and moved the embed code from the steps to a button
 * [PR-28](https://github.com/itk-enter/enter-maps/pull/28)

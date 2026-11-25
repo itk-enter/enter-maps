@@ -214,6 +214,13 @@ builder:
     preview_update: Update the map
     preview_empty: Select a data set for the layer, and click Update the map to see the map.
     preview_frame: Preview of "%title%"
+    confirm_create_heading: Create a new map?
+    confirm_create_text: The map is saved, and you get its embed code.
+    confirm_create: Create the map
+    confirm_update_heading: Save the changes?
+    confirm_update_text: The changes show at once on all sites that show the map.
+    confirm_update: Save the changes
+    confirm_cancel: Back to the form
     save_preview: Save and show the map
     cancel: Cancel
     saved: The map "%title%" is saved.

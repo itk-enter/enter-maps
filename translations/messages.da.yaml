@@ -214,6 +214,13 @@ builder:
     preview_update: Opdater kortet
     preview_empty: Vælg et datasæt til laget, og klik på Opdater kortet for at se kortet.
     preview_frame: Forhåndsvisning af "%title%"
+    confirm_create_heading: Opret nyt kort?
+    confirm_create_text: Kortet bliver gemt, og du får embedkoden til det.
+    confirm_create: Opret kortet
+    confirm_update_heading: Gem ændringerne?
+    confirm_update_text: Ændringerne vises med det samme på alle sider, som viser kortet.
+    confirm_update: Gem ændringerne
+    confirm_cancel: Tilbage til formularen
     save_preview: Gem og vis kortet
     cancel: Annullér
     saved: Kortet "%title%" er gemt.
