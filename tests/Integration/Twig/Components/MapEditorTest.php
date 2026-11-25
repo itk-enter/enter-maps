@@ -34,8 +34,9 @@ final class MapEditorTest extends WebTestCase
 
     protected function setUp(): void
     {
-        OidcTestLogin::asEmployee(self::createClient());
+        $client = self::createClient();
         Database::reset(self::getContainer()->get(EntityManagerInterface::class));
+        OidcTestLogin::asEmployee($client);
         $this->enter = new FakeEnter();
         $this->enter->dataSets = [
             ['id' => 'benches', 'title' => 'Bænke'],

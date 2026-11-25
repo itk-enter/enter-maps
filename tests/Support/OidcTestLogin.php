@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Support;
 
+use App\Entity\User;
+use App\Repository\UserRepository;
 use App\Security\OidcUserProvider;
 use Jose\Component\Core\AlgorithmManager;
 use Jose\Component\Core\JWK;
@@ -11,7 +13,6 @@ use Jose\Component\Signature\Algorithm\RS256;
 use Jose\Component\Signature\JWSBuilder;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Component\Security\Core\User\OidcUser;
 
 /**
  * Logins for tests. The test environment checks ID tokens with the public
@@ -26,16 +27,18 @@ use Symfony\Component\Security\Core\User\OidcUser;
 final class OidcTestLogin
 {
     /**
-     * Logs the client in as an employee, without the login flow.
+     * Logs the client in as an employee, without the login flow. The user is
+     * stored, because the session loads it from the database on each request.
+     * Call it after Database::reset().
      */
-    public static function asEmployee(KernelBrowser $client): void
+    public static function asEmployee(KernelBrowser $client): User
     {
-        $client->loginUser(new OidcUser(
-            userIdentifier: 'employee',
-            roles: ['ROLE_USER', OidcUserProvider::ROLE_EMPLOYEE],
-            sub: 'employee',
-            name: 'Medarbejder',
-        ), 'main');
+        $user = new User($_SERVER['OIDC_ISSUER'] ?? $_ENV['OIDC_ISSUER'], 'employee');
+        $user->logIn('Medarbejder', 'employee@example.com', [OidcUserProvider::ROLE_EMPLOYEE], new \DateTimeImmutable());
+        $client->getContainer()->get(UserRepository::class)->save($user);
+        $client->loginUser($user, 'main');
+
+        return $user;
     }
 
     /**

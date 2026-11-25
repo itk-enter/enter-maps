@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 * [PR-34](https://github.com/itk-enter/enter-maps/pull/34)
-  Added a login with OpenID Connect to all pages except `/embed/`, `/data/` and `/assets/`
+  Added a login with OpenID Connect to all pages except `/embed/`, `/data/` and `/assets/`, and a `User` for each person
 * [PR-28](https://github.com/itk-enter/enter-maps/pull/28)
   Deleted the old Symfony cache before `composer install` in the staging deploy
 * [PR-22](https://github.com/itk-enter/enter-maps/pull/22)

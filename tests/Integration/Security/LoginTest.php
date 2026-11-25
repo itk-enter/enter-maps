@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Security;
 
 use App\Controller\LoginController;
+use App\Repository\UserRepository;
 use App\Security\OidcClient;
 use App\Tests\Support\Database;
 use App\Tests\Support\OidcTestLogin;
@@ -75,6 +76,16 @@ final class LoginTest extends WebTestCase
         // The session keeps the user, so the next page needs no token.
         $this->browser->request('GET', '/builder');
         $this->assertResponseIsSuccessful();
+
+        // The first login stored the user, and a later login finds the same user.
+        $users = self::getContainer()->get(UserRepository::class);
+        $this->assertCount(1, $users->findAll());
+        $this->browser->getCookieJar()->clear();
+        $this->idToken = OidcTestLogin::idToken(['name' => 'Medarbejder Ny']);
+        $this->login('/builder');
+        $this->browser->followRedirect();
+        $this->assertCount(1, $users->findAll());
+        $this->assertStringContainsString('Medarbejder Ny', $this->browser->getCrawler()->filter('header')->text());
     }
 
     public function testDoesNotLetAUserInWhoIsNotAnEmployee(): void

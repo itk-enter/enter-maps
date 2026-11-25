@@ -25,8 +25,8 @@ final class BuilderControllerTest extends WebTestCase
     protected function setUp(): void
     {
         $this->browser = self::createClient();
-        OidcTestLogin::asEmployee($this->browser);
         Database::reset(self::getContainer()->get(EntityManagerInterface::class));
+        OidcTestLogin::asEmployee($this->browser);
     }
 
     public function testTellsThatThereAreNoMaps(): void

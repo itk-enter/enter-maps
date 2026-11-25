@@ -59,7 +59,11 @@ user in the group `Employee` can use the builder. Other users get the page "Inge
 - `citizen`, in no group. This user gets "Ingen adgang".
 
 The login is the authorization code flow with PKCE in `src/Security/`. The access token authenticator of Symfony checks
-the ID token once, after the login. Then the session keeps the user. The browser tests log in as `employee` in
+the ID token once, after the login. Then the session keeps the user.
+
+The first login of a person makes a `User` in the table `app_user`. A later login finds the same user from the issuer of
+the provider and the `sub` claim, which OpenID Connect keeps the same for a person. Each login updates the name, the
+e-mail and the roles from the ID token. The browser tests log in as `employee` in
 `tests/Browser/global-setup.js`.
 
 ### Data from a local Enter

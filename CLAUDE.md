@@ -73,6 +73,7 @@ src/Controller/LoginController.php /login, /login/callback, /logout and /logged-
 src/Embed/                         The embed options from the query string, and LeafletPage renders the page
 src/Enter/                         EnterClient reads from Enter. DataProxy validates the request.
 src/Entity/MapConfiguration.php    The stored configuration, on itk-dev/entity-bundle
+src/Entity/User.php                A user of the builder, made on the first login with OpenID Connect
 src/Form/                          The Symfony form types of the map form
 src/MapConfig/                     MapConfigParser, the config value objects and MapConfigurationFactory
 src/Renderer/                      The converter of each renderer, the base maps and the icons
