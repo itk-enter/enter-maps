@@ -93,9 +93,8 @@ builder:
     step_datasets: Datasæt
     step_layers: Lag
     step_view: Forhåndsvisning
-    step_embed: Embedkode
-    steps_locked: Skriv en titel, og vælg mindst ét datasæt for at åbne Lag og Forhåndsvisning. Embedkoden kommer, når kortet er gemt.
-    steps_embed_locked: Embedkoden kommer, når kortet er gemt.
+    embed: Embedkode
+    steps_locked: Skriv en titel, og vælg mindst ét datasæt for at åbne Lag og Forhåndsvisning.
     step_error: (har fejl)
     data_sets: Datasæt
     data_sets_help: Vælg datasættene til kortet. Hvert datasæt bliver et lag. Fjerner du fluebenet, fjernes lagene med datasættet.

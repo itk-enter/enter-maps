@@ -93,9 +93,8 @@ builder:
     step_datasets: Data sets
     step_layers: Layers
     step_view: Preview
-    step_embed: Embed code
-    steps_locked: Type a title, and select one or more data sets to open Layers and Preview. The embed code comes when you save the map.
-    steps_embed_locked: The embed code comes when you save the map.
+    embed: Embed code
+    steps_locked: Type a title, and select one or more data sets to open Layers and Preview.
     step_error: (has errors)
     data_sets: Data sets
     data_sets_help: Select the data sets of the map. Each data set becomes a layer. If you remove the tick, the form removes the layers with the data set.
