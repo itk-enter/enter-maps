@@ -95,12 +95,25 @@ test("makes a new map with a fixed filter", async ({ page }) => {
   await expect(
     question.getByRole("button", { name: "Tilbage til formularen" }),
   ).toBeFocused();
-  await expect(
-    question
-      .frameLocator('iframe[title="Forhåndsvisning af \\"Bænke i byen\\""]')
-      .getByRole("checkbox", { name: "Træ eller metal" }),
-  ).toBeVisible();
+  // The user can use the map before the save. The bar is above the map, not on it.
+  const frame = question.locator("iframe");
+  const filter = frame
+    .contentFrame()
+    .getByRole("checkbox", { name: "Træ eller metal" });
+  await filter.check();
+  await expect(filter).toBeChecked();
+  const bar = await question
+    .getByRole("heading")
+    .evaluate(
+      (heading) =>
+        heading.parentElement.parentElement.getBoundingClientRect().bottom,
+    );
+  expect((await frame.boundingBox()).y).toBeGreaterThanOrEqual(bar);
   await expectNoAxeViolations(page);
+  // Escape in the map belongs to the map, for example to close a place. In the bar, it goes back to the form.
+  await question
+    .getByRole("button", { name: "Tilbage til formularen" })
+    .focus();
   await page.keyboard.press("Escape");
   await expect(question).toHaveCount(0);
   await expect(page).toHaveURL("/builder/new");
