@@ -92,9 +92,14 @@ builder:
     step_settings: Indstillinger
     step_datasets: Datasæt
     step_layers: Lag
+    step_json: JSON
+    json: Konfigurationen som JSON
+    json_help: Her er kortets konfiguration med værdierne fra formularen, også de dele, som formularen ikke kan redigere. Ret JSON'en, og gå til et andet trin, eller gem. Så bliver JSON'en tjekket, og formularen får værdierne.
+    json_label: JSON
+    json_invalid: JSON'en er ikke gyldig. Ret disse fejl.
     step_view: Forhåndsvisning
     step_embed: Embedkode
-    steps_locked: Skriv en titel, og vælg mindst ét datasæt for at åbne Lag og Forhåndsvisning. Embedkoden kommer, når kortet er gemt.
+    steps_locked: Skriv en titel, og vælg mindst ét datasæt for at åbne de andre trin. Embedkoden kommer, når kortet er gemt.
     steps_embed_locked: Embedkoden kommer, når kortet er gemt.
     step_error: (har fejl)
     data_sets: Datasæt

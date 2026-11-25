@@ -16,6 +16,7 @@ use App\Entity\MapConfiguration;
 use App\Form\LayerType;
 use App\Form\MapType;
 use App\MapConfig\InvalidMapConfigException;
+use App\MapConfig\MapConfigParser;
 use App\MapConfig\MapConfigurationFactory;
 use App\Renderer\Renderer;
 use App\Repository\MapConfigurationRepository;
@@ -57,9 +58,10 @@ final class MapEditor extends AbstractController
     public const string STEP_SETTINGS = 'settings';
     public const string STEP_DATA_SETS = 'datasets';
     public const string STEP_LAYERS = 'layers';
+    public const string STEP_JSON = 'json';
     public const string STEP_VIEW = 'view';
 
-    public const array STEPS = [self::STEP_SETTINGS, self::STEP_DATA_SETS, self::STEP_LAYERS, self::STEP_VIEW];
+    public const array STEPS = [self::STEP_SETTINGS, self::STEP_DATA_SETS, self::STEP_LAYERS, self::STEP_JSON, self::STEP_VIEW];
 
     /**
      * The fields of the map form on each step. The layers are on their own step.
@@ -116,6 +118,28 @@ final class MapEditor extends AbstractController
     public ?string $confirmToken = null;
 
     /**
+     * The config as JSON on the JSON step. The step fills it from the form,
+     * and the user can change it. See applyJson().
+     */
+    #[LiveProp(writable: true)]
+    public string $json = '';
+
+    /**
+     * The config of the last JSON that the user applied, as JSON, or null.
+     * It has the keys that the form does not edit, so a save keeps them. Without
+     * it, these keys come from the stored map.
+     */
+    #[LiveProp]
+    public ?string $baseConfig = null;
+
+    /**
+     * The errors of the JSON on the JSON step.
+     *
+     * @var list<string>
+     */
+    public array $jsonErrors = [];
+
+    /**
      * The errors of the schema validation, if the form is valid but the config is not.
      *
      * @var list<string>
@@ -140,6 +164,7 @@ final class MapEditor extends AbstractController
         private readonly PreviewStore $previews,
         private readonly DataSetChoices $dataSetChoices,
         private readonly LayerDefaults $layerDefaults,
+        private readonly MapConfigParser $parser,
     ) {
     }
 
@@ -216,6 +241,9 @@ final class MapEditor extends AbstractController
         foreach ($this->saveErrors as $error) {
             $steps[$this->stepOfSchemaError($error)] = true;
         }
+        if ([] !== $this->jsonErrors) {
+            $steps[self::STEP_JSON] = true;
+        }
 
         return array_values(array_filter(self::STEPS, static fn (string $step): bool => isset($steps[$step])));
     }
@@ -226,6 +254,10 @@ final class MapEditor extends AbstractController
      * the changes on the other steps. If the form has an error, the view step
      * stays, and the menu marks the steps with an error.
      *
+     * The JSON step shows the config from the form. When the user leaves the
+     * JSON step, the form gets the values of the JSON. If the JSON is not
+     * valid, the JSON step stays, with the errors.
+     *
      * @param string $step one of STEPS
      */
     #[LiveAction]
@@ -234,7 +266,14 @@ final class MapEditor extends AbstractController
         if (!\in_array($step, $this->availableSteps(), true)) {
             return;
         }
+        if (self::STEP_JSON === $this->step && self::STEP_JSON !== $step && !$this->applyJson()) {
+            return;
+        }
 
+        if (self::STEP_JSON === $step) {
+            $this->json = $this->prettyJson($this->submittedConfig(false));
+            $this->jsonErrors = [];
+        }
         $this->step = $step;
         if (self::STEP_VIEW === $step) {
             $this->updatePreview(false);
@@ -331,13 +370,18 @@ final class MapEditor extends AbstractController
     }
 
     /**
-     * Validates the form, and asks the user to confirm the save. The question
+     * Validates the form, and asks the user to confirm the save. On the JSON
+     * step, the form first gets the values of the JSON. The question
      * shows over the map from the form, because a save of a stored map
      * changes the map on all sites that show it. The map is not stored yet.
      */
     #[LiveAction]
     public function review(): void
     {
+        if (self::STEP_JSON === $this->step && !$this->applyJson()) {
+            return;
+        }
+
         $this->confirmToken = $this->draftToken(true);
     }
 
@@ -433,6 +477,41 @@ final class MapEditor extends AbstractController
     }
 
     /**
+     * Validates the JSON of the JSON step against the schema, and puts its
+     * values into the form. The keys that the form does not edit stay in
+     * $baseConfig, so a save keeps them.
+     *
+     * @return bool false if the JSON is not valid, and then $jsonErrors has the errors
+     */
+    private function applyJson(): bool
+    {
+        try {
+            $this->parser->parse($this->json);
+        } catch (InvalidMapConfigException $exception) {
+            $this->jsonErrors = $exception->errors;
+            $this->step = self::STEP_JSON;
+
+            return false;
+        }
+
+        /** @var \stdClass $config the parser accepted the JSON, so it is an object */
+        $config = json_decode($this->json, false, 512, \JSON_THROW_ON_ERROR);
+        $this->jsonErrors = [];
+        $this->baseConfig = json_encode($config, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+        $this->formValues = $this->extractFormValues($this->createForm(MapType::class, $this->mapper->toData($config))->createView());
+        // The form starts again from the new values, and the render submits them.
+        $this->resetForm(true);
+        $this->shouldAutoSubmitForm = true;
+
+        return true;
+    }
+
+    private function prettyJson(string $json): string
+    {
+        return json_encode(json_decode($json, false, 512, \JSON_THROW_ON_ERROR), \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+    }
+
+    /**
      * Validates the form and gives the config as JSON.
      *
      * @param bool $showErrorStep if true and the form is not valid, the form shows the first step with an error
@@ -460,7 +539,9 @@ final class MapEditor extends AbstractController
         /** @var MapData $data */
         $data = $this->getForm()->getData();
 
-        return json_encode($this->mapper->toConfig($data, $this->map()?->getConfig()), \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+        $original = null !== $this->baseConfig ? json_decode($this->baseConfig, false, 512, \JSON_THROW_ON_ERROR) : $this->map()?->getConfig();
+
+        return json_encode($this->mapper->toConfig($data, $original instanceof \stdClass ? $original : null), \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
     }
 
     /**

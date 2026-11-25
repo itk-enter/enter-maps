@@ -248,6 +248,22 @@
                 {# loads the new map. The map-view controller copies the view of the map #}
                 {# into the fields. #}
                 {% set frameSource = previewToken ? path('app_builder_draft', {token: previewToken}) : (mapId ? path('app_embed_leaflet', {id: mapId}) : null) %}
+                {# The config as JSON, with the parts that the form does not edit. The #}
+                {# form gets the values of the JSON when the user leaves the step or #}
+                {# saves. The text field is not part of the Symfony form, so the label #}
+                {# and the text field are raw. #}
+                <section id="step-json" aria-labelledby="json-heading" class="{{ section }}" {{ step == 'json' ? '' : 'hidden' }}>
+                    <twig:Heading level="2" id="json-heading">{{ 'builder.form.json'|trans }}</twig:Heading>
+                    <p class="m-0 text-sm text-text-muted" id="json-help">{{ 'builder.form.json_help'|trans }}</p>
+                    {% if jsonErrors is not empty %}
+                        <twig:Layout:ErrorList title="{{ 'builder.form.json_invalid'|trans }}" :errors="jsonErrors" />
+                    {% endif %}
+                    <label for="map-json" class="font-semibold">{{ 'builder.form.json_label'|trans }}</label>
+                    <textarea id="map-json" data-model="norender|json" spellcheck="false" autocomplete="off" aria-describedby="json-help"
+                              {% if jsonErrors is not empty %}aria-invalid="true"{% endif %}
+                              class="min-h-[32rem] w-full rounded border border-line bg-surface p-3 font-mono text-sm text-ink aria-invalid:border-danger">{{ json }}</textarea>
+                </section>
+
                 <section id="step-view" aria-labelledby="view-heading" class="{{ section }}" data-controller="map-view" {{ step == 'view' ? '' : 'hidden' }}>
                     <twig:Heading level="2" id="view-heading">{{ 'builder.form.view'|trans }}</twig:Heading>
                     <p class="m-0 text-sm text-text-muted">{{ 'builder.form.view_help'|trans }}</p>

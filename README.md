@@ -70,8 +70,9 @@ If you change `docker-compose.override.yml` while the containers run, run `docke
 
 The builder at <http://enter-maps.local.itkdev.dk/builder> lists the maps. On the list, you can:
 
-- Make a new map, or edit a map, in a form with four steps: the settings, the data sets, the layers and the
-  preview. "Gem og vis kortet" shows the map from the form, and asks you to confirm the save. For a stored map, the
+- Make a new map, or edit a map, in a form with five steps: the settings, the data sets, the layers, the JSON and the
+  preview. The JSON step shows the configuration from the form, and the form gets the values of the JSON again.
+  "Gem og vis kortet" shows the map from the form, and asks you to confirm the save. For a stored map, the
   question tells that the change shows at once on all sites with the map. Then the builder saves and shows the map.
   The menu of the form links to the embed code of a saved map.
 - Show a map.
