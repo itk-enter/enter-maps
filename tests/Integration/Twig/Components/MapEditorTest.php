@@ -321,6 +321,23 @@ final class MapEditorTest extends WebTestCase
         $this->assertStringEndsWith('/'.MapConfigParser::SCHEMAS[$latest], (string) $crawler->filter('#step-json a')->attr('href'));
     }
 
+    public function testShowsThePathOfAnErrorWithArrowsBetweenTheKeys(): void
+    {
+        $editor = self::getContainer()->get(MapEditor::class);
+
+        $this->assertSame([
+            'layers > 0 > row > title > path: The data must match the pattern',
+            'The required properties (title) are missing',
+            'The configuration is not valid JSON: Syntax error',
+            'filters > 0 > appliesTo > 1: There is no layer with the id "x".',
+        ], $editor->readableErrors([
+            '/layers/0/row/title/path: The data must match the pattern',
+            '/: The required properties (title) are missing',
+            'The configuration is not valid JSON: Syntax error',
+            '/filters/0/appliesTo/1: There is no layer with the id "x".',
+        ]));
+    }
+
     public function testAsksBeforeASaveFromTheJsonStep(): void
     {
         $map = $this->import('toilets');
@@ -392,7 +409,7 @@ final class MapEditorTest extends WebTestCase
         $crawler = $component->call('showStep', ['step' => MapEditor::STEP_VIEW])->render()->crawler();
 
         $this->assertSame(MapEditor::STEP_VIEW, $component->component()->step);
-        $this->assertStringContainsString('/report/url', $crawler->filter('[role="alert"] li')->text());
+        $this->assertStringStartsWith('report > url: ', $crawler->filter('[role="alert"] li')->text());
         $this->assertStringContainsString('(har fejl)', $crawler->filter('nav button')->first()->text());
         // The frame shows the stored map.
         $this->assertSame('/embed/leaflet/'.$map->getId(), $crawler->filter('iframe')->attr('src'));
@@ -419,7 +436,7 @@ final class MapEditorTest extends WebTestCase
 
         $crawler = $component->call('preview')->render()->crawler();
 
-        $this->assertStringContainsString('/report/url', $crawler->filter('[role="alert"] li')->text());
+        $this->assertStringStartsWith('report > url: ', $crawler->filter('[role="alert"] li')->text());
         // The form shows the step of the error, and the menu marks it.
         $this->assertSame(MapEditor::STEP_SETTINGS, $component->component()->step);
         $this->assertStringContainsString('(har fejl)', $crawler->filter('nav [aria-current="step"]')->text());
@@ -437,7 +454,7 @@ final class MapEditorTest extends WebTestCase
         $crawler = $component->call('save')->render()->crawler();
 
         $this->assertSame('Kortet blev ikke gemt. Ret disse fejl.', $crawler->filter('[role="alert"] p')->text());
-        $this->assertStringContainsString('/report/url', $crawler->filter('[role="alert"] li')->text());
+        $this->assertStringStartsWith('report > url: ', $crawler->filter('[role="alert"] li')->text());
     }
 
     public function testAddsItemsWithTheirDefaultValues(): void
@@ -654,7 +671,7 @@ final class MapEditorTest extends WebTestCase
 
         $crawler = $component->call('save')->render()->crawler();
 
-        $this->assertStringContainsString('/layers/0', $crawler->filter('[role="alert"]')->text());
+        $this->assertStringContainsString('layers > 0', $crawler->filter('[role="alert"]')->text());
         $this->assertNull($crawler->filter('#layer-0')->attr('hidden'));
     }
 

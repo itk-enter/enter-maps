@@ -11,7 +11,7 @@
 <div {{ attributes }}>
     {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col gap-6', 'data-action': 'live#action:prevent', 'data-live-action-param': 'review'}}) }}
         {% if saveErrors is not empty %}
-            <twig:Layout:ErrorList title="{{ 'builder.form.not_saved'|trans }}" :errors="saveErrors" />
+            <twig:Layout:ErrorList title="{{ 'builder.form.not_saved'|trans }}" :errors="this.readableErrors(saveErrors)" />
         {% endif %}
         {{ form_errors(form) }}
 
@@ -260,7 +260,7 @@
                     {# The form has the values of the last valid JSON, so the reset gives #}
                     {# a JSON that the user can leave the step with. #}
                     {% if jsonErrors is not empty %}
-                        <twig:Layout:ErrorList title="{{ 'builder.form.json_invalid'|trans }}" :errors="jsonErrors">
+                        <twig:Layout:ErrorList title="{{ 'builder.form.json_invalid'|trans }}" :errors="this.readableErrors(jsonErrors)">
                             <twig:Form:Button type="button" variant="secondary" data-action="live#action" data-live-action-param="resetJson">{{ 'builder.form.json_reset'|trans }}</twig:Form:Button>
                         </twig:Layout:ErrorList>
                     {% endif %}

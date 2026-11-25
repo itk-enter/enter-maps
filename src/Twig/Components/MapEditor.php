@@ -313,6 +313,30 @@ final class MapEditor extends AbstractController
     }
 
     /**
+     * Makes the errors of the schema easier to read: the path to the error
+     * has " > " between the keys, in place of the slashes of a JSON Pointer.
+     * The root of the config has no path. The component reads the paths of
+     * the errors with the slashes, so only the text on the page changes.
+     *
+     * Example: "/layers/0/dataSet: …" gives "layers > 0 > dataSet: …".
+     *
+     * @param list<string> $errors
+     *
+     * @return list<string>
+     */
+    public function readableErrors(array $errors): array
+    {
+        return array_map(static function (string $error): string {
+            if (1 !== preg_match('#^(/[^:\s]*): (.*)$#s', $error, $matches)) {
+                return $error;
+            }
+            $path = implode(' > ', array_filter(explode('/', $matches[1]), static fn (string $key): bool => '' !== $key));
+
+            return '' === $path ? $matches[2] : $path.': '.$matches[2];
+        }, $errors);
+    }
+
+    /**
      * Adds a layer with a data set, or removes the layers with the data set.
      * If the form has a layer without a data set, the data set goes into that
      * layer. The layer gets the defaults of the type of the data set (see
