@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-33](https://github.com/itk-enter/enter-maps/pull/33)
+  Added an import and an export of the JSON of a map to the list of maps in the builder
 * [PR-28](https://github.com/itk-enter/enter-maps/pull/28)
   Deleted the old Symfony cache before `composer install` in the staging deploy
 * [PR-22](https://github.com/itk-enter/enter-maps/pull/22)
