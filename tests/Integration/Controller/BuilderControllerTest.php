@@ -49,9 +49,65 @@ final class BuilderControllerTest extends WebTestCase
         $this->assertStringContainsString('Toiletter i Aarhus', $row->text());
         $this->assertStringContainsString((string) $map->getId(), $row->text());
         $this->assertSame(
-            ['/builder/'.$map->getId().'/edit', '/embed/leaflet/'.$map->getId(), '/builder/'.$map->getId().'/embed', '/builder/'.$map->getId().'/delete'],
+            ['/builder/'.$map->getId().'/edit', '/embed/leaflet/'.$map->getId(), '/builder/'.$map->getId().'/embed', '/builder/'.$map->getId().'/export', '/builder/'.$map->getId().'/delete'],
             $row->filter('a')->each(static fn (Crawler $link): ?string => $link->attr('href')),
         );
+    }
+
+    public function testExportsTheConfigOfAMapAsAJsonFile(): void
+    {
+        $map = $this->import('toilets');
+
+        $this->browser->request('GET', '/builder/'.$map->getId().'/export');
+
+        $this->assertResponseIsSuccessful();
+        $this->assertResponseHeaderSame('Content-Type', 'application/json; charset=UTF-8');
+        $this->assertResponseHeaderSame('Content-Disposition', 'attachment; filename=toiletter-i-aarhus.json');
+        $json = (string) $this->browser->getResponse()->getContent();
+        $this->assertEquals($map->getConfig(), json_decode($json, false));
+        // The file has only the config, so an import makes a new map.
+        $this->assertStringNotContainsString((string) $map->getId(), $json);
+
+        $this->browser->request('GET', '/builder/'.self::UNKNOWN_ID.'/export');
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    public function testImportsAnExportAsANewMap(): void
+    {
+        $map = $this->import('toilets');
+        $this->browser->request('GET', '/builder/'.$map->getId().'/export');
+        $json = (string) $this->browser->getResponse()->getContent();
+
+        $crawler = $this->browser->request('GET', '/builder');
+        $crawler = $this->browser->click($crawler->selectLink('Importér')->link());
+        $this->assertSelectorTextSame('h1', 'Importér et kort');
+        $this->browser->submit($crawler->selectButton('Importér kortet')->form(['import[json]' => $json]));
+
+        $maps = self::getContainer()->get(MapConfigurationRepository::class)->findAll();
+        $this->assertCount(2, $maps);
+        $imported = $maps[0]->getId()->equals($map->getId()) ? $maps[1] : $maps[0];
+        $this->assertResponseRedirects('/builder/'.$imported->getId().'/preview');
+        $this->assertEquals($map->getConfig(), $imported->getConfig());
+        $this->browser->followRedirect();
+        $this->assertSelectorTextContains('[role="status"]', 'Kortet "Toiletter i Aarhus" er importeret.');
+    }
+
+    public function testDoesNotImportJsonThatIsNotValid(): void
+    {
+        foreach ([
+            '{"title": ' => 'The configuration is not valid JSON',
+            '{"version": 1, "title": "Uden lag"}' => 'The required properties',
+            '' => 'Værdien må ikke være blank.',
+        ] as $json => $error) {
+            $crawler = $this->browser->request('GET', '/builder/import');
+            $crawler = $this->browser->submit($crawler->selectButton('Importér kortet')->form(['import[json]' => $json]));
+
+            $this->assertResponseStatusCodeSame(422, (string) $json);
+            $this->assertStringContainsString($error, $crawler->filter('main')->text(), (string) $json);
+            // The field keeps the JSON, so the user can correct it.
+            $this->assertSame(trim((string) $json), $crawler->filter('#import_json')->text(normalizeWhitespace: false));
+        }
+        $this->assertCount(0, self::getContainer()->get(MapConfigurationRepository::class)->findAll());
     }
 
     public function testShowsTheFormOfANewMap(): void
