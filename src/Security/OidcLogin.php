@@ -106,12 +106,18 @@ final readonly class OidcLogin
     }
 
     /**
-     * A path such as "/builder", but not "//other.example.com", which a browser reads as another site.
+     * A path on this site, such as "/builder". It starts with one "/", and the
+     * next character is not "/" or "\", which a browser reads as the start of
+     * another site. It has no control character and no space, because a
+     * browser removes tabs and newlines from an address first: "/\t/evil"
+     * becomes "//evil".
      *
      * @phpstan-assert-if-true string $target
      */
     private function isLocalPath(?string $target): bool
     {
-        return null !== $target && str_starts_with($target, '/') && !str_starts_with($target, '//') && !str_contains($target, '\\');
+        return null !== $target
+            && 1 === preg_match('~^/(?![/\\\\])~', $target)
+            && 1 !== preg_match('~[\x00-\x20\x7F]~', $target);
     }
 }

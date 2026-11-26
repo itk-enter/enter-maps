@@ -144,9 +144,19 @@ final class LoginTest extends WebTestCase
     {
         $this->idToken = OidcTestLogin::idToken();
 
-        $this->login('//evil.example.com/page');
+        // A browser removes tabs and newlines from an address, so "/\t/evil" becomes "//evil", which is another site.
+        foreach (['//evil.example.com/page', "/\t/evil.example.com", "/\n/evil.example.com", "/\r/evil.example.com", '/\\evil.example.com', '/ /evil.example.com', "/\x00/evil.example.com", 'https://evil.example.com', 'evil.example.com'] as $target) {
+            $this->browser->getCookieJar()->clear();
 
-        $this->assertResponseRedirects('/builder');
+            $this->login($target);
+
+            $this->assertResponseRedirects('/builder', message: json_encode($target, \JSON_THROW_ON_ERROR));
+        }
+
+        // A path on this site, with a query string, is kept.
+        $this->browser->getCookieJar()->clear();
+        $this->login('/builder/new?step=layers');
+        $this->assertResponseRedirects('/builder/new?step=layers');
     }
 
     public function testLogsOutAtTheProviderToo(): void
