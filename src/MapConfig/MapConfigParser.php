@@ -23,7 +23,7 @@ final readonly class MapConfigParser
     /**
      * The schema file of each version.
      */
-    private const array SCHEMAS = [
+    public const array SCHEMAS = [
         1 => 'map-config.v1.json',
     ];
 
@@ -32,6 +32,14 @@ final readonly class MapConfigParser
         private Cql2FilterParser $filterParser,
         private SvgIconValidator $svgIconValidator,
     ) {
+    }
+
+    /**
+     * The latest version of the schema, for a new configuration.
+     */
+    public function latestVersion(): int
+    {
+        return max(array_keys(self::SCHEMAS));
     }
 
     /**
