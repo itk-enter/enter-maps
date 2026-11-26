@@ -56,7 +56,7 @@ user in the group `Employee` can use the builder. Other users get the page "Inge
 <http://idp-employee.enter-maps.local.itkdev.dk/>. Its login page has two users:
 
 - `employee`, in the group `Employee`. This user can use the builder.
-- `citizen`, in no group. This user gets "Ingen adgang".
+- `colleague`, an employee in another group. This user gets "Ingen adgang".
 
 The login is the authorization code flow with PKCE in `src/Security/`. The access token authenticator of Symfony checks
 the ID token once, after the login. Then the session keeps the user.

@@ -88,9 +88,9 @@ final class LoginTest extends WebTestCase
         $this->assertStringContainsString('Medarbejder Ny', $this->browser->getCrawler()->filter('header')->text());
     }
 
-    public function testDoesNotLetAUserInWhoIsNotAnEmployee(): void
+    public function testDoesNotLetAUserInWhoIsNotInTheGroup(): void
     {
-        $this->idToken = OidcTestLogin::idToken(['sub' => 'citizen', 'name' => 'Borger', 'groups' => []]);
+        $this->idToken = OidcTestLogin::idToken(['sub' => 'colleague', 'name' => 'Kollega', 'groups' => ['Other']]);
 
         $this->login('/builder');
         $this->browser->followRedirect();

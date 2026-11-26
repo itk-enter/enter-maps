@@ -18,7 +18,7 @@ test("shows the user who is logged in", async ({ page }) => {
 test.describe("without a login", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("does not let a user in who is not an employee", async ({ page }) => {
+  test("does not let a user in who is not in the group", async ({ page }) => {
     // The login page of the provider is on another host, which the stubs of support.js block.
     await page.unrouteAll();
     await page.route("https://cdn.jsdelivr.net/**", (route) =>
@@ -26,12 +26,12 @@ test.describe("without a login", () => {
     );
 
     await page.goto("/builder");
-    await page.getByRole("button", { name: "Authorize as citizen" }).click();
+    await page.getByRole("button", { name: "Authorize as colleague" }).click();
 
     await expect(
       page.getByRole("heading", { level: 1, name: "Ingen adgang" }),
     ).toBeVisible();
-    await expect(page.getByRole("banner")).toContainText("Borger");
+    await expect(page.getByRole("banner")).toContainText("Kollega");
     await expectNoAxeViolations(page);
   });
 });

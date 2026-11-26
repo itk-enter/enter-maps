@@ -20,11 +20,10 @@ services:
     expose:
       - "80"
     command:
-      [
-        "--port",
-        "80",
-        "--user-claims",
-        '{"sub": "employee", "email": "employee@example.com", "name": "Medarbejder", "groups": ["Employee"]}',
-        "--user-claims",
-        '{"sub": "citizen", "email": "citizen@example.com", "name": "Borger", "groups": []}',
-      ]
+      - "--port"
+      - "80"
+      - "--user-claims"
+      - '{"sub": "employee", "email": "employee@example.com", "name": "Medarbejder", "groups": ["Employee"]}'
+      # An employee of the municipality who is not in the group of the builder.
+      - "--user-claims"
+      - '{"sub": "colleague", "email": "colleague@example.com", "name": "Kollega", "groups": ["Other"]}'
