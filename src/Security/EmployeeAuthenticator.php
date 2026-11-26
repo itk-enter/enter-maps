@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Security;
 
+use App\Entity\User;
 use ItkDev\OpenIdConnect\Exception\OpenIdConnectExceptionInterface;
 use ItkDev\OpenIdConnectBundle\Exception\OpenIdConnectBundleExceptionInterface;
 use ItkDev\OpenIdConnectBundle\Security\OpenIdConfigurationProviderManager;
@@ -48,10 +49,10 @@ class EmployeeAuthenticator extends OpenIdLoginAuthenticator
             $user = $this->users->fromClaims($this->validateClaims($request));
         } catch (OpenIdConnectExceptionInterface|OpenIdConnectBundleExceptionInterface|\InvalidArgumentException $exception) {
             // The bundle reads the cause, so it must be chained.
-            throw new CustomUserMessageAuthenticationException($exception->getMessage(), previous: $exception);
+            throw new CustomUserMessageAuthenticationException($exception->getMessage(), code: (int) $exception->getCode(), previous: $exception);
         }
 
-        return new SelfValidatingPassport(new UserBadge($user->getUserIdentifier(), static fn () => $user));
+        return new SelfValidatingPassport(new UserBadge($user->getUserIdentifier(), static fn (): User => $user));
     }
 
     /**
