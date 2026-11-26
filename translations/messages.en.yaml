@@ -92,9 +92,16 @@ builder:
     step_settings: Settings
     step_datasets: Data sets
     step_layers: Layers
+    step_json: JSON
+    json: The configuration as JSON
+    json_help: This is the configuration of the map with the values of the form, also the parts that the form cannot edit. Change the JSON, and go to another step, or save. Then the builder checks the JSON, and the form gets the values.
+    json_label: JSON
+    json_invalid: The JSON is not valid. Correct these errors.
+    json_schema: JSON Schema for version %version% on GitHub (opens in a new window)
+    json_reset: Restore the last valid JSON
     step_view: Preview
     step_embed: Embed code
-    steps_locked: Type a title, and select one or more data sets to open Layers and Preview. The embed code comes when you save the map.
+    steps_locked: Type a title, and select one or more data sets to open the other steps. The embed code comes when you save the map.
     steps_embed_locked: The embed code comes when you save the map.
     step_error: (has errors)
     data_sets: Data sets
