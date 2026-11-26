@@ -24,6 +24,12 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 final readonly class OidcClient
 {
+    /**
+     * The scopes of the login: "openid" for the ID token, and "profile" and
+     * "email" for the name and the e-mail of the user in its claims.
+     */
+    private const string SCOPE = 'openid profile email';
+
     public function __construct(
         private HttpClientInterface $httpClient,
         private CacheInterface $cache,
@@ -47,7 +53,7 @@ final readonly class OidcClient
             'response_type' => 'code',
             'client_id' => $this->clientId,
             'redirect_uri' => $redirectUri,
-            'scope' => 'openid profile email',
+            'scope' => self::SCOPE,
             'state' => $state,
             'code_challenge' => $challenge,
             'code_challenge_method' => 'S256',
