@@ -16,6 +16,7 @@ use App\Entity\MapConfiguration;
 use App\Form\LayerType;
 use App\Form\MapType;
 use App\MapConfig\InvalidMapConfigException;
+use App\MapConfig\MapConfigParser;
 use App\MapConfig\MapConfigurationFactory;
 use App\Renderer\Renderer;
 use App\Repository\MapConfigurationRepository;
@@ -57,9 +58,15 @@ final class MapEditor extends AbstractController
     public const string STEP_SETTINGS = 'settings';
     public const string STEP_DATA_SETS = 'datasets';
     public const string STEP_LAYERS = 'layers';
+    public const string STEP_JSON = 'json';
     public const string STEP_VIEW = 'view';
 
-    public const array STEPS = [self::STEP_SETTINGS, self::STEP_DATA_SETS, self::STEP_LAYERS, self::STEP_VIEW];
+    public const array STEPS = [self::STEP_SETTINGS, self::STEP_DATA_SETS, self::STEP_LAYERS, self::STEP_JSON, self::STEP_VIEW];
+
+    /**
+     * The folder of the schema files on GitHub. The JSON step links to the schema of the version of the config.
+     */
+    private const string SCHEMA_URL = 'https://github.com/itk-enter/enter-maps/blob/develop/config/schema/';
 
     /**
      * The fields of the map form on each step. The layers are on their own step.
@@ -109,6 +116,35 @@ final class MapEditor extends AbstractController
     public ?string $previewToken = null;
 
     /**
+     * The token of the map that waits for a confirmation of the save, or null.
+     * With a token, the form shows the map and asks the user to confirm.
+     */
+    #[LiveProp]
+    public ?string $confirmToken = null;
+
+    /**
+     * The config as JSON on the JSON step. The step fills it from the form,
+     * and the user can change it. See applyJson().
+     */
+    #[LiveProp(writable: true)]
+    public string $json = '';
+
+    /**
+     * The config of the last JSON that the user applied, as JSON, or null.
+     * It has the keys that the form does not edit, so a save keeps them. Without
+     * it, these keys come from the stored map.
+     */
+    #[LiveProp]
+    public ?string $baseConfig = null;
+
+    /**
+     * The errors of the JSON on the JSON step.
+     *
+     * @var list<string>
+     */
+    public array $jsonErrors = [];
+
+    /**
      * The errors of the schema validation, if the form is valid but the config is not.
      *
      * @var list<string>
@@ -133,6 +169,7 @@ final class MapEditor extends AbstractController
         private readonly PreviewStore $previews,
         private readonly DataSetChoices $dataSetChoices,
         private readonly LayerDefaults $layerDefaults,
+        private readonly MapConfigParser $parser,
     ) {
     }
 
@@ -209,6 +246,9 @@ final class MapEditor extends AbstractController
         foreach ($this->saveErrors as $error) {
             $steps[$this->stepOfSchemaError($error)] = true;
         }
+        if ([] !== $this->jsonErrors) {
+            $steps[self::STEP_JSON] = true;
+        }
 
         return array_values(array_filter(self::STEPS, static fn (string $step): bool => isset($steps[$step])));
     }
@@ -219,6 +259,10 @@ final class MapEditor extends AbstractController
      * the changes on the other steps. If the form has an error, the view step
      * stays, and the menu marks the steps with an error.
      *
+     * The JSON step shows the config from the form. When the user leaves the
+     * JSON step, the form gets the values of the JSON. If the JSON is not
+     * valid, the JSON step stays, with the errors.
+     *
      * @param string $step one of STEPS
      */
     #[LiveAction]
@@ -227,11 +271,69 @@ final class MapEditor extends AbstractController
         if (!\in_array($step, $this->availableSteps(), true)) {
             return;
         }
+        if (self::STEP_JSON === $this->step && self::STEP_JSON !== $step && !$this->applyJson()) {
+            return;
+        }
 
+        if (self::STEP_JSON === $step) {
+            $this->json = $this->prettyJson($this->submittedConfig(false));
+            $this->jsonErrors = [];
+        }
         $this->step = $step;
         if (self::STEP_VIEW === $step) {
             $this->updatePreview(false);
         }
+    }
+
+    /**
+     * Gives the JSON on the JSON step the values of the form again, and
+     * removes the errors. The form has the values of the last valid JSON,
+     * because JSON that is not valid does not go into the form.
+     */
+    #[LiveAction]
+    public function resetJson(): void
+    {
+        $this->json = $this->prettyJson($this->submittedConfig(false));
+        $this->jsonErrors = [];
+    }
+
+    /**
+     * The address of the schema on GitHub, for the version of the config. The
+     * version comes from the JSON on the JSON step, else from the stored map.
+     * A new map has the latest version.
+     *
+     * @return array{version: int, url: string}
+     */
+    public function schema(): array
+    {
+        $version = array_find([$this->decodeVersion($this->json), $this->decodeVersion($this->baseConfig), $this->map()?->getConfig()->version ?? null], fn ($candidate): bool => \is_int($candidate) && isset(MapConfigParser::SCHEMAS[$candidate]));
+        $version ??= $this->parser->latestVersion();
+
+        return ['version' => $version, 'url' => self::SCHEMA_URL.MapConfigParser::SCHEMAS[$version]];
+    }
+
+    /**
+     * Makes the errors of the schema easier to read: the path to the error
+     * has " > " between the keys, in place of the slashes of a JSON Pointer.
+     * The root of the config has no path. The component reads the paths of
+     * the errors with the slashes, so only the text on the page changes.
+     *
+     * Example: "/layers/0/dataSet: …" gives "layers > 0 > dataSet: …".
+     *
+     * @param list<string> $errors
+     *
+     * @return list<string>
+     */
+    public function readableErrors(array $errors): array
+    {
+        return array_map(static function (string $error): string {
+            if (1 !== preg_match('#^(/[^:\s]*): (.*)$#s', $error, $matches)) {
+                return $error;
+            }
+            $path = implode(' > ', array_filter(explode('/', $matches[1]), static fn (string $key): bool => '' !== $key));
+
+            return '' === $path ? $matches[2] : $path.': '.$matches[2];
+        }, $errors);
     }
 
     /**
@@ -324,11 +426,37 @@ final class MapEditor extends AbstractController
     }
 
     /**
-     * Stores the map, and shows it. The embed code is a link in the menu of the steps.
+     * Validates the form, and asks the user to confirm the save. On the JSON
+     * step, the form first gets the values of the JSON. The question
+     * shows over the map from the form, because a save of a stored map
+     * changes the map on all sites that show it. The map is not stored yet.
+     */
+    #[LiveAction]
+    public function review(): void
+    {
+        if (self::STEP_JSON === $this->step && !$this->applyJson()) {
+            return;
+        }
+
+        $this->confirmToken = $this->draftToken(true);
+    }
+
+    /**
+     * Closes the question of review(), without a save.
+     */
+    #[LiveAction]
+    public function cancelSave(): void
+    {
+        $this->confirmToken = null;
+    }
+
+    /**
+     * Stores the map, and shows it. The user confirms the save first. See review().
      */
     #[LiveAction]
     public function save(): ?Response
     {
+        $this->confirmToken = null;
         $json = $this->submittedConfig();
         $map = $this->map();
 
@@ -367,6 +495,23 @@ final class MapEditor extends AbstractController
      */
     private function updatePreview(bool $showErrorStep): void
     {
+        $token = $this->draftToken($showErrorStep);
+        if (null !== $token) {
+            $this->previewToken = $token;
+            $this->step = self::STEP_VIEW;
+        }
+    }
+
+    /**
+     * Makes the map from the form without a save, and gives the token of its
+     * preview. The map that other sites show does not change.
+     *
+     * @param bool $showErrorStep if true, the form shows the first step with an error
+     *
+     * @return string|null the token, or null if the config is not valid
+     */
+    private function draftToken(bool $showErrorStep): ?string
+    {
         $json = $this->submittedConfig($showErrorStep);
 
         try {
@@ -378,13 +523,58 @@ final class MapEditor extends AbstractController
                 $this->showStepWithError();
             }
 
-            return;
+            return null;
         }
 
         /** @var \stdClass $settings the converter of the renderer ran, so the settings are there */
         $settings = $draft->getMapJson(Renderer::Leaflet);
-        $this->previewToken = $this->previews->add($settings);
-        $this->step = self::STEP_VIEW;
+
+        return $this->previews->add($settings);
+    }
+
+    /**
+     * Validates the JSON of the JSON step against the schema, and puts its
+     * values into the form. The keys that the form does not edit stay in
+     * $baseConfig, so a save keeps them.
+     *
+     * @return bool false if the JSON is not valid, and then $jsonErrors has the errors
+     */
+    private function applyJson(): bool
+    {
+        try {
+            $this->parser->parse($this->json);
+        } catch (InvalidMapConfigException $exception) {
+            $this->jsonErrors = $exception->errors;
+            $this->step = self::STEP_JSON;
+
+            return false;
+        }
+
+        /** @var \stdClass $config the parser accepted the JSON, so it is an object */
+        $config = json_decode($this->json, false, 512, \JSON_THROW_ON_ERROR);
+        $this->jsonErrors = [];
+        $this->baseConfig = json_encode($config, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+        $this->formValues = $this->extractFormValues($this->createForm(MapType::class, $this->mapper->toData($config))->createView());
+        // The form starts again from the new values, and the render submits them.
+        $this->resetForm(true);
+        $this->shouldAutoSubmitForm = true;
+
+        return true;
+    }
+
+    /**
+     * @return mixed the "version" of the JSON, or null if the JSON is not an object
+     */
+    private function decodeVersion(?string $json): mixed
+    {
+        $config = json_decode((string) $json);
+
+        return $config instanceof \stdClass ? ($config->version ?? null) : null;
+    }
+
+    private function prettyJson(string $json): string
+    {
+        return json_encode(json_decode($json, false, 512, \JSON_THROW_ON_ERROR), \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
     }
 
     /**
@@ -415,7 +605,9 @@ final class MapEditor extends AbstractController
         /** @var MapData $data */
         $data = $this->getForm()->getData();
 
-        return json_encode($this->mapper->toConfig($data, $this->map()?->getConfig()), \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
+        $original = null !== $this->baseConfig ? json_decode($this->baseConfig, false, 512, \JSON_THROW_ON_ERROR) : $this->map()?->getConfig();
+
+        return json_encode($this->mapper->toConfig($data, $original instanceof \stdClass ? $original : null), \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
     }
 
     /**

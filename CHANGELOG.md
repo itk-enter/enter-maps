@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [PR-29](https://github.com/itk-enter/enter-maps/pull/29)
   Numbered the steps of the map form, and moved the embed code from the steps to a button
+* [PR-31](https://github.com/itk-enter/enter-maps/pull/31)
+  Added a JSON step to the map form, before the preview
+* [PR-30](https://github.com/itk-enter/enter-maps/pull/30)
+  Added a question over the map before the builder saves it
 * [PR-28](https://github.com/itk-enter/enter-maps/pull/28)
   Deleted the old Symfony cache before `composer install` in the staging deploy
 * [PR-22](https://github.com/itk-enter/enter-maps/pull/22)

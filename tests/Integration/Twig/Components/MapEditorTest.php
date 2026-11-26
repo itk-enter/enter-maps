@@ -6,6 +6,7 @@ namespace App\Tests\Integration\Twig\Components;
 
 use App\Builder\MapConfigurationImporter;
 use App\Entity\MapConfiguration;
+use App\MapConfig\MapConfigParser;
 use App\Renderer\Renderer;
 use App\Repository\MapConfigurationRepository;
 use App\Tests\Support\Database;
@@ -154,6 +155,213 @@ final class MapEditorTest extends WebTestCase
         $this->assertSame('Ny titel', $stored->getMapJson(Renderer::Leaflet)?->title);
     }
 
+    public function testAsksBeforeItCreatesANewMap(): void
+    {
+        // The same client as the request for the frame, so that they share the session.
+        $client = self::getClient();
+        $this->assertInstanceOf(KernelBrowser::class, $client);
+        $component = $this->createLiveComponent(MapEditor::class, [], $client)
+            ->call('addCollectionItem', ['name' => 'map[layers]'])
+            ->call('addCollectionItem', ['name' => 'map[layers][0][conditions]']);
+
+        $crawler = $component->submitForm(['map' => $this->newMap()], 'review')->render()->crawler();
+
+        /** @var MapEditor $editor */
+        $editor = $component->component();
+        $this->assertNotNull($editor->confirmToken);
+        $this->assertSame('Opret nyt kort?', $crawler->filter('dialog h2')->text());
+        $this->assertSame(['Opret kortet', 'Tilbage til formularen'], $crawler->filter('dialog button')->each(static fn (Crawler $button): string => $button->text()));
+        $this->assertNotNull($crawler->filter('dialog button')->eq(1)->attr('autofocus'));
+        $this->assertSame('/builder/preview/'.$editor->confirmToken, $crawler->filter('dialog iframe')->attr('src'));
+        // The question does not save the map.
+        $this->assertCount(0, self::getContainer()->get(MapConfigurationRepository::class)->findAll());
+
+        $crawler = $component->call('cancelSave')->render()->crawler();
+
+        $this->assertCount(0, $crawler->filter('dialog'));
+        $this->assertCount(0, self::getContainer()->get(MapConfigurationRepository::class)->findAll());
+
+        // The frame of the question shows the map from the form.
+        $client->request('GET', '/builder/preview/'.$editor->confirmToken);
+        $this->assertSelectorTextSame('h1', 'Bænke i byen');
+    }
+
+    public function testWarnsBeforeItChangesAStoredMap(): void
+    {
+        $map = $this->import('toilets');
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+
+        $crawler = $component->submitForm(['map' => ['title' => 'Ny titel']], 'review')->render()->crawler();
+
+        $this->assertSame('Gem ændringerne?', $crawler->filter('dialog h2')->text());
+        $this->assertSame('Ændringerne vises med det samme på alle sider, som viser kortet.', $crawler->filter('dialog p')->text());
+        $this->assertSame('Gem ændringerne', $crawler->filter('dialog button')->first()->text());
+
+        $component->call('save');
+
+        $this->assertSame('/builder/'.$map->getId().'/preview', $this->redirect($component));
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $this->assertSame('Ny titel', self::getContainer()->get(MapConfigurationRepository::class)->find((string) $map->getId())?->getConfig()->title);
+    }
+
+    public function testDoesNotAskIfTheSchemaHasErrors(): void
+    {
+        // A config that the form cannot correct: the URL of the report link must use https.
+        $config = json_decode((string) file_get_contents($this->fixture('toilets')), false);
+        $config->report->url = 'http://example.dk/form';
+        $map = new MapConfiguration($config, [Renderer::Leaflet], []);
+        self::getContainer()->get(MapConfigurationRepository::class)->save($map);
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+
+        $crawler = $component->call('review')->render()->crawler();
+
+        $this->assertCount(0, $crawler->filter('dialog'));
+        $this->assertSame('Kortet blev ikke gemt. Ret disse fejl.', $crawler->filter('[role="alert"] p')->text());
+    }
+
+    public function testShowsTheConfigOfTheFormAsJson(): void
+    {
+        $map = $this->import('toilets-and-parking');
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+        $component->set('map.title', 'Ny titel');
+
+        $crawler = $component->call('showStep', ['step' => MapEditor::STEP_JSON])->render()->crawler();
+
+        $this->assertNull($crawler->filter('#step-json')->attr('hidden'));
+        $json = json_decode($crawler->filter('#map-json')->text(normalizeWhitespace: false), true);
+        // The JSON has the values of the form, and the parts that the form does not edit.
+        $this->assertSame('Ny titel', $json['title']);
+        $this->assertCount(2, $json['filters']);
+        $this->assertSame(['toilets', 'parking'], array_column($json['layers'], 'id'));
+    }
+
+    public function testPutsTheValuesOfTheJsonIntoTheFormAndKeepsTheOtherKeys(): void
+    {
+        $map = $this->import('toilets');
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+        $component->call('showStep', ['step' => MapEditor::STEP_JSON]);
+        /** @var MapEditor $editor */
+        $editor = $component->component();
+        $config = json_decode($editor->json, true);
+        $config['title'] = 'Fra JSON';
+        $config['layers'][0]['label'] = 'Toiletter fra JSON';
+        $config['report']['label'] = 'Ny tekst til linket';
+
+        $crawler = $component->set('json', json_encode($config))->call('showStep', ['step' => MapEditor::STEP_SETTINGS])->render()->crawler();
+
+        $this->assertSame('Fra JSON', $crawler->filter('#map_title')->attr('value'));
+        $this->assertSame('Toiletter fra JSON', $crawler->filter('#map_layers_0_label')->attr('value'));
+
+        $component->call('save');
+
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $stored = self::getContainer()->get(MapConfigurationRepository::class)->find((string) $map->getId())?->getConfig();
+        $this->assertInstanceOf(\stdClass::class, $stored);
+        $this->assertSame('Fra JSON', $stored->title);
+        // "report" is not in the form, so it comes from the JSON.
+        $this->assertSame('Ny tekst til linket', $stored->report->label);
+    }
+
+    public function testStaysOnTheJsonStepWithTheErrorsOfTheJson(): void
+    {
+        $map = $this->import('toilets');
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+        $component->call('showStep', ['step' => MapEditor::STEP_JSON]);
+
+        foreach (['{"title": ', '{"version": 1, "title": "Uden lag"}'] as $json) {
+            $crawler = $component->set('json', $json)->call('showStep', ['step' => MapEditor::STEP_SETTINGS])->render()->crawler();
+
+            $this->assertNull($crawler->filter('#step-json')->attr('hidden'), $json);
+            $this->assertSame('JSON\'en er ikke gyldig. Ret disse fejl.', $crawler->filter('#step-json [role="alert"] p')->text(), $json);
+            $this->assertSame('true', $crawler->filter('#map-json')->attr('aria-invalid'), $json);
+            $this->assertStringContainsString('(har fejl)', $crawler->filter('nav [aria-current="step"]')->text(), $json);
+            // The text field keeps the JSON of the user, so the user can correct it.
+            $this->assertSame($json, $crawler->filter('#map-json')->text(normalizeWhitespace: false), $json);
+        }
+
+        // The question before a save needs valid JSON too.
+        $crawler = $component->call('review')->render()->crawler();
+        $this->assertCount(0, $crawler->filter('dialog'));
+        $this->assertCount(1, $crawler->filter('#step-json [role="alert"]'));
+    }
+
+    public function testRestoresTheLastValidJsonAndLetsTheUserLeaveTheStep(): void
+    {
+        $map = $this->import('toilets');
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+        $component->call('showStep', ['step' => MapEditor::STEP_JSON]);
+        /** @var MapEditor $editor */
+        $editor = $component->component();
+        $valid = $editor->json;
+
+        $crawler = $component->set('json', '{"title": ')->call('showStep', ['step' => MapEditor::STEP_SETTINGS])->render()->crawler();
+        $this->assertSame('Gendan den sidste gyldige JSON', $crawler->filter('#step-json [role="alert"] button')->text());
+
+        $crawler = $component->call('resetJson')->render()->crawler();
+
+        $this->assertCount(0, $crawler->filter('#step-json [role="alert"]'));
+        $this->assertSame($valid, $crawler->filter('#map-json')->text(normalizeWhitespace: false));
+
+        $crawler = $component->call('showStep', ['step' => MapEditor::STEP_SETTINGS])->render()->crawler();
+        $this->assertNull($crawler->filter('#step-settings')->attr('hidden'));
+    }
+
+    public function testLinksToTheSchemaOfTheVersionOfTheConfig(): void
+    {
+        $map = $this->import('toilets');
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+
+        $crawler = $component->call('showStep', ['step' => MapEditor::STEP_JSON])->render()->crawler();
+
+        $link = $crawler->filter('#step-json a');
+        $this->assertSame('https://github.com/itk-enter/enter-maps/blob/develop/config/schema/map-config.v1.json', $link->attr('href'));
+        $this->assertSame('JSON Schema for version 1 på GitHub (åbner i et nyt vindue)', $link->text());
+
+        // JSON with a version that does not exist links to the version of the stored map.
+        $crawler = $component->set('json', '{"version": 99}')->render()->crawler();
+        $this->assertStringEndsWith('/map-config.v1.json', (string) $crawler->filter('#step-json a')->attr('href'));
+    }
+
+    public function testLinksToTheLatestSchemaForANewMap(): void
+    {
+        $crawler = $this->createLiveComponent(MapEditor::class)->render()->crawler();
+        $latest = self::getContainer()->get(MapConfigParser::class)->latestVersion();
+        $this->assertStringEndsWith('/'.MapConfigParser::SCHEMAS[$latest], (string) $crawler->filter('#step-json a')->attr('href'));
+    }
+
+    public function testShowsThePathOfAnErrorWithArrowsBetweenTheKeys(): void
+    {
+        $editor = self::getContainer()->get(MapEditor::class);
+
+        $this->assertSame([
+            'layers > 0 > row > title > path: The data must match the pattern',
+            'The required properties (title) are missing',
+            'The configuration is not valid JSON: Syntax error',
+            'filters > 0 > appliesTo > 1: There is no layer with the id "x".',
+        ], $editor->readableErrors([
+            '/layers/0/row/title/path: The data must match the pattern',
+            '/: The required properties (title) are missing',
+            'The configuration is not valid JSON: Syntax error',
+            '/filters/0/appliesTo/1: There is no layer with the id "x".',
+        ]));
+    }
+
+    public function testAsksBeforeASaveFromTheJsonStep(): void
+    {
+        $map = $this->import('toilets');
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+        $component->call('showStep', ['step' => MapEditor::STEP_JSON]);
+        /** @var MapEditor $editor */
+        $editor = $component->component();
+        $config = json_decode($editor->json, true);
+        $config['title'] = 'Gemt fra JSON';
+
+        $crawler = $component->set('json', json_encode($config))->call('review')->render()->crawler();
+
+        $this->assertSame('Gem ændringerne?', $crawler->filter('dialog h2')->text());
+        $this->assertSame('Gemt fra JSON', $crawler->filter('#map_title')->attr('value'));
+    }
+
     public function testPreviewsTheMapWithoutASave(): void
     {
         $map = $this->import('toilets');
@@ -209,7 +417,7 @@ final class MapEditorTest extends WebTestCase
         $crawler = $component->call('showStep', ['step' => MapEditor::STEP_VIEW])->render()->crawler();
 
         $this->assertSame(MapEditor::STEP_VIEW, $component->component()->step);
-        $this->assertStringContainsString('/report/url', $crawler->filter('[role="alert"] li')->text());
+        $this->assertStringStartsWith('report > url: ', $crawler->filter('[role="alert"] li')->text());
         $this->assertStringContainsString('(har fejl)', $crawler->filter('nav button')->first()->text());
         // The frame shows the stored map.
         $this->assertSame('/embed/leaflet/'.$map->getId(), $crawler->filter('iframe')->attr('src'));
@@ -236,7 +444,7 @@ final class MapEditorTest extends WebTestCase
 
         $crawler = $component->call('preview')->render()->crawler();
 
-        $this->assertStringContainsString('/report/url', $crawler->filter('[role="alert"] li')->text());
+        $this->assertStringStartsWith('report > url: ', $crawler->filter('[role="alert"] li')->text());
         // The form shows the step of the error, and the menu marks it.
         $this->assertSame(MapEditor::STEP_SETTINGS, $component->component()->step);
         $this->assertStringContainsString('(har fejl)', $crawler->filter('nav [aria-current="step"]')->text());
@@ -254,7 +462,7 @@ final class MapEditorTest extends WebTestCase
         $crawler = $component->call('save')->render()->crawler();
 
         $this->assertSame('Kortet blev ikke gemt. Ret disse fejl.', $crawler->filter('[role="alert"] p')->text());
-        $this->assertStringContainsString('/report/url', $crawler->filter('[role="alert"] li')->text());
+        $this->assertStringStartsWith('report > url: ', $crawler->filter('[role="alert"] li')->text());
     }
 
     public function testAddsItemsWithTheirDefaultValues(): void
@@ -474,7 +682,7 @@ final class MapEditorTest extends WebTestCase
 
         $crawler = $component->call('save')->render()->crawler();
 
-        $this->assertStringContainsString('/layers/0', $crawler->filter('[role="alert"]')->text());
+        $this->assertStringContainsString('layers > 0', $crawler->filter('[role="alert"]')->text());
         $this->assertNull($crawler->filter('#layer-0')->attr('hidden'));
     }
 
