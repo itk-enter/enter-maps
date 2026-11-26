@@ -61,6 +61,17 @@ builder:
     delete_label: Slet kortet "%title%"
     deleted: Slettede kort
     deleted_at: Slettet %date%
+    import: Importér
+    export: Eksportér
+    export_label: Eksportér kortet "%title%" som JSON
+  import:
+    title: Importér et kort
+    text: Indsæt JSON'en med kortets konfiguration, fx fra en eksport. Kortet bliver et nyt kort med sin egen adresse, så det ændrer ikke andre kort.
+    json: JSON
+    json_help: Konfigurationen bliver tjekket mod JSON Schemaet, før kortet bliver gemt.
+    submit: Importér kortet
+    invalid: Kortet blev ikke importeret. Ret disse fejl.
+    done: Kortet "%title%" er importeret.
   embed:
     title: Embedkode til "%title%"
     text: Kopiér koden, og indsæt den i HTML'en på den side, som skal vise kortet.
