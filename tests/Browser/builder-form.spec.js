@@ -42,10 +42,10 @@ test("makes a new map with a fixed filter", async ({ page }) => {
     page.getByRole("heading", { level: 1, name: "Nyt kort" }),
   ).toBeVisible();
   await expectNoAxeViolations(page);
-  // Before a title, the layers, the view and the embed code are disabled.
+  // Before a title, the layers and the view are disabled. A new map has no embed code.
   const steps = page.getByRole("navigation", { name: "Trin i formularen" });
   await expect(steps.getByRole("button", { name: "Lag" })).toBeDisabled();
-  await expect(steps.getByRole("button", { name: "Embedkode" })).toBeDisabled();
+  await expect(page.getByRole("link", { name: "Embedkode" })).toHaveCount(0);
 
   await page.getByLabel("Titel", { exact: true }).fill("Bænke i byen");
   await page.getByLabel("Søg i stederne", { exact: true }).check();
@@ -231,10 +231,7 @@ test("edits a map and shows the embed code", async ({ page }) => {
   ).toBeVisible();
   await expectNoAxeViolations(page);
 
-  await page
-    .getByRole("navigation", { name: "Trin i formularen" })
-    .getByRole("link", { name: "Embedkode" })
-    .click();
+  await page.getByRole("link", { name: "Embedkode", exact: true }).click();
 
   await expect(page).toHaveURL(`/builder/${maps.toilets}/embed`);
   await expect(page.locator("pre code")).toContainText(

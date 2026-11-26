@@ -16,29 +16,23 @@
         {{ form_errors(form) }}
 
         <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-[14rem_minmax(0,1fr)]">
-            {# The steps of the form, on one page. The menu shows one step, and the #}
-            {# other steps stay in the page, so that the form keeps their values. #}
-            {# A step that is not available is disabled. The embed code is a link to #}
-        {# its own page, and it needs a stored map. #}
-        {% set errorSteps = this.stepsWithErrors %}
-        {% set availableSteps = this.availableSteps %}
+            {# The steps of the form, on one page, in the order of the work. The #}
+            {# menu shows one step, and the other steps stay in the page, so that the #}
+            {# form keeps their values. A step that is not available is disabled. #}
+            {% set errorSteps = this.stepsWithErrors %}
+            {% set availableSteps = this.availableSteps %}
             <nav aria-label="{{ 'builder.form.steps'|trans }}" class="flex flex-col gap-3 lg:sticky lg:top-4">
-                <ul class="m-0 flex list-none flex-wrap gap-1 p-0 lg:flex-col">
+                <ol class="m-0 flex list-none flex-wrap gap-1 p-0 lg:flex-col">
                     {% for name in constant('App\\Twig\\Components\\MapEditor::STEPS') %}
                         <li>
-                            <twig:Form:StepButton :current="step == name" :invalid="name in errorSteps" :disabled="name not in availableSteps" controls="step-{{ name }}" data-action="live#action" data-live-action-param="showStep" data-live-step-param="{{ name }}">
+                            <twig:Form:StepButton :number="loop.index" :current="step == name" :invalid="name in errorSteps" :disabled="name not in availableSteps" controls="step-{{ name }}" data-action="live#action" data-live-action-param="showStep" data-live-step-param="{{ name }}">
                                 {{- ('builder.form.step_' ~ name)|trans -}}
                             </twig:Form:StepButton>
                         </li>
                     {% endfor %}
-                    <li>
-                        <twig:Form:StepButton :href="mapId ? path('app_builder_embed', {id: mapId}) : null" :disabled="mapId is null">
-                            {{- 'builder.form.step_embed'|trans -}}
-                        </twig:Form:StepButton>
-                    </li>
-                </ul>
-                {% if availableSteps|length < 4 or mapId is null %}
-                    <p class="m-0 text-sm text-text-muted">{{ (availableSteps|length < 4 ? 'builder.form.steps_locked' : 'builder.form.steps_embed_locked')|trans }}</p>
+                </ol>
+                {% if availableSteps|length < constant('App\\Twig\\Components\\MapEditor::STEPS')|length %}
+                    <p class="m-0 text-sm text-text-muted">{{ 'builder.form.steps_locked'|trans }}</p>
                 {% endif %}
             </nav>
 
@@ -297,6 +291,10 @@
 
                 <div class="flex flex-wrap gap-3 border-t border-line pt-6">
                     <twig:Form:Button type="button" data-action="live#action" data-live-action-param="review">{{ 'builder.form.save_preview'|trans }}</twig:Form:Button>
+                    {# The embed code is on its own page, and it needs a stored map. #}
+                    {% if mapId %}
+                        <twig:Form:Button variant="secondary" href="{{ path('app_builder_embed', {id: mapId}) }}">{{ 'builder.form.embed'|trans }}</twig:Form:Button>
+                    {% endif %}
                     <twig:Form:Button variant="secondary" href="{{ path('app_builder') }}">{{ 'builder.form.cancel'|trans }}</twig:Form:Button>
                 </div>
             </div>

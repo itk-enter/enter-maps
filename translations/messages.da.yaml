@@ -111,9 +111,8 @@ builder:
     json_schema: JSON Schema for version %version% på GitHub (åbner i et nyt vindue)
     json_reset: Gendan den sidste gyldige JSON
     step_view: Forhåndsvisning
-    step_embed: Embedkode
-    steps_locked: Skriv en titel, og vælg mindst ét datasæt for at åbne de andre trin. Embedkoden kommer, når kortet er gemt.
-    steps_embed_locked: Embedkoden kommer, når kortet er gemt.
+    embed: Embedkode
+    steps_locked: Skriv en titel, og vælg mindst ét datasæt for at åbne de andre trin.
     step_error: (har fejl)
     data_sets: Datasæt
     data_sets_help: Vælg datasættene til kortet. Hvert datasæt bliver et lag. Fjerner du fluebenet, fjernes lagene med datasættet.
