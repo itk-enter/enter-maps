@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-33](https://github.com/itk-enter/enter-maps/pull/33)
+  Added an import and an export of the JSON of a map to the list of maps in the builder
 * [PR-31](https://github.com/itk-enter/enter-maps/pull/31)
   Added a JSON step to the map form, before the preview
 * [PR-30](https://github.com/itk-enter/enter-maps/pull/30)

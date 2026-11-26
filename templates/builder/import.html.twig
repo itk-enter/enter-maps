@@ -1,0 +1,17 @@
+{% extends 'builder/layout.html.twig' %}
+
+{% block heading %}{{ 'builder.import.title'|trans }}{% endblock %}
+
+{% block content %}
+    <p class="m-0 max-w-2xl">{{ 'builder.import.text'|trans }}</p>
+    {% if errors is not empty %}
+        <twig:Layout:ErrorList title="{{ 'builder.import.invalid'|trans }}" :errors="errors" />
+    {% endif %}
+    {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col gap-6'}}) }}
+        {{ form_row(form.json) }}
+        <div class="flex flex-wrap gap-3">
+            <twig:Form:Button>{{ 'builder.import.submit'|trans }}</twig:Form:Button>
+            <twig:Form:Button variant="secondary" href="{{ path('app_builder') }}">{{ 'builder.form.cancel'|trans }}</twig:Form:Button>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}
