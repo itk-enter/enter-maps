@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Security;
 
 use App\Security\LogoutListener;
-use App\Security\OidcClient;
+use ItkDev\OpenIdConnect\Security\OpenIdConfigurationProvider;
+use ItkDev\OpenIdConnectBundle\Exception\InvalidProviderException;
+use ItkDev\OpenIdConnectBundle\Security\OpenIdConfigurationProviderManager;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Cache\Adapter\ArrayAdapter;
-use Symfony\Component\HttpClient\MockHttpClient;
-use Symfony\Component\HttpClient\Response\JsonMockResponse;
-use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -20,31 +18,31 @@ final class LogoutListenerTest extends TestCase
 {
     public function testLogsOutAtTheProvider(): void
     {
-        $event = $this->logout(new JsonMockResponse(['end_session_endpoint' => 'https://idp.example.com/logout']));
+        $provider = $this->createMock(OpenIdConfigurationProvider::class);
+        $provider->expects($this->once())->method('getEndSessionUrl')->with('https://maps.example.com/logged-out')
+            ->willReturn('https://idp.example.com/logout?post_logout_redirect_uri=x');
+        $manager = $this->createStub(OpenIdConfigurationProviderManager::class);
+        $manager->method('getProvider')->willReturn($provider);
 
-        $this->assertSame('https://idp.example.com/logout?client_id=enter-maps&post_logout_redirect_uri=https%3A%2F%2Fmaps.example.com%2Flogged-out', $this->target($event));
+        $this->assertSame('https://idp.example.com/logout?post_logout_redirect_uri=x', $this->logout($manager));
     }
 
-    public function testGoesToThePageOfTheLogoutIfTheProviderHasNoLogoutOrDoesNotAnswer(): void
+    public function testGoesToThePageOfTheLogoutIfTheProviderIsNotThere(): void
     {
-        $this->assertSame('https://maps.example.com/logged-out', $this->target($this->logout(new JsonMockResponse(['authorization_endpoint' => 'x']))));
-        $this->assertSame('https://maps.example.com/logged-out', $this->target($this->logout(new MockResponse('', ['http_code' => 503]))));
+        $manager = $this->createStub(OpenIdConfigurationProviderManager::class);
+        $manager->method('getProvider')->willThrowException(new InvalidProviderException('No provider'));
+
+        $this->assertSame('https://maps.example.com/logged-out', $this->logout($manager));
     }
 
-    private function logout(MockResponse $discovery): LogoutEvent
+    private function logout(OpenIdConfigurationProviderManager $manager): string
     {
         $urlGenerator = $this->createStub(UrlGeneratorInterface::class);
         $urlGenerator->method('generate')->willReturn('https://maps.example.com/logged-out');
-        $client = new OidcClient(new MockHttpClient([$discovery]), new ArrayAdapter(), 'https://idp.example.com', 'enter-maps', 'secret');
         $event = new LogoutEvent(new Request(), null);
 
-        new LogoutListener($client, $urlGenerator)($event);
+        new LogoutListener($manager, $urlGenerator)($event);
 
-        return $event;
-    }
-
-    private function target(LogoutEvent $event): string
-    {
         $response = $event->getResponse();
         $this->assertInstanceOf(RedirectResponse::class, $response);
 

@@ -7,8 +7,6 @@ namespace App\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
-use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Http\Authentication\AuthenticationFailureHandlerInterface;
 use Symfony\Component\Security\Http\Authorization\AccessDeniedHandlerInterface;
 use Twig\Environment;
 
@@ -17,22 +15,11 @@ use Twig\Environment;
  * It does not send the user to the login again, because the provider would
  * log the same user in again, and the browser would go round in a loop.
  */
-final readonly class AccessDeniedPage implements AuthenticationFailureHandlerInterface, AccessDeniedHandlerInterface
+final readonly class AccessDeniedPage implements AccessDeniedHandlerInterface
 {
     public function __construct(
         private Environment $twig,
-        private OidcLogin $login,
     ) {
-    }
-
-    /**
-     * The ID token was not valid, for example because it expired or has another audience.
-     */
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
-    {
-        $this->login->forgetToken($request);
-
-        return $this->render('login_failed', Response::HTTP_UNAUTHORIZED);
     }
 
     /**

@@ -44,6 +44,7 @@ Rules that apply to all parts:
 - AssetMapper with `importmap.php`. Do not add a Node build step.
 - Tailwind CSS v4 through `symfonycasts/tailwind-bundle`, with a pinned binary. See "Frontend".
 - Symfony Form and Validator for the builder.
+- `itk-dev/openid-connect-bundle` for the login of the builder with OpenID Connect.
 - `symfony/http-client` with a scoped client for Enter, and Symfony Cache for the data proxy.
 - Leaflet 1.9.x from the importmap.
 - Septima Widget as an ES module from its CDN, with a pinned version. This is the only CDN.
@@ -69,7 +70,7 @@ src/Controller/BuilderController.php /builder: the list of the maps, the embed c
 src/Controller/DataController.php  GET /data/{dataSet}.geojson
 src/Controller/EmbedController.php GET /embed/leaflet/{id}
 src/Controller/HomeController.php  GET /: the front page, with a card for each part of the site
-src/Controller/LoginController.php /login, /login/callback, /logout and /logged-out
+src/Controller/LoginController.php The callback of the login, /logout and /logged-out
 src/Embed/                         The embed options from the query string, and LeafletPage renders the page
 src/Enter/                         EnterClient reads from Enter. DataProxy validates the request.
 src/Entity/MapConfiguration.php    The stored configuration, on itk-dev/entity-bundle
@@ -77,13 +78,13 @@ src/Entity/User.php                A user of the builder, made on the first logi
 src/Form/                          The Symfony form types of the map form
 src/MapConfig/                     MapConfigParser, the config value objects and MapConfigurationFactory
 src/Renderer/                      The converter of each renderer, the base maps and the icons
-src/Security/                      The login with OpenID Connect: the flow, the user and the pages of a denied access
+src/Security/                      The login on itk-dev/openid-connect-bundle: the authenticator, the user and the pages of a denied access
 src/Twig/Components/MapEditor.php  The Live Component of the map form
 tests/Unit/                        Unit tests
 tests/Integration/                 Tests that boot the kernel or send requests
 tests/Support/FakeEnter.php        A fake Enter for tests, on MockHttpClient
 tests/Support/Database.php         Makes an empty SQLite database for a test
-tests/Support/OidcTestLogin.php    Logs a test client in, and signs ID tokens with the test key
+tests/Support/OidcTestLogin.php    Logs a test client in as an employee
 tests/Browser/                     Playwright and axe-core tests of the pages, with stubs for services
 templates/builder/                 The pages of the builder
 templates/components/              Twig components: Layout, Map, Search, Form, Icon, Heading, Card and Table

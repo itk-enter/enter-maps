@@ -13,6 +13,7 @@
         "doctrine/orm": "^3.8.0",
         "enshrined/svg-sanitize": "^1.1",
         "itk-dev/entity-bundle": "^0.2",
+        "itk-dev/openid-connect-bundle": "~6.1.0",
         "opis/json-schema": "^2.6.2",
         "symfony/asset-mapper": "~8.1.11",
         "symfony/console": "~8.1.11",
@@ -32,8 +33,7 @@
         "symfony/ux-twig-component": "^3.7",
         "symfony/validator": "~8.1.11",
         "symfony/yaml": "~8.1.11",
-        "symfonycasts/tailwind-bundle": "^1.0",
-        "web-token/jwt-library": "~4.2.7"
+        "symfonycasts/tailwind-bundle": "^1.0"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.57.0",

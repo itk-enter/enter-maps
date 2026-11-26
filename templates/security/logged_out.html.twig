@@ -5,6 +5,6 @@
 {% block content %}
     <p class="m-0 max-w-2xl">{{ 'builder.security.logged_out_text'|trans }}</p>
     <p class="m-0">
-        <twig:Form:Button href="{{ path('app_login') }}">{{ 'builder.security.login'|trans }}</twig:Form:Button>
+        <twig:Form:Button href="{{ path('itkdev_openid_connect_login', {providerKey: constant('App\\Security\\EmployeeAuthenticator::PROVIDER')}) }}">{{ 'builder.security.login'|trans }}</twig:Form:Button>
     </p>
 {% endblock %}

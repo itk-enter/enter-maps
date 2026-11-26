@@ -1,0 +1,25 @@
+# The login of the builder with OpenID Connect.
+# https://github.com/itk-dev/openid-connect-bundle
+itkdev_openid_connect:
+    cache_options:
+        cache_pool: cache.app
+    # The bundle needs a route for the login links of the command line. The
+    # project does not use them yet.
+    cli_login_options:
+        route: app_builder
+    openid_providers:
+        employee:
+            options:
+                metadata_url: '%env(string:OIDC_METADATA_URL)%'
+                client_id: '%env(string:OIDC_CLIENT_ID)%'
+                client_secret: '%env(string:OIDC_CLIENT_SECRET)%'
+                redirect_route: app_login_callback
+
+# The mock provider of docker-compose.oidc.yml answers on http between the
+# containers. Never allow http on a server.
+when@dev:
+    itkdev_openid_connect:
+        openid_providers:
+            employee:
+                options:
+                    allow_http: true

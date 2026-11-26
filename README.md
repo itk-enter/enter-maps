@@ -58,8 +58,9 @@ user in the group `Employee` can use the builder. Other users get the page "Inge
 - `employee`, in the group `Employee`. This user can use the builder.
 - `colleague`, an employee in another group. This user gets "Ingen adgang".
 
-The login is the authorization code flow with PKCE in `src/Security/`. The access token authenticator of Symfony checks
-the ID token once, after the login. Then the session keeps the user.
+The login uses [itk-dev/openid-connect-bundle](https://github.com/itk-dev/openid-connect-bundle). The bundle runs the
+authorization code flow with PKCE, and validates the ID token. `src/Security/EmployeeAuthenticator.php` makes the user
+from the claims, and the session keeps the user. The login starts at `/openidconnect/login/employee`.
 
 The first login of a person makes a `User` in the table `app_user`. A later login finds the same user from the issuer of
 the provider and the `sub` claim, which OpenID Connect keeps the same for a person. Each login updates the name, the
@@ -286,13 +287,15 @@ On the server, set `ENTER_BASE_URI` in `.env.local` to the address of Enter. On 
 The builder at `/builder` can change and delete the maps on all sites, so it needs a login. On the server, set the
 values of the OpenID Connect provider in `.env.local`:
 
-- `OIDC_ISSUER`: the issuer of the provider, without a slash at the end. The app reads the discovery document from it.
+- `OIDC_METADATA_URL`: the address of the discovery document of the provider, which ends in
+  `/.well-known/openid-configuration`.
 - `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET`: the client of the app at the provider. Register
-  `https://<server>/login/callback` as the redirect URI, and `https://<server>/logged-out` as the address after a
-  logout.
+  `https://<server>/openidconnect/callback` as the redirect URI, and `https://<server>/logged-out` as the address after
+  a logout.
 - `OIDC_GROUPS_CLAIM` and `OIDC_EMPLOYEE_GROUP`: the claim with the groups of the user, and the group that can use the
   builder. The defaults are `groups` and `Employee`.
-- `OIDC_ENFORCE_KEY_USAGE`: keep the default `true`. Only the mock provider needs `false`.
+
+The provider must use https. Only the development environment allows http, for the mock provider.
 
 `docker-compose.dev-server.override.yml` puts basic auth on all paths, except `/embed/`, `/data/` and `/assets/`. A map
 on another site needs these paths without a login. Use the file after `docker-compose.server.yml`. On staging, put it

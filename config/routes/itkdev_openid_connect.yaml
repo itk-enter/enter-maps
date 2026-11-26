@@ -1,0 +1,4 @@
+# The login route of itk-dev/openid-connect-bundle: /openidconnect/login/{providerKey}.
+itkdev_openid_connect:
+    resource: '@ItkDevOpenIdConnectBundle/src/Resources/config/routes.yaml'
+    prefix: /openidconnect

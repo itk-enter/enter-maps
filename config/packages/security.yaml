@@ -1,8 +1,10 @@
 security:
-    # The users of the builder log in with OpenID Connect. See src/Security.
+    # The users of the builder. EmployeeAuthenticator makes them on the first login.
     providers:
-        oidc:
-            id: App\Security\OidcUserProvider
+        users:
+            entity:
+                class: App\Entity\User
+                property: id
 
     firewalls:
         dev:
@@ -16,15 +18,11 @@ security:
             security: false
         main:
             lazy: true
-            provider: oidc
-            # The access token authenticator checks the ID token from the
-            # callback of the login once. Then the session keeps the user.
-            # The token handler is below, for each environment.
-            # https://symfony.com/doc/current/security/access_token.html#using-openid-connect-oidc
-            access_token:
-                token_extractors: App\Security\SessionTokenExtractor
-                failure_handler: App\Security\AccessDeniedPage
-            entry_point: App\Security\LoginEntryPoint
+            provider: users
+            # The login with OpenID Connect on itk-dev/openid-connect-bundle.
+            custom_authenticators:
+                - App\Security\EmployeeAuthenticator
+            entry_point: App\Security\EmployeeAuthenticator
             access_denied_handler: App\Security\AccessDeniedPage
             logout:
                 path: app_logout
@@ -33,41 +31,5 @@ security:
     # "public" let /embed/, /data/ and /assets/ through without a login. All
     # other paths need an employee. Only the first rule that matches applies.
     access_control:
-        - { path: ^/(login|logged-out)(/|$), roles: PUBLIC_ACCESS }
+        - { path: ^/(openidconnect/login/|logged-out$), roles: PUBLIC_ACCESS }
         - { path: ^/, roles: ROLE_EMPLOYEE }
-
-# The keys of the provider come from its discovery document.
-when@dev: &discovery
-    security:
-        firewalls:
-            main:
-                access_token:
-                    token_handler:
-                        oidc:
-                            claim: sub
-                            algorithms: ['RS256']
-                            audience: '%env(OIDC_CLIENT_ID)%'
-                            issuers: ['%env(OIDC_ISSUER)%']
-                            discovery:
-                                base_uri: '%env(OIDC_ISSUER)%/'
-                                cache:
-                                    id: cache.app
-                                # The mock provider gives its key without "use", so .env.dev turns this off.
-                                enforce_key_usage_verification: '%env(bool:OIDC_ENFORCE_KEY_USAGE)%'
-
-when@prod: *discovery
-
-# The tests sign the ID tokens with the key in tests/Support/oidc-test-key.json,
-# so they need no provider.
-when@test:
-    security:
-        firewalls:
-            main:
-                access_token:
-                    token_handler:
-                        oidc:
-                            claim: sub
-                            algorithms: ['RS256']
-                            audience: '%env(OIDC_CLIENT_ID)%'
-                            issuers: ['%env(OIDC_ISSUER)%']
-                            keyset: '%env(OIDC_TEST_KEYSET)%'
