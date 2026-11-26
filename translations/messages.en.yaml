@@ -100,9 +100,8 @@ builder:
     json_schema: JSON Schema for version %version% on GitHub (opens in a new window)
     json_reset: Restore the last valid JSON
     step_view: Preview
-    step_embed: Embed code
-    steps_locked: Type a title, and select one or more data sets to open the other steps. The embed code comes when you save the map.
-    steps_embed_locked: The embed code comes when you save the map.
+    embed: Embed code
+    steps_locked: Type a title, and select one or more data sets to open the other steps.
     step_error: (has errors)
     data_sets: Data sets
     data_sets_help: Select the data sets of the map. Each data set becomes a layer. If you remove the tick, the form removes the layers with the data set.

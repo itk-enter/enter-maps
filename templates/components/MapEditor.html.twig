@@ -31,7 +31,7 @@
                         </li>
                     {% endfor %}
                 </ol>
-                {% if availableSteps|length < 4 %}
+                {% if availableSteps|length < constant('App\\Twig\\Components\\MapEditor::STEPS')|length %}
                     <p class="m-0 text-sm text-text-muted">{{ 'builder.form.steps_locked'|trans }}</p>
                 {% endif %}
             </nav>
@@ -290,7 +290,7 @@
                 </section>
 
                 <div class="flex flex-wrap gap-3 border-t border-line pt-6">
-                    <twig:Form:Button type="button" data-action="live#action" data-live-action-param="save">{{ 'builder.form.save_preview'|trans }}</twig:Form:Button>
+                    <twig:Form:Button type="button" data-action="live#action" data-live-action-param="review">{{ 'builder.form.save_preview'|trans }}</twig:Form:Button>
                     {# The embed code is on its own page, and it needs a stored map. #}
                     {% if mapId %}
                         <twig:Form:Button variant="secondary" href="{{ path('app_builder_embed', {id: mapId}) }}">{{ 'builder.form.embed'|trans }}</twig:Form:Button>
