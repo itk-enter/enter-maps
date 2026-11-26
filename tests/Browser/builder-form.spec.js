@@ -89,6 +89,38 @@ test("makes a new map with a fixed filter", async ({ page }) => {
 
   await page.getByRole("button", { name: "Gem og vis kortet" }).click();
 
+  // The form asks first, over the map from the form. Escape goes back to the form.
+  const question = page.getByRole("dialog", { name: "Opret nyt kort?" });
+  await expect(question).toBeVisible();
+  await expect(
+    question.getByRole("button", { name: "Tilbage til formularen" }),
+  ).toBeFocused();
+  // The user can use the map before the save. The bar is above the map, not on it.
+  const frame = question.locator("iframe");
+  const filter = frame
+    .contentFrame()
+    .getByRole("checkbox", { name: "Træ eller metal" });
+  await filter.check();
+  await expect(filter).toBeChecked();
+  const bar = await question
+    .getByRole("heading")
+    .evaluate(
+      (heading) =>
+        heading.parentElement.parentElement.getBoundingClientRect().bottom,
+    );
+  expect((await frame.boundingBox()).y).toBeGreaterThanOrEqual(bar);
+  await expectNoAxeViolations(page);
+  // Escape in the map belongs to the map, for example to close a place. In the bar, it goes back to the form.
+  await question
+    .getByRole("button", { name: "Tilbage til formularen" })
+    .focus();
+  await page.keyboard.press("Escape");
+  await expect(question).toHaveCount(0);
+  await expect(page).toHaveURL("/builder/new");
+
+  await page.getByRole("button", { name: "Gem og vis kortet" }).click();
+  await page.getByRole("button", { name: "Opret kortet" }).click();
+
   await expect(page).toHaveURL(/\/builder\/[0-9A-Z]{26}\/preview$/);
   await expect(page.getByRole("status")).toHaveText(
     'Kortet "Bænke i byen" er gemt.',
@@ -120,6 +152,32 @@ test("shows the errors next to the fields", async ({ page }) => {
   await expect(title).toHaveAccessibleDescription(/Udfyld feltet/);
   await expect(page).toHaveURL(/\/builder\/new$/);
   await expectNoAxeViolations(page);
+});
+
+test("warns before it saves a change to a stored map", async ({ page }) => {
+  await page.goto(`/builder/${maps.toilets}/edit`);
+  await page.getByLabel("Titel", { exact: true }).fill("Nye toiletter");
+  await rendered(page);
+
+  await page.getByRole("button", { name: "Gem og vis kortet" }).click();
+
+  const question = page.getByRole("dialog", { name: "Gem ændringerne?" });
+  await expect(question).toContainText(
+    "Ændringerne vises med det samme på alle sider, som viser kortet.",
+  );
+  await expect(
+    question.getByRole("button", { name: "Gem ændringerne" }),
+  ).toBeVisible();
+  await expectNoAxeViolations(page);
+
+  // The test goes back without a save, so the other tests still have the map.
+  await question
+    .getByRole("button", { name: "Tilbage til formularen" })
+    .click();
+  await expect(question).toHaveCount(0);
+  await expect(page.getByLabel("Titel", { exact: true })).toHaveValue(
+    "Nye toiletter",
+  );
 });
 
 test("edits a map and shows the embed code", async ({ page }) => {

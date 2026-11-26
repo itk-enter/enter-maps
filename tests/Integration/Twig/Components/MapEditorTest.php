@@ -146,6 +146,70 @@ final class MapEditorTest extends WebTestCase
         $this->assertSame('Ny titel', $stored->getMapJson(Renderer::Leaflet)?->title);
     }
 
+    public function testAsksBeforeItCreatesANewMap(): void
+    {
+        // The same client as the request for the frame, so that they share the session.
+        $client = self::getClient();
+        $this->assertInstanceOf(KernelBrowser::class, $client);
+        $component = $this->createLiveComponent(MapEditor::class, [], $client)
+            ->call('addCollectionItem', ['name' => 'map[layers]'])
+            ->call('addCollectionItem', ['name' => 'map[layers][0][conditions]']);
+
+        $crawler = $component->submitForm(['map' => $this->newMap()], 'review')->render()->crawler();
+
+        /** @var MapEditor $editor */
+        $editor = $component->component();
+        $this->assertNotNull($editor->confirmToken);
+        $this->assertSame('Opret nyt kort?', $crawler->filter('dialog h2')->text());
+        $this->assertSame(['Opret kortet', 'Tilbage til formularen'], $crawler->filter('dialog button')->each(static fn (Crawler $button): string => $button->text()));
+        $this->assertNotNull($crawler->filter('dialog button')->eq(1)->attr('autofocus'));
+        $this->assertSame('/builder/preview/'.$editor->confirmToken, $crawler->filter('dialog iframe')->attr('src'));
+        // The question does not save the map.
+        $this->assertCount(0, self::getContainer()->get(MapConfigurationRepository::class)->findAll());
+
+        $crawler = $component->call('cancelSave')->render()->crawler();
+
+        $this->assertCount(0, $crawler->filter('dialog'));
+        $this->assertCount(0, self::getContainer()->get(MapConfigurationRepository::class)->findAll());
+
+        // The frame of the question shows the map from the form.
+        $client->request('GET', '/builder/preview/'.$editor->confirmToken);
+        $this->assertSelectorTextSame('h1', 'Bænke i byen');
+    }
+
+    public function testWarnsBeforeItChangesAStoredMap(): void
+    {
+        $map = $this->import('toilets');
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+
+        $crawler = $component->submitForm(['map' => ['title' => 'Ny titel']], 'review')->render()->crawler();
+
+        $this->assertSame('Gem ændringerne?', $crawler->filter('dialog h2')->text());
+        $this->assertSame('Ændringerne vises med det samme på alle sider, som viser kortet.', $crawler->filter('dialog p')->text());
+        $this->assertSame('Gem ændringerne', $crawler->filter('dialog button')->first()->text());
+
+        $component->call('save');
+
+        $this->assertSame('/builder/'.$map->getId().'/preview', $this->redirect($component));
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
+        $this->assertSame('Ny titel', self::getContainer()->get(MapConfigurationRepository::class)->find((string) $map->getId())?->getConfig()->title);
+    }
+
+    public function testDoesNotAskIfTheSchemaHasErrors(): void
+    {
+        // A config that the form cannot correct: the URL of the report link must use https.
+        $config = json_decode((string) file_get_contents($this->fixture('toilets')), false);
+        $config->report->url = 'http://example.dk/form';
+        $map = new MapConfiguration($config, [Renderer::Leaflet], []);
+        self::getContainer()->get(MapConfigurationRepository::class)->save($map);
+        $component = $this->createLiveComponent(MapEditor::class, ['mapId' => (string) $map->getId()]);
+
+        $crawler = $component->call('review')->render()->crawler();
+
+        $this->assertCount(0, $crawler->filter('dialog'));
+        $this->assertSame('Kortet blev ikke gemt. Ret disse fejl.', $crawler->filter('[role="alert"] p')->text());
+    }
+
     public function testPreviewsTheMapWithoutASave(): void
     {
         $map = $this->import('toilets');

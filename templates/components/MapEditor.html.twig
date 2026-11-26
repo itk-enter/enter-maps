@@ -9,7 +9,7 @@
 {% set legend = 'mb-2 p-0 font-semibold' %}
 {% set card = 'm-0 flex flex-col gap-3 rounded border border-line bg-surface-2 p-3' %}
 <div {{ attributes }}>
-    {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col gap-6', 'data-action': 'live#action:prevent', 'data-live-action-param': 'save'}}) }}
+    {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col gap-6', 'data-action': 'live#action:prevent', 'data-live-action-param': 'review'}}) }}
         {% if saveErrors is not empty %}
             <twig:Layout:ErrorList title="{{ 'builder.form.not_saved'|trans }}" :errors="saveErrors" />
         {% endif %}
@@ -274,10 +274,37 @@
                 </section>
 
                 <div class="flex flex-wrap gap-3 border-t border-line pt-6">
-                    <twig:Form:Button type="button" data-action="live#action" data-live-action-param="save">{{ 'builder.form.save_preview'|trans }}</twig:Form:Button>
+                    <twig:Form:Button type="button" data-action="live#action" data-live-action-param="review">{{ 'builder.form.save_preview'|trans }}</twig:Form:Button>
                     <twig:Form:Button variant="secondary" href="{{ path('app_builder') }}">{{ 'builder.form.cancel'|trans }}</twig:Form:Button>
                 </div>
             </div>
         </div>
     {{ form_end(form) }}
+
+    {# The question before a save: a bar at the top, and the map from the form #}
+    {# below it. The user can use the map before the save. The dialog is modal, #}
+    {# so the form behind it is inert and cannot change. In the bar, Escape is #}
+    {# the same as the abort button. In the map, Escape belongs to the map. The #}
+    {# abort button has the focus, because a save of a stored map changes the #}
+    {# map on all sites. #}
+    {% if confirmToken %}
+        {% set kind = mapId ? 'update' : 'create' %}
+        <dialog data-controller="confirm-dialog" data-action="cancel->live#action:prevent" data-live-action-param="cancelSave"
+                aria-labelledby="confirm-heading" aria-describedby="confirm-text"
+                class="m-0 size-full max-h-none max-w-none flex-col border-0 bg-surface p-0 open:flex backdrop:bg-ink/60">
+            <div class="flex flex-none flex-wrap items-center gap-x-6 gap-y-3 border-0 border-b-4 border-solid {{ kind == 'update' ? 'border-danger' : 'border-primary' }} bg-surface-2 px-4 py-3">
+                <div class="flex min-w-64 flex-1 flex-col gap-1">
+                    <twig:Heading level="2" id="confirm-heading">{{ ('builder.form.confirm_' ~ kind ~ '_heading')|trans }}</twig:Heading>
+                    <p id="confirm-text" class="m-0 {{ kind == 'update' ? 'font-semibold' : '' }}">{{ ('builder.form.confirm_' ~ kind ~ '_text')|trans }}</p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <twig:Form:Button type="button" variant="{{ kind == 'update' ? 'danger' : 'primary' }}" data-action="live#action" data-live-action-param="save">{{ ('builder.form.confirm_' ~ kind)|trans }}</twig:Form:Button>
+                    <twig:Form:Button type="button" variant="secondary" autofocus data-action="live#action" data-live-action-param="cancelSave">{{ 'builder.form.confirm_cancel'|trans }}</twig:Form:Button>
+                </div>
+            </div>
+            <iframe src="{{ path('app_builder_draft', {token: confirmToken}) }}"
+                    title="{{ 'builder.form.preview_frame'|trans({'%title%': form.title.vars.value}) }}"
+                    class="min-h-0 w-full flex-1 border-0"></iframe>
+        </dialog>
+    {% endif %}
 </div>
