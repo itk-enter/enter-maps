@@ -180,6 +180,45 @@ test("warns before it saves a change to a stored map", async ({ page }) => {
   );
 });
 
+test("edits the map as JSON", async ({ page }) => {
+  await page.goto(`/builder/${maps.toilets}/edit`);
+  await showStep(page, "JSON");
+
+  const json = page.getByLabel("JSON", { exact: true });
+  const config = JSON.parse(await json.inputValue());
+  expect(config.title).toBe("Toiletter i Aarhus");
+  await expect(
+    page.getByRole("link", { name: /JSON Schema for version 1/ }),
+  ).toHaveAttribute("href", /\/config\/schema\/map-config\.v1\.json$/);
+  await expectNoAxeViolations(page);
+
+  // JSON that is not valid keeps the step, with the errors.
+  await json.fill('{"title": ');
+  await page
+    .getByRole("navigation", { name: "Trin i formularen" })
+    .getByRole("button", { name: "Indstillinger", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toContainText(
+    "JSON'en er ikke gyldig. Ret disse fejl.",
+  );
+  await expect(json).toHaveAttribute("aria-invalid", "true");
+  await expectNoAxeViolations(page);
+
+  // The reset gives the last valid JSON back, and the user can leave the step again.
+  await page
+    .getByRole("button", { name: "Gendan den sidste gyldige JSON" })
+    .click();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  await expect(json).toHaveValue(JSON.stringify(config, null, 4));
+
+  // Valid JSON goes into the form. The test does not save, so the other tests still have the map.
+  await json.fill(JSON.stringify({ ...config, title: "Toiletter fra JSON" }));
+  await showStep(page, "Indstillinger");
+  await expect(page.getByLabel("Titel", { exact: true })).toHaveValue(
+    "Toiletter fra JSON",
+  );
+});
+
 test("edits a map and shows the embed code", async ({ page }) => {
   await page.goto(`/builder/${maps.toilets}/edit`);
 

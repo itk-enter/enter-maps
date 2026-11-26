@@ -62,10 +62,10 @@ config/packages/enter.yaml         The HTTP client for Enter
 config/packages/map_layer_defaults.yaml The defaults of a new layer in the builder, for each NGSI-LD type
 config/schema/map-config.v1.json   JSON Schema for config, version 1
 migrations/                        Doctrine migrations for MariaDB
-src/Builder/                       Import, embed code, the data sets, the layer defaults and the preview store
+src/Builder/                       Import, export, embed code, the data sets, the layer defaults and the preview store
 src/Builder/Form/                  The data of the map form, and MapFormMapper between the form and config
 src/Command/                       Console commands, for example app:map-config:import
-src/Controller/BuilderController.php /builder: the list of the maps, the embed code, delete and restore
+src/Controller/BuilderController.php /builder: the list of the maps, the embed code, import, export, delete and restore
 src/Controller/DataController.php  GET /data/{dataSet}.geojson
 src/Controller/EmbedController.php GET /embed/leaflet/{id}
 src/Controller/HomeController.php  GET /: the front page, with a card for each part of the site

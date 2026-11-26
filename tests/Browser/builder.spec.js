@@ -78,7 +78,9 @@ test("changes the height of the embed code", async ({ page }) => {
   await page.getByLabel("Højde i pixels").fill("50");
   await page.getByRole("button", { name: "Opdater koden" }).click();
 
-  await expect(page.getByText("Værdien skal være mellem 300 og 3000.")).toBeVisible();
+  await expect(
+    page.getByText("Værdien skal være mellem 300 og 3000."),
+  ).toBeVisible();
   await expect(code).toContainText('height="700"');
   await expectNoAxeViolations(page);
 });
@@ -126,4 +128,31 @@ test("links to the builder from the front page", async ({ page }) => {
   await page.getByRole("link", { name: "Åbn kortbyggeren" }).click();
 
   await expect(page).toHaveURL("/builder");
+});
+
+test("imports and exports the JSON of a map", async ({ page }) => {
+  await page.goto("/builder");
+  await expect(
+    page.getByRole("link", {
+      name: 'Eksportér kortet "Toiletter i Aarhus" som JSON',
+    }),
+  ).toHaveAttribute("href", `/builder/${maps.toilets}/export`);
+
+  await page.getByRole("link", { name: "Importér", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Importér et kort" }),
+  ).toBeVisible();
+  await expectNoAxeViolations(page);
+
+  // The test imports JSON that is not valid, so the other tests keep their maps.
+  await page.getByLabel("JSON", { exact: true }).fill('{"version": 1}');
+  await page.getByRole("button", { name: "Importér kortet" }).click();
+
+  await expect(page.getByRole("alert")).toContainText(
+    "Kortet blev ikke importeret. Ret disse fejl.",
+  );
+  await expect(page.getByLabel("JSON", { exact: true })).toHaveValue(
+    '{"version": 1}',
+  );
+  await expectNoAxeViolations(page);
 });

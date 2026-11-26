@@ -70,13 +70,16 @@ If you change `docker-compose.override.yml` while the containers run, run `docke
 
 The builder at <http://enter-maps.local.itkdev.dk/builder> lists the maps. On the list, you can:
 
-- Make a new map, or edit a map, in a form with four steps: the settings, the data sets, the layers and the
-  preview. "Gem og vis kortet" shows the map from the form, and asks you to confirm the save. For a stored map, the
+- Make a new map, or edit a map, in a form with five steps: the settings, the data sets, the layers, the JSON and the
+  preview. The JSON step shows the configuration from the form, and the form gets the values of the JSON again.
+  "Gem og vis kortet" shows the map from the form, and asks you to confirm the save. For a stored map, the
   question tells that the change shows at once on all sites with the map. Then the builder saves and shows the map.
   The menu of the form links to the embed code of a saved map.
 - Show a map.
 - Get the embed code of a map: the `<iframe>` tag for the page that shows the map.
 - Delete a map, and restore a deleted map.
+- Export the configuration of a map as a JSON file, and import a JSON file as a new map. The import checks the JSON
+  against the JSON Schema. The file has no id, so an import always makes a new map.
 
 A tick on a data set adds a layer with the defaults of the NGSI-LD type of the data set. The type is `model` in
 `/sources.json` of Enter. The defaults are in `config/packages/map_layer_defaults.yaml`, with the same keys as a layer
