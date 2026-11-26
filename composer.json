@@ -73,7 +73,10 @@
     "autoload": {
         "psr-4": {
             "App\\": "src/"
-        }
+        },
+        "exclude-from-classmap": [
+            "vendor/damienharper/auditor/src/Provider/Doctrine/"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
