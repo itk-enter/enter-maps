@@ -32,4 +32,4 @@ security:
     # other paths need an employee. Only the first rule that matches applies.
     access_control:
         - { path: ^/(openidconnect/login/|logged-out$), roles: PUBLIC_ACCESS }
-        - { path: ^/, roles: ROLE_EMPLOYEE }
+        - { path: ^/, roles: !php/enum App\Entity\Role::EMPLOYEE->value }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Security;
 
+use App\Entity\Role;
 use App\Entity\User;
 use App\Security\EmployeeAuthenticator;
 use App\Security\OidcUserFactory;
@@ -39,7 +40,7 @@ final class EmployeeAuthenticatorTest extends KernelTestCase
         $user = $passport->getUser();
         $this->assertInstanceOf(User::class, $user);
         $this->assertSame('Medarbejder', $user->getName());
-        $this->assertContains(OidcUserFactory::ROLE_EMPLOYEE, $user->getRoles());
+        $this->assertContains(Role::EMPLOYEE->value, $user->getRoles());
         $this->assertSame((string) $user->getId(), $passport->getBadge(\Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge::class)?->getUserIdentifier());
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Security;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Security\OidcUserFactory;
 use App\Tests\Support\Database;
@@ -43,6 +44,12 @@ final class OidcUserFactoryTest extends KernelTestCase
         $this->assertSame('employee@example.com', $user->getEmail());
         $this->assertSame(['ROLE_EMPLOYEE', 'ROLE_USER'], $user->getRoles());
         $this->assertSame((string) $user->getId(), $user->getUserIdentifier());
+        $this->assertNotNull($user->getLastLoginAt());
+    }
+
+    public function testHasNoTimeOfALoginBeforeTheFirstLogin(): void
+    {
+        $this->assertNull(new User('https://idp.example.com', 'abc-123')->getLastLoginAt());
     }
 
     public function testFindsTheSameUserOnALaterLoginAndUpdatesIt(): void

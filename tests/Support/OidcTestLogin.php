@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Support;
 
+use App\Entity\Role;
 use App\Entity\User;
 use App\Repository\UserRepository;
-use App\Security\OidcUserFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 
 /**
@@ -21,13 +21,15 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 final class OidcTestLogin
 {
     /**
-     * The user is stored, because the session loads it from the database on
-     * each request. Call it after Database::reset().
+     * Stands in for the whole login: the user logs in at the provider, and
+     * the session gets the user. Thus it also sets the time of the login. The
+     * user is stored, because the session loads it from the database on each
+     * request. Call it after Database::reset().
      */
     public static function asEmployee(KernelBrowser $client): User
     {
         $user = new User('https://idp.example.com', 'employee');
-        $user->logIn('Medarbejder', 'employee@example.com', [OidcUserFactory::ROLE_EMPLOYEE], new \DateTimeImmutable());
+        $user->logIn('Medarbejder', 'employee@example.com', [Role::EMPLOYEE], new \DateTimeImmutable());
         $client->getContainer()->get(UserRepository::class)->save($user);
         $client->loginUser($user, 'main');
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Security;
 
+use App\Entity\Role;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -14,14 +15,12 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  * issuer and the "sub" claim. Each login updates the name, the e-mail and
  * the roles.
  *
- * A user in the group of employees gets ROLE_EMPLOYEE, which the builder
+ * A user in the group of employees gets Role::EMPLOYEE, which the builder
  * needs. The groups come from the claim in OIDC_GROUPS_CLAIM, for example
  * "groups".
  */
 final readonly class OidcUserFactory
 {
-    public const string ROLE_EMPLOYEE = 'ROLE_EMPLOYEE';
-
     public function __construct(
         private UserRepository $repository,
         #[Autowire(env: 'OIDC_GROUPS_CLAIM')]
@@ -50,8 +49,8 @@ final readonly class OidcUserFactory
         $user->logIn(
             name: \is_string($claims['name'] ?? null) ? $claims['name'] : null,
             email: \is_string($claims['email'] ?? null) ? $claims['email'] : null,
-            roles: $employee ? [self::ROLE_EMPLOYEE] : [],
-            at: new \DateTimeImmutable(),
+            roles: $employee ? [Role::EMPLOYEE] : [],
+            lastLoginAt: new \DateTimeImmutable(),
         );
         $this->repository->save($user);
 

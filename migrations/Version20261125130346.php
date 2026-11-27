@@ -33,7 +33,7 @@ final class Version20261125130346 extends AbstractMigration
         $table->addColumn('name', Types::STRING, ['length' => 255, 'notnull' => false]);
         $table->addColumn('email', Types::STRING, ['length' => 255, 'notnull' => false]);
         $table->addColumn('roles', Types::JSON, ['notnull' => true]);
-        $table->addColumn('last_login_at', Types::DATETIME_IMMUTABLE, ['notnull' => true]);
+        $table->addColumn('last_login_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addColumn('created_at', Types::DATETIME_IMMUTABLE, ['notnull' => true]);
         $table->addColumn('updated_at', Types::DATETIME_IMMUTABLE, ['notnull' => true]);
         $table->setPrimaryKey(['id']);

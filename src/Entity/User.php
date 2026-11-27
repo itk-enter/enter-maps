@@ -40,8 +40,11 @@ class User extends AbstractITKDevEntity implements UserInterface, TimestampableI
     #[ORM\Column(type: Types::JSON)]
     private array $roles = [];
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private \DateTimeImmutable $lastLoginAt;
+    /**
+     * Null if the user has not logged in yet.
+     */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $lastLoginAt = null;
 
     public function __construct(
         #[ORM\Column(length: 255)]
@@ -50,20 +53,19 @@ class User extends AbstractITKDevEntity implements UserInterface, TimestampableI
         private string $subject,
     ) {
         parent::__construct();
-        $this->lastLoginAt = new \DateTimeImmutable();
     }
 
     /**
      * Updates the user from the claims of a new login.
      *
-     * @param list<string> $roles
+     * @param list<Role> $roles
      */
-    public function logIn(?string $name, ?string $email, array $roles, \DateTimeImmutable $at): void
+    public function logIn(?string $name, ?string $email, array $roles, \DateTimeImmutable $lastLoginAt): void
     {
         $this->name = $name;
         $this->email = $email;
-        $this->roles = $roles;
-        $this->lastLoginAt = $at;
+        $this->roles = array_map(static fn (Role $role): string => $role->value, $roles);
+        $this->lastLoginAt = $lastLoginAt;
     }
 
     public function getIssuer(): string
@@ -86,7 +88,7 @@ class User extends AbstractITKDevEntity implements UserInterface, TimestampableI
         return $this->email;
     }
 
-    public function getLastLoginAt(): \DateTimeImmutable
+    public function getLastLoginAt(): ?\DateTimeImmutable
     {
         return $this->lastLoginAt;
     }
@@ -101,6 +103,6 @@ class User extends AbstractITKDevEntity implements UserInterface, TimestampableI
      */
     public function getRoles(): array
     {
-        return array_values(array_unique([...$this->roles, 'ROLE_USER']));
+        return array_values(array_unique([...$this->roles, Role::USER->value]));
     }
 }
