@@ -54,7 +54,7 @@ final class SecurityTest extends WebTestCase
     public function testDoesNotLetAUserInWhoIsNotInTheGroup(): void
     {
         $user = new User('https://idp.example.com', 'colleague');
-        $user->logIn('Kollega', null, [], new \DateTimeImmutable());
+        $user->update('Kollega', null, []);
         self::getContainer()->get(UserRepository::class)->save($user);
         $this->browser->loginUser($user, 'main');
 

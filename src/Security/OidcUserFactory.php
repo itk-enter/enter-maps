@@ -46,12 +46,12 @@ final readonly class OidcUserFactory
         $user = $this->repository->findOneByLogin($issuer, $subject) ?? new User($issuer, $subject);
         $groups = $claims[$this->groupsClaim] ?? [];
         $employee = \is_array($groups) && \in_array($this->employeeGroup, $groups, true);
-        $user->logIn(
+        $user->update(
             name: \is_string($claims['name'] ?? null) ? $claims['name'] : null,
             email: \is_string($claims['email'] ?? null) ? $claims['email'] : null,
             roles: $employee ? [Role::EMPLOYEE] : [],
-            lastLoginAt: new \DateTimeImmutable(),
         );
+        $user->logIn(new \DateTimeImmutable());
         $this->repository->save($user);
 
         return $user;

@@ -21,15 +21,15 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 final class OidcTestLogin
 {
     /**
-     * Stands in for the whole login: the user logs in at the provider, and
-     * the session gets the user. Thus it also sets the time of the login. The
-     * user is stored, because the session loads it from the database on each
-     * request. Call it after Database::reset().
+     * The user has the role of an employee, but no time of a login, because
+     * the user did not log in at the provider. The user is stored, because the
+     * session loads it from the database on each request. Call it after
+     * Database::reset().
      */
     public static function asEmployee(KernelBrowser $client): User
     {
         $user = new User('https://idp.example.com', 'employee');
-        $user->logIn('Medarbejder', 'employee@example.com', [Role::EMPLOYEE], new \DateTimeImmutable());
+        $user->update('Medarbejder', 'employee@example.com', [Role::EMPLOYEE]);
         $client->getContainer()->get(UserRepository::class)->save($user);
         $client->loginUser($user, 'main');
 

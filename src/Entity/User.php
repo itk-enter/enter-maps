@@ -56,15 +56,22 @@ class User extends AbstractITKDevEntity implements UserInterface, TimestampableI
     }
 
     /**
-     * Updates the user from the claims of a new login.
+     * Sets the name, the e-mail and the roles, for example from the claims of a login.
      *
      * @param list<Role> $roles
      */
-    public function logIn(?string $name, ?string $email, array $roles, \DateTimeImmutable $lastLoginAt): void
+    public function update(?string $name, ?string $email, array $roles): void
     {
         $this->name = $name;
         $this->email = $email;
         $this->roles = array_map(static fn (Role $role): string => $role->value, $roles);
+    }
+
+    /**
+     * Records the time of a login.
+     */
+    public function logIn(\DateTimeImmutable $lastLoginAt): void
+    {
         $this->lastLoginAt = $lastLoginAt;
     }
 

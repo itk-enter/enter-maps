@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Security;
 
+use App\Entity\Role;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Security\OidcUserFactory;
@@ -49,7 +50,16 @@ final class OidcUserFactoryTest extends KernelTestCase
 
     public function testHasNoTimeOfALoginBeforeTheFirstLogin(): void
     {
-        $this->assertNull(new User('https://idp.example.com', 'abc-123')->getLastLoginAt());
+        $user = new User('https://idp.example.com', 'abc-123');
+        $user->update('Medarbejder', null, [Role::EMPLOYEE]);
+
+        // A user can have data and roles without a login, for example a user that a test makes.
+        $this->assertNull($user->getLastLoginAt());
+        $this->assertSame(['ROLE_EMPLOYEE', 'ROLE_USER'], $user->getRoles());
+
+        $at = new \DateTimeImmutable('2026-11-27 10:00');
+        $user->logIn($at);
+        $this->assertSame($at, $user->getLastLoginAt());
     }
 
     public function testFindsTheSameUserOnALaterLoginAndUpdatesIt(): void
