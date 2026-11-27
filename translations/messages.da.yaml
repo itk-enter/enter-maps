@@ -61,6 +61,9 @@ builder:
     delete_label: Slet kortet "%title%"
     deleted: Slettede kort
     deleted_at: Slettet %date%
+    import: Importér
+    export: Eksportér
+    export_label: Eksportér kortet "%title%" som JSON
   security:
     login: Log ind
     logout: Log ud
@@ -73,9 +76,6 @@ builder:
     logged_out:
       title: Du er logget ud
       text: Log ind igen for at bruge kortbyggeren.
-    import: Importér
-    export: Eksportér
-    export_label: Eksportér kortet "%title%" som JSON
   import:
     title: Importér et kort
     text: Indsæt JSON'en med kortets konfiguration, fx fra en eksport. Kortet bliver et nyt kort med sin egen adresse, så det ændrer ikke andre kort.

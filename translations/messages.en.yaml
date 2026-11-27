@@ -61,6 +61,9 @@ builder:
     delete_label: Delete the map "%title%"
     deleted: Deleted maps
     deleted_at: Deleted %date%
+    import: Import
+    export: Export
+    export_label: Export the map "%title%" as JSON
   security:
     login: Log in
     logout: Log out
@@ -73,9 +76,6 @@ builder:
     logged_out:
       title: You are logged out
       text: Log in again to use the map builder.
-    import: Import
-    export: Export
-    export_label: Export the map "%title%" as JSON
   import:
     title: Import a map
     text: Paste the JSON with the configuration of the map, for example from an export. The map becomes a new map with its own address, so it does not change other maps.
