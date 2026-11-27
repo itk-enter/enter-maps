@@ -9,36 +9,30 @@
 {% set legend = 'mb-2 p-0 font-semibold' %}
 {% set card = 'm-0 flex flex-col gap-3 rounded border border-line bg-surface-2 p-3' %}
 <div {{ attributes }}>
-    {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col gap-6', 'data-action': 'live#action:prevent', 'data-live-action-param': 'save'}}) }}
+    {{ form_start(form, {attr: {novalidate: 'novalidate', class: 'flex flex-col gap-6', 'data-action': 'live#action:prevent', 'data-live-action-param': 'review'}}) }}
         {% if saveErrors is not empty %}
-            <twig:Layout:ErrorList title="{{ 'builder.form.not_saved'|trans }}" :errors="saveErrors" />
+            <twig:Layout:ErrorList title="{{ 'builder.form.not_saved'|trans }}" :errors="this.readableErrors(saveErrors)" />
         {% endif %}
         {{ form_errors(form) }}
 
         <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-[14rem_minmax(0,1fr)]">
-            {# The steps of the form, on one page. The menu shows one step, and the #}
-            {# other steps stay in the page, so that the form keeps their values. #}
-            {# A step that is not available is disabled. The embed code is a link to #}
-        {# its own page, and it needs a stored map. #}
-        {% set errorSteps = this.stepsWithErrors %}
-        {% set availableSteps = this.availableSteps %}
+            {# The steps of the form, on one page, in the order of the work. The #}
+            {# menu shows one step, and the other steps stay in the page, so that the #}
+            {# form keeps their values. A step that is not available is disabled. #}
+            {% set errorSteps = this.stepsWithErrors %}
+            {% set availableSteps = this.availableSteps %}
             <nav aria-label="{{ 'builder.form.steps'|trans }}" class="flex flex-col gap-3 lg:sticky lg:top-4">
-                <ul class="m-0 flex list-none flex-wrap gap-1 p-0 lg:flex-col">
+                <ol class="m-0 flex list-none flex-wrap gap-1 p-0 lg:flex-col">
                     {% for name in constant('App\\Twig\\Components\\MapEditor::STEPS') %}
                         <li>
-                            <twig:Form:StepButton :current="step == name" :invalid="name in errorSteps" :disabled="name not in availableSteps" controls="step-{{ name }}" data-action="live#action" data-live-action-param="showStep" data-live-step-param="{{ name }}">
+                            <twig:Form:StepButton :number="loop.index" :current="step == name" :invalid="name in errorSteps" :disabled="name not in availableSteps" controls="step-{{ name }}" data-action="live#action" data-live-action-param="showStep" data-live-step-param="{{ name }}">
                                 {{- ('builder.form.step_' ~ name)|trans -}}
                             </twig:Form:StepButton>
                         </li>
                     {% endfor %}
-                    <li>
-                        <twig:Form:StepButton :href="mapId ? path('app_builder_embed', {id: mapId}) : null" :disabled="mapId is null">
-                            {{- 'builder.form.step_embed'|trans -}}
-                        </twig:Form:StepButton>
-                    </li>
-                </ul>
-                {% if availableSteps|length < 4 or mapId is null %}
-                    <p class="m-0 text-sm text-text-muted">{{ (availableSteps|length < 4 ? 'builder.form.steps_locked' : 'builder.form.steps_embed_locked')|trans }}</p>
+                </ol>
+                {% if availableSteps|length < constant('App\\Twig\\Components\\MapEditor::STEPS')|length %}
+                    <p class="m-0 text-sm text-text-muted">{{ 'builder.form.steps_locked'|trans }}</p>
                 {% endif %}
             </nav>
 
@@ -248,6 +242,28 @@
                 {# loads the new map. The map-view controller copies the view of the map #}
                 {# into the fields. #}
                 {% set frameSource = previewToken ? path('app_builder_draft', {token: previewToken}) : (mapId ? path('app_embed_leaflet', {id: mapId}) : null) %}
+                {# The config as JSON, with the parts that the form does not edit. The #}
+                {# form gets the values of the JSON when the user leaves the step or #}
+                {# saves. The text field is not part of the Symfony form, so the label #}
+                {# and the text field are raw. #}
+                <section id="step-json" aria-labelledby="json-heading" class="{{ section }}" {{ step == 'json' ? '' : 'hidden' }}>
+                    <twig:Heading level="2" id="json-heading">{{ 'builder.form.json'|trans }}</twig:Heading>
+                    <p class="m-0 text-sm text-text-muted" id="json-help">{{ 'builder.form.json_help'|trans }}</p>
+                    {% set schema = this.schema %}
+                    <p class="m-0 text-sm"><a href="{{ schema.url }}" target="_blank" rel="noopener" class="text-link underline">{{ 'builder.form.json_schema'|trans({'%version%': schema.version}) }}</a></p>
+                    {# The form has the values of the last valid JSON, so the reset gives #}
+                    {# a JSON that the user can leave the step with. #}
+                    {% if jsonErrors is not empty %}
+                        <twig:Layout:ErrorList title="{{ 'builder.form.json_invalid'|trans }}" :errors="this.readableErrors(jsonErrors)">
+                            <twig:Form:Button type="button" variant="secondary" data-action="live#action" data-live-action-param="resetJson">{{ 'builder.form.json_reset'|trans }}</twig:Form:Button>
+                        </twig:Layout:ErrorList>
+                    {% endif %}
+                    <label for="map-json" class="font-semibold">{{ 'builder.form.json_label'|trans }}</label>
+                    <textarea id="map-json" data-model="norender|json" spellcheck="false" autocomplete="off" aria-describedby="json-help"
+                              {% if jsonErrors is not empty %}aria-invalid="true"{% endif %}
+                              class="min-h-[32rem] w-full rounded border border-line bg-surface p-3 font-mono text-sm text-ink aria-invalid:border-danger">{{ json }}</textarea>
+                </section>
+
                 <section id="step-view" aria-labelledby="view-heading" class="{{ section }}" data-controller="map-view" {{ step == 'view' ? '' : 'hidden' }}>
                     <twig:Heading level="2" id="view-heading">{{ 'builder.form.view'|trans }}</twig:Heading>
                     <p class="m-0 text-sm text-text-muted">{{ 'builder.form.view_help'|trans }}</p>
@@ -274,10 +290,41 @@
                 </section>
 
                 <div class="flex flex-wrap gap-3 border-t border-line pt-6">
-                    <twig:Form:Button type="button" data-action="live#action" data-live-action-param="save">{{ 'builder.form.save_preview'|trans }}</twig:Form:Button>
+                    <twig:Form:Button type="button" data-action="live#action" data-live-action-param="review">{{ 'builder.form.save_preview'|trans }}</twig:Form:Button>
+                    {# The embed code is on its own page, and it needs a stored map. #}
+                    {% if mapId %}
+                        <twig:Form:Button variant="secondary" href="{{ path('app_builder_embed', {id: mapId}) }}">{{ 'builder.form.embed'|trans }}</twig:Form:Button>
+                    {% endif %}
                     <twig:Form:Button variant="secondary" href="{{ path('app_builder') }}">{{ 'builder.form.cancel'|trans }}</twig:Form:Button>
                 </div>
             </div>
         </div>
     {{ form_end(form) }}
+
+    {# The question before a save: a bar at the top, and the map from the form #}
+    {# below it. The user can use the map before the save. The dialog is modal, #}
+    {# so the form behind it is inert and cannot change. In the bar, Escape is #}
+    {# the same as the abort button. In the map, Escape belongs to the map. The #}
+    {# abort button has the focus, because a save of a stored map changes the #}
+    {# map on all sites. #}
+    {% if confirmToken %}
+        {% set kind = mapId ? 'update' : 'create' %}
+        <dialog data-controller="confirm-dialog" data-action="cancel->live#action:prevent" data-live-action-param="cancelSave"
+                aria-labelledby="confirm-heading" aria-describedby="confirm-text"
+                class="m-0 size-full max-h-none max-w-none flex-col border-0 bg-surface p-0 open:flex backdrop:bg-ink/60">
+            <div class="flex flex-none flex-wrap items-center gap-x-6 gap-y-3 border-0 border-b-4 border-solid {{ kind == 'update' ? 'border-danger' : 'border-primary' }} bg-surface-2 px-4 py-3">
+                <div class="flex min-w-64 flex-1 flex-col gap-1">
+                    <twig:Heading level="2" id="confirm-heading">{{ ('builder.form.confirm_' ~ kind ~ '_heading')|trans }}</twig:Heading>
+                    <p id="confirm-text" class="m-0 {{ kind == 'update' ? 'font-semibold' : '' }}">{{ ('builder.form.confirm_' ~ kind ~ '_text')|trans }}</p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <twig:Form:Button type="button" variant="{{ kind == 'update' ? 'danger' : 'primary' }}" data-action="live#action" data-live-action-param="save">{{ ('builder.form.confirm_' ~ kind)|trans }}</twig:Form:Button>
+                    <twig:Form:Button type="button" variant="secondary" autofocus data-action="live#action" data-live-action-param="cancelSave">{{ 'builder.form.confirm_cancel'|trans }}</twig:Form:Button>
+                </div>
+            </div>
+            <iframe src="{{ path('app_builder_draft', {token: confirmToken}) }}"
+                    title="{{ 'builder.form.preview_frame'|trans({'%title%': form.title.vars.value}) }}"
+                    class="min-h-0 w-full flex-1 border-0"></iframe>
+        </dialog>
+    {% endif %}
 </div>

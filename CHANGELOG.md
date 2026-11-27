@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [PR-34](https://github.com/itk-enter/enter-maps/pull/34)
   Added a login with OpenID Connect to the builder, and a `User` for each person. `/`, `/embed/` and `/data/` stay open
+* [PR-29](https://github.com/itk-enter/enter-maps/pull/29)
+  Numbered the steps of the map form, and moved the embed code from the steps to a button
+* [PR-33](https://github.com/itk-enter/enter-maps/pull/33)
+  Added an import and an export of the JSON of a map to the list of maps in the builder
+* [PR-31](https://github.com/itk-enter/enter-maps/pull/31)
+  Added a JSON step to the map form, before the preview
+* [PR-30](https://github.com/itk-enter/enter-maps/pull/30)
+  Added a question over the map before the builder saves it
 * [PR-28](https://github.com/itk-enter/enter-maps/pull/28)
   Deleted the old Symfony cache before `composer install` in the staging deploy
 * [PR-22](https://github.com/itk-enter/enter-maps/pull/22)
@@ -21,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Improved how the map loads tiles and moves to a selected place
 * [PR-23](https://github.com/itk-enter/enter-maps/pull/23)
   Removed the value `off` of the embed option `sidebar`
+* [PR-24](https://github.com/itk-enter/enter-maps/pull/24)
+  Added a height field to the embed code page in the builder
 * [PR-20](https://github.com/itk-enter/enter-maps/pull/20)
   Added the map form in the builder in four steps, with a fixed filter for each layer
 * [PR-15](https://github.com/itk-enter/enter-maps/pull/15)

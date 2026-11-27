@@ -5,12 +5,17 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Builder\EmbedCode;
+use App\Builder\MapConfigurationExporter;
+use App\Builder\MapConfigurationImporter;
 use App\Builder\PreviewStore;
 use App\Embed\LeafletPage;
 use App\Entity\MapConfiguration;
 use App\Form\EmbedCodeType;
+use App\Form\ImportType;
+use App\MapConfig\InvalidMapConfigException;
 use App\Repository\MapConfigurationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,6 +36,8 @@ final class BuilderController extends AbstractController
         private readonly TranslatorInterface $translator,
         private readonly PreviewStore $previews,
         private readonly LeafletPage $leafletPage,
+        private readonly MapConfigurationImporter $importer,
+        private readonly MapConfigurationExporter $exporter,
     ) {
     }
 
@@ -47,6 +54,45 @@ final class BuilderController extends AbstractController
     public function new(): Response
     {
         return $this->render('builder/form.html.twig', ['map' => null]);
+    }
+
+    /**
+     * Makes a new map from the JSON of a config, for example from an export.
+     */
+    #[Route('/import', name: 'app_builder_import', methods: [Request::METHOD_GET, Request::METHOD_POST])]
+    public function import(Request $request): Response
+    {
+        $form = $this->createForm(ImportType::class)->handleRequest($request);
+        $errors = [];
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $map = $this->importer->import((string) $form->get('json')->getData());
+                $this->addFlash('success', $this->translator->trans('builder.import.done', ['%title%' => $this->title($map)]));
+
+                return $this->redirectToRoute('app_builder_preview', ['id' => $map->getId()]);
+            } catch (InvalidMapConfigException $exception) {
+                $errors = $exception->errors;
+            }
+        }
+
+        $response = $this->render('builder/import.html.twig', ['form' => $form, 'errors' => $errors]);
+        if ([] !== $errors) {
+            $response->setStatusCode(Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Gives the config of a map as a JSON file.
+     */
+    #[Route('/{id}/export', name: 'app_builder_export', methods: [Request::METHOD_GET])]
+    public function export(MapConfiguration $map): Response
+    {
+        return new Response($this->exporter->json($map), Response::HTTP_OK, [
+            'Content-Type' => 'application/json; charset=UTF-8',
+            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $this->exporter->fileName($map)),
+        ]);
     }
 
     #[Route('/{id}/edit', name: 'app_builder_edit', methods: [Request::METHOD_GET])]
