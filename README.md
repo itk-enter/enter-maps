@@ -47,6 +47,26 @@ The site is at <http://enter-maps.local.itkdev.dk/>.
 `docker-compose.override.yml` changes the template for this project. Docker Compose reads it automatically. It removes
 Mailpit, because the project does not send e-mail.
 
+### Login
+
+All pages need a login with OpenID Connect, except the front page `/`, and the map and its data: `/embed/`, `/data/` and
+`/assets/`. Only a user in the group `Employee` can use the builder. Other users get the page "Ingen adgang".
+
+`docker-compose.override.yml` includes `docker-compose.oidc.yml`, which runs a mock provider at
+<http://idp-employee.enter-maps.local.itkdev.dk/>. Its login page has two users:
+
+- `employee`, in the group `Employee`. This user can use the builder.
+- `colleague`, an employee in another group. This user gets "Ingen adgang".
+
+The login uses [itk-dev/openid-connect-bundle](https://github.com/itk-dev/openid-connect-bundle). The bundle runs the
+authorization code flow with PKCE, and validates the ID token. `src/Security/EmployeeAuthenticator.php` makes the user
+from the claims, and the session keeps the user. The login starts at `/openidconnect/login/employee`.
+
+The first login of a person makes a `User` in the table `app_user`. A later login finds the same user from the issuer of
+the provider and the `sub` claim, which OpenID Connect keeps the same for a person. Each login updates the name, the
+e-mail and the roles from the ID token. The browser tests log in as `employee` in
+`tests/Browser/global-setup.js`.
+
 ### Data from a local Enter
 
 This project reads data from [Enter](https://github.com/itk-enter/enter). To use a local Enter, start the two projects
@@ -269,9 +289,19 @@ become a problem, add a cache to the proxy.
 On the server, set `ENTER_BASE_URI` in `.env.local` to the address of Enter. On staging, also set
 `ENTER_BASIC_AUTH` to `user:password`, because the staging site of Enter is behind basic auth.
 
-The builder at `/builder` can change and delete the maps on all sites. The project has no login yet, so protect
-`/builder` with basic auth on the server. The form sends its changes to `/builder/_components/`, so the same basic
-auth protects them.
+The builder at `/builder` can change and delete the maps on all sites, so it needs a login. On the server, set the
+values of the OpenID Connect provider in `.env.local`:
+
+- `OIDC_METADATA_URL`: the full address of the discovery document of the provider, as the provider gives it. The
+  bundle uses it without a change, so it can have a query string, for example
+  `https://login.microsoftonline.com/<tenant>/v2.0/.well-known/openid-configuration?p=<policy>`.
+- `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET`: the client of the app at the provider. Register
+  `https://<server>/openidconnect/callback` as the redirect URI, and `https://<server>/logged-out` as the address after
+  a logout.
+- `OIDC_GROUPS_CLAIM` and `OIDC_EMPLOYEE_GROUP`: the claim with the groups of the user, and the group that can use the
+  builder. The defaults are `groups` and `Employee`.
+
+The provider must use https. Only the development environment allows http, for the mock provider.
 
 `docker-compose.dev-server.override.yml` puts basic auth on all paths, except `/embed/`, `/data/` and `/assets/`. A map
 on another site needs these paths without a login. Use the file after `docker-compose.server.yml`. On staging, put it

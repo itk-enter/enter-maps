@@ -49,11 +49,13 @@ test("makes a new map with a fixed filter", async ({ page }) => {
 
   await page.getByLabel("Titel", { exact: true }).fill("Bænke i byen");
   await page.getByLabel("Søg i stederne", { exact: true }).check();
+  // Without Enter, the title is sufficient to open the layers. Wait until the
+  // form has the title, so that the click on a step does not overtake it.
+  await expect(steps.getByRole("button", { name: "Lag" })).toBeEnabled();
   await showStep(page, "Datasæt");
   await expect(
     page.getByText("Enter svarer ikke, så listen over datasæt mangler."),
   ).toBeVisible();
-  // Without Enter, the title is sufficient to open the layers.
   await showStep(page, "Lag");
   await page.getByRole("button", { name: "Tilføj et lag til kortet" }).click();
   await page.getByLabel("Navn på laget").fill("Bænke");

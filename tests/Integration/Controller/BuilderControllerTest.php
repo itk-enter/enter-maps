@@ -10,6 +10,7 @@ use App\Entity\MapConfiguration;
 use App\Repository\MapConfigurationRepository;
 use App\Tests\Support\Database;
 use App\Tests\Support\FakeEnter;
+use App\Tests\Support\OidcTestLogin;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -25,6 +26,7 @@ final class BuilderControllerTest extends WebTestCase
     {
         $this->browser = self::createClient();
         Database::reset(self::getContainer()->get(EntityManagerInterface::class));
+        OidcTestLogin::asEmployee($this->browser);
     }
 
     public function testTellsThatThereAreNoMaps(): void

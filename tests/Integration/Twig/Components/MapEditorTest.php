@@ -11,6 +11,7 @@ use App\Renderer\Renderer;
 use App\Repository\MapConfigurationRepository;
 use App\Tests\Support\Database;
 use App\Tests\Support\FakeEnter;
+use App\Tests\Support\OidcTestLogin;
 use App\Twig\Components\MapEditor;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -22,17 +23,21 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\UX\LiveComponent\Test\InteractsWithLiveComponents;
+use Symfony\UX\LiveComponent\Test\TestLiveComponent;
 
 final class MapEditorTest extends WebTestCase
 {
-    use InteractsWithLiveComponents;
+    use InteractsWithLiveComponents {
+        createLiveComponent as private createLiveComponentWithClient;
+    }
 
     private FakeEnter $enter;
 
     protected function setUp(): void
     {
-        self::createClient();
+        $client = self::createClient();
         Database::reset(self::getContainer()->get(EntityManagerInterface::class));
+        OidcTestLogin::asEmployee($client);
         $this->enter = new FakeEnter();
         $this->enter->dataSets = [
             ['id' => 'benches', 'title' => 'Bænke'],
@@ -44,6 +49,20 @@ final class MapEditorTest extends WebTestCase
         $request = new Request();
         $request->setSession(new Session(new MockArraySessionStorage()));
         self::getContainer()->get(RequestStack::class)->push($request);
+    }
+
+    /**
+     * A component with the client of setUp(), which is logged in as an employee.
+     * The trait gives a new client without the login.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function createLiveComponent(string $name, array $data = [], ?KernelBrowser $client = null): TestLiveComponent
+    {
+        $client ??= self::getClient();
+        $this->assertInstanceOf(KernelBrowser::class, $client);
+
+        return $this->createLiveComponentWithClient($name, $data, $client);
     }
 
     public function testStartsANewMapWithoutLayers(): void
@@ -714,7 +733,7 @@ final class MapEditorTest extends WebTestCase
      * A new map, with the client of the test without a reboot, so that the
      * actions also use the fake Enter.
      */
-    private function componentWithFakeEnter(): \Symfony\UX\LiveComponent\Test\TestLiveComponent
+    private function componentWithFakeEnter(): TestLiveComponent
     {
         $client = self::getClient();
         $this->assertInstanceOf(KernelBrowser::class, $client);
@@ -723,7 +742,7 @@ final class MapEditorTest extends WebTestCase
         return $this->createLiveComponent(MapEditor::class, [], $client);
     }
 
-    private function newMapComponent(): \Symfony\UX\LiveComponent\Test\TestLiveComponent
+    private function newMapComponent(): TestLiveComponent
     {
         return $this->createLiveComponent(MapEditor::class)
             ->call('addCollectionItem', ['name' => 'map[layers]'])
@@ -748,7 +767,7 @@ final class MapEditorTest extends WebTestCase
         ];
     }
 
-    private function redirect(\Symfony\UX\LiveComponent\Test\TestLiveComponent $component): ?string
+    private function redirect(TestLiveComponent $component): ?string
     {
         $response = $component->response();
 

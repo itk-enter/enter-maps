@@ -3,7 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 /**
  * @file The configuration of the browser tests. "task test:browser" runs
  * them in the playwright container against the dev site.
- * The report and the traces go to var/browser/.
+ * The report and the traces go to var/browser/. Each test starts with the
+ * login of its worker, see support.js.
  */
 export default defineConfig({
   testDir: ".",

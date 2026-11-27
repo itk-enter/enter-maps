@@ -1,6 +1,11 @@
 # Local changes to the ITK Dev template. Docker Compose merges this file into
 # docker-compose.yml automatically. Do not give "-f" to "docker compose",
 # because then Docker Compose does not read this file.
+
+# The mock OpenID Connect provider for the login of the builder.
+include:
+  - docker-compose.oidc.yml
+
 services:
   # The project does not send e-mail, so it does not need Mailpit.
   mail: !reset

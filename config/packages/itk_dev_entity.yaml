@@ -1,6 +1,7 @@
-# The audit log and blameable need a user class, so they stay off until the
-# builder has a login.
+# The users of the builder. The audit log and blameable need it. They stay off
+# for now.
 itk_dev_entity:
+    user_class: App\Entity\User
     timestampable:
         enabled: true
     soft_delete:

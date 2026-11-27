@@ -9,12 +9,18 @@
  * - All other hosts give an empty answer.
  *
  * A test fails if the page has a JavaScript error.
+ *
+ * Each test starts logged in as an employee. Each parallel worker logs in
+ * once at the mock provider of docker-compose.oidc.yml, so the tests that run
+ * at the same time do not share a session. A shared session mixes up the
+ * flash messages and the state of the forms.
  */
 
 import { readFileSync } from "node:fs";
 import { basename } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { test as base, expect } from "@playwright/test";
+import { logIn, stateFile } from "./login.js";
 
 /**
  * The id of each map, from tests/Fixtures/map-config, with the name of the
@@ -109,6 +115,17 @@ async function stubServices(page, baseURL) {
 }
 
 export const test = base.extend({
+  // The login of this worker. A test can start without a login with
+  // test.use({ storageState: { cookies: [], origins: [] } }).
+  storageState: ({ workerStorageState }, use) => use(workerStorageState),
+  workerStorageState: [
+    async ({ browser }, use, workerInfo) => {
+      const file = stateFile(`state-${workerInfo.parallelIndex}.json`);
+      await logIn(browser, workerInfo.project.use.baseURL, file);
+      await use(file);
+    },
+    { scope: "worker" },
+  ],
   page: async ({ page, baseURL }, use) => {
     const errors = [];
 

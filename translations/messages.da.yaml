@@ -64,6 +64,18 @@ builder:
     import: Importér
     export: Eksportér
     export_label: Eksportér kortet "%title%" som JSON
+  security:
+    login: Log ind
+    logout: Log ud
+    login_failed:
+      title: Login mislykkedes
+      text: Kortbyggeren kunne ikke bekræfte dit login. Log ud, og prøv igen.
+    not_employee:
+      title: Ingen adgang
+      text: Kortbyggeren er kun for medarbejdere. Dit login giver ikke adgang. Log ud, og log ind med et andet login.
+    logged_out:
+      title: Du er logget ud
+      text: Log ind igen for at bruge kortbyggeren.
   import:
     title: Importér et kort
     text: Indsæt JSON'en med kortets konfiguration, fx fra en eksport. Kortet bliver et nyt kort med sin egen adresse, så det ændrer ikke andre kort.

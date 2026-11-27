@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+* [PR-34](https://github.com/itk-enter/enter-maps/pull/34)
+  Added a login with OpenID Connect to the builder, and a `User` for each person. `/`, `/embed/` and `/data/` stay open
 * [PR-29](https://github.com/itk-enter/enter-maps/pull/29)
   Numbered the steps of the map form, and moved the embed code from the steps to a button
 * [PR-33](https://github.com/itk-enter/enter-maps/pull/33)

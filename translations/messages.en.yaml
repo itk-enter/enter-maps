@@ -64,6 +64,18 @@ builder:
     import: Import
     export: Export
     export_label: Export the map "%title%" as JSON
+  security:
+    login: Log in
+    logout: Log out
+    login_failed:
+      title: The login failed
+      text: The map builder could not confirm your login. Log out, and try again.
+    not_employee:
+      title: No access
+      text: The map builder is only for employees. Your login does not give access. Log out, and log in with another login.
+    logged_out:
+      title: You are logged out
+      text: Log in again to use the map builder.
   import:
     title: Import a map
     text: Paste the JSON with the configuration of the map, for example from an export. The map becomes a new map with its own address, so it does not change other maps.
