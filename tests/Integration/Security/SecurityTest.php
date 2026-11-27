@@ -34,11 +34,20 @@ final class SecurityTest extends WebTestCase
 
     public function testSendsAUserWithoutALoginToTheProvider(): void
     {
-        foreach (['/', '/builder', '/builder/new'] as $path) {
+        foreach (['/builder', '/builder/new'] as $path) {
             $this->browser->request('GET', $path);
 
             $this->assertResponseRedirects('/openidconnect/login/employee', message: $path);
         }
+    }
+
+    public function testShowsTheFrontPageWithoutALogin(): void
+    {
+        $crawler = $this->browser->request('GET', '/');
+
+        $this->assertResponseIsSuccessful();
+        // The link to the builder is open, but the builder needs a login.
+        $this->assertSame('/builder', $crawler->selectLink('Åbn kortbyggeren')->attr('href'));
     }
 
     public function testLetsTheMapAndItsDataThroughWithoutALogin(): void

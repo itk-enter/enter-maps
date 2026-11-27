@@ -27,9 +27,10 @@ security:
             logout:
                 path: app_logout
 
-    # The same paths as the basic auth on the server: the firewalls "dev" and
-    # "public" let /embed/, /data/ and /assets/ through without a login. All
-    # other paths need an employee. Only the first rule that matches applies.
+    # The firewalls "dev" and "public" let /embed/, /data/ and /assets/ through
+    # without a login. The front page and the pages of the login are open too.
+    # All other paths need an employee. Only the first rule that matches applies.
     access_control:
+        - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/(openidconnect/login/|logged-out$), roles: PUBLIC_ACCESS }
         - { path: ^/, roles: !php/enum App\Entity\Role::EMPLOYEE->value }

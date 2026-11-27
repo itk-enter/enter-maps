@@ -49,8 +49,8 @@ Mailpit, because the project does not send e-mail.
 
 ### Login
 
-All pages need a login with OpenID Connect, except the map and its data: `/embed/`, `/data/` and `/assets/`. Only a
-user in the group `Employee` can use the builder. Other users get the page "Ingen adgang".
+All pages need a login with OpenID Connect, except the front page `/`, and the map and its data: `/embed/`, `/data/` and
+`/assets/`. Only a user in the group `Employee` can use the builder. Other users get the page "Ingen adgang".
 
 `docker-compose.override.yml` includes `docker-compose.oidc.yml`, which runs a mock provider at
 <http://idp-employee.enter-maps.local.itkdev.dk/>. Its login page has two users:
