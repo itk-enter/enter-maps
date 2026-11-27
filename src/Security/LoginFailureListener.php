@@ -11,6 +11,8 @@ use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 
+use function Symfony\Component\Translation\t;
+
 /**
  * Shows the page "Login mislykkedes" when the login with the provider fails,
  * for example because the ID token is not valid or the user cancelled at the
@@ -36,6 +38,6 @@ final readonly class LoginFailureListener
         }
 
         $status = $exception instanceof HttpExceptionInterface ? $exception->getStatusCode() : Response::HTTP_UNAUTHORIZED;
-        $event->setResponse($this->page->render('login_failed', $status));
+        $event->setResponse($this->page->render(t('builder.security.login_failed.title'), t('builder.security.login_failed.text'), $status));
     }
 }

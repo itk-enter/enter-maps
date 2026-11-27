@@ -8,7 +8,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Authorization\AccessDeniedHandlerInterface;
+use Symfony\Contracts\Translation\TranslatableInterface;
 use Twig\Environment;
+
+use function Symfony\Component\Translation\t;
 
 /**
  * The page for a login that failed, and for a user who is not an employee.
@@ -27,14 +30,15 @@ final readonly class AccessDeniedPage implements AccessDeniedHandlerInterface
      */
     public function handle(Request $request, AccessDeniedException $accessDeniedException): Response
     {
-        return $this->render('not_employee', Response::HTTP_FORBIDDEN);
+        return $this->render(t('builder.security.not_employee.title'), t('builder.security.not_employee.text'), Response::HTTP_FORBIDDEN);
     }
 
     /**
-     * @param string $reason the key of the texts in builder.security
+     * The template translates the title and the text. Give them with t(), so
+     * that the extraction of the translations finds the keys.
      */
-    public function render(string $reason, int $status): Response
+    public function render(TranslatableInterface $title, TranslatableInterface $text, int $status): Response
     {
-        return new Response($this->twig->render('security/denied.html.twig', ['reason' => $reason]), $status);
+        return new Response($this->twig->render('security/denied.html.twig', ['title' => $title, 'text' => $text]), $status);
     }
 }

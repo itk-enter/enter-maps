@@ -1,9 +1,10 @@
 {% extends 'builder/layout.html.twig' %}
 
-{% block heading %}{{ ('builder.security.' ~ reason ~ '_title')|trans }}{% endblock %}
+{# The title and the text come from AccessDeniedPage, as translatable messages. #}
+{% block heading %}{{ title|trans }}{% endblock %}
 
 {% block content %}
-    <p class="m-0 max-w-2xl">{{ ('builder.security.' ~ reason ~ '_text')|trans }}</p>
+    <p class="m-0 max-w-2xl">{{ text|trans }}</p>
     <p class="m-0 flex flex-wrap gap-3">
         <twig:Form:Button href="{{ path('app_logout') }}">{{ 'builder.security.logout'|trans }}</twig:Form:Button>
     </p>
