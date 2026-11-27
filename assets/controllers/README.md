@@ -35,6 +35,7 @@ address-search:choose  -> map#origin
 | `address_search_controller.js` | The search field. Filters the list as the user types (`address-search:query`), or finds an address with Adressevælger (`address-search:choose`). The address search is an ARIA 1.2 combobox.                                                                             |
 | `clipboard_controller.js`      | In the builder: copies the embed code. On a page without https, it uses the old copy command.                                                                                                                                                                            |
 | `map_view_controller.js`       | In the builder: keeps the view that the map in the frame sends after each move, and copies it into the view fields of the form.                                                                                                                                          |
+| `confirm_dialog_controller.js` | In the builder: opens the question before a save as a modal dialog. Escape sends `cancel`, which goes back to the form.                                                                                                                                                  |
 
 ## The modules in `assets/lib/`
 

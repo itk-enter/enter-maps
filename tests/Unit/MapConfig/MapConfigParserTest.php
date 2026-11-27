@@ -36,6 +36,14 @@ final class MapConfigParserTest extends TestCase
         $this->parser = new MapConfigParser($validator, new Cql2FilterParser($validator), new SvgIconValidator());
     }
 
+    public function testGivesTheLatestVersionWithASchemaFile(): void
+    {
+        $latest = $this->parser->latestVersion();
+
+        $this->assertSame(max(array_keys(MapConfigParser::SCHEMAS)), $latest);
+        $this->assertFileExists(\dirname(__DIR__, 3).'/config/schema/'.MapConfigParser::SCHEMAS[$latest]);
+    }
+
     public function testParsesTheExampleOfThePlan(): void
     {
         $config = $this->parser->parse((string) file_get_contents(\dirname(__DIR__, 2).'/Fixtures/map-config/toilets.json'));
