@@ -287,8 +287,9 @@ On the server, set `ENTER_BASE_URI` in `.env.local` to the address of Enter. On 
 The builder at `/builder` can change and delete the maps on all sites, so it needs a login. On the server, set the
 values of the OpenID Connect provider in `.env.local`:
 
-- `OIDC_METADATA_URL`: the address of the discovery document of the provider, which ends in
-  `/.well-known/openid-configuration`.
+- `OIDC_METADATA_URL`: the full address of the discovery document of the provider, as the provider gives it. The
+  bundle uses it without a change, so it can have a query string, for example
+  `https://login.microsoftonline.com/<tenant>/v2.0/.well-known/openid-configuration?p=<policy>`.
 - `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET`: the client of the app at the provider. Register
   `https://<server>/openidconnect/callback` as the redirect URI, and `https://<server>/logged-out` as the address after
   a logout.
